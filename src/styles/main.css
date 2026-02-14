@@ -1,0 +1,29 @@
+#root {
+  max-width: 1920px;
+  padding: 1rem;
+}
+
+.page {
+    display: flex;
+    flex-direction: row;
+}
+
+.main {
+    width: 80vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    border-style: dotted;
+    border-color: rgb(249, 8, 8);
+    border-width: 4px;
+}
+
+.sidebar {
+    width: 20vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    border-style: dotted;
+    border-color: rgb(4, 229, 19);
+    border-width: 4px;
+}

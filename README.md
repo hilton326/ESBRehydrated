@@ -1,2 +1,1 @@
-# SpecialChat
 A recreation of FANDOM's wiki chatrooms, which were removed in the 2020 UCP migration.
