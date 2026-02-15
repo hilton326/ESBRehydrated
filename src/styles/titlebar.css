@@ -1,0 +1,27 @@
+/* Navbar */
+.titlebar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    border-style: solid;
+    border-color: white;
+    border-width: 4px;
+    color:aqua;
+}
+
+.logo-container {
+    width: 80px;
+    height: 80px;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    margin: 10px;
+    overflow: hidden;
+    padding-right: 100px;
+}
+/* ESB logo */
+.esb-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}

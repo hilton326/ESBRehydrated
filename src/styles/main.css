@@ -27,3 +27,14 @@
     border-color: rgb(4, 229, 19);
     border-width: 4px;
 }
+
+/* The top title bar */
+.titlebar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    border-style: solid;
+    border-color: white;
+    border-width: 2px;
+    color:aqua;
+}

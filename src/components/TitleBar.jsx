@@ -1,10 +1,12 @@
-import '../styles/navbar.css'
-import reactLogo from '../assets/react.svg'
+import '../styles/titlebar.css'
+import ESBLogo from '../assets/ESB.png'
 
 function TitleBar() {
     return (
-        <div className='navbar'>
-            <img src={reactLogo} className="logo" alt="ESB logo" />
+        <div className='titlebar'>
+            <div className="logo-container">
+                <img src={ESBLogo} className="esb-logo" alt="ESB logo" />
+            </div>
             <h2>Encyclopedia SpongeBobia</h2>
         </div>
     )

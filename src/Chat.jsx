@@ -1,6 +1,7 @@
 
 import './styles/main.css'
 import TitleBar from './components/TitleBar'
+import UserMenu from './components/UserMenu'
 
 function Chat() {
 
@@ -20,7 +21,7 @@ function Chat() {
       </div>
 
       <div className="sidebar">
-        <TitleBar/>
+        <UserMenu username={"PlanKrab"} />
         <TitleBar/>
         <TitleBar/>
       </div>
