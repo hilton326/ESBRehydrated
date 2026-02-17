@@ -1,6 +1,7 @@
 
 import './styles/main.css'
 import TitleBar from './components/TitleBar'
+import MessageDisplay from './components/MessageDisplay'
 import UserMenu from './components/UserMenu'
 
 function Chat() {
@@ -12,18 +13,16 @@ function Chat() {
   */
   return (
 
-    <div className="page">
+    <div id="page">
       
-      <div className="main">
+      <div id="main">
         <TitleBar/>
-        <TitleBar/>
-        <TitleBar/>
+        <MessageDisplay/>
       </div>
 
-      <div className="sidebar">
+      <div id="sidebar">
         <UserMenu username={"PlanKrab"} />
-        <TitleBar/>
-        <TitleBar/>
+        
       </div>
     </div>
   )
