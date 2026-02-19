@@ -79,10 +79,10 @@
 }
 
 /* User settings menu opener */
-#profile-dropdown {
+.profile-dropdown {
     cursor: pointer;
 }
-#profile-dropdown:hover {
+.profile-dropdown:hover {
     color:red;
 }
 
