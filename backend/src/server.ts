@@ -3,12 +3,14 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 
+// Import router functions from controllers
+import userRouter from './controllers/UserController';
 
 // Initialize the Express application
 const app = express();
 
-// Set the backend port (use 5000 if nothing specified in env. variables)
-const PORT = process.env.PORT || 5000;
+// Set the backend port (use 8080 if nothing specified in env. variables)
+const PORT = process.env.PORT || 8080;
 
 /* Middleware:
 * Enables CORS for all routes, which allows frontend applications on other domains to access this API.
@@ -16,6 +18,9 @@ const PORT = process.env.PORT || 5000;
 * This is important for handling data sent in POST requests. */
 app.use(cors());
 app.use(express.json());
+
+// Routes for API controllers
+app.use('/api/users', userRouter);
 
 // Test API endpoint (GET)
 app.get('/api/test', (req: Request, res: Response) => {
