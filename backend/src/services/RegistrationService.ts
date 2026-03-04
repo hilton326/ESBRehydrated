@@ -19,7 +19,7 @@ function checkIfUsernameExists(newUsername: string) {
 }
 
 // Ensure password meets security requirements
-function validatePassword(password: string) {
+function checkPassword(password: string) {
     // WIP: requirements not yet decided
 }
 
@@ -48,7 +48,7 @@ function createUser(username: string, password: string) {
     return response;
 }
 
-export { checkIfUsernameExists, validatePassword, hashPassword, createUser, userList }
+export { checkIfUsernameExists, checkPassword, hashPassword, createUser, userList }
 
 
 

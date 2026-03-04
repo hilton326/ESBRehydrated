@@ -1,5 +1,9 @@
+// Model imports
 import { User } from '../models/User';
-import { checkIfUsernameExists, validatePassword, hashPassword, createUser } from '../services/RegistrationService'
+// Services
+import { checkIfUsernameExists, checkPassword, hashPassword, createUser } from '../services/RegistrationService'
+import { getUser, validatePassword, generateToken } from '../services/AuthenticationService'
+// Data Transfer Objects (DTOs)
 import { Credentials } from '../dto/users/Credentials';
 
 import { Router, Request, Response } from 'express';
@@ -32,8 +36,28 @@ router.post('/register', async (req: Request, res: Response) => {
 
 // Logging in
 router.post('/login', async (req: Request, res: Response) => {
-    const credentials: Credentials = req.body;
-    // WIP
+    const credentials: Credentials = req.body; // Login credentials
+
+    // Retrieve user from database: return error message if username is not found
+    const {user, usernameError} = await getUser(credentials.username);
+    if (!user) {
+        return res.status(403).send(usernameError);
+    }
+
+    // Validate password: return error message if password is incorrect
+    const {valid, validationError} = await validatePassword(user, credentials.password)
+    if (!valid) {
+        return res.status(403).send(validationError);
+    }
+
+    // Generate login token
+    const {token, tokenError} = await generateToken(user.username);
+    // Record server error if something goes wrong creating the token
+    if (tokenError) {
+        return res.status(500).send("Server error: " + tokenError);
+    }
+    // If successful, return token back to client
+    return res.status(200).send({ token });
 })
 
 export default router;
