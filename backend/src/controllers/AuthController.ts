@@ -1,13 +1,13 @@
+// Express.js imports
+import { Router, Request, Response } from 'express';
+const router = Router();
 // Model imports
 import { User } from '../models/User';
 // Services
-import { checkIfUsernameExists, checkPassword, hashPassword, createUser } from '../services/RegistrationService'
-import { getUser, validatePassword, generateToken } from '../services/AuthenticationService'
+import { checkIfUsernameExists, checkPassword, hashPassword, createNewUser } from '../services/RegistrationService'
+import { findUser, validatePassword, generateToken } from '../services/AuthenticationService'
 // Data Transfer Objects (DTOs)
 import { Credentials } from '../dto/users/Credentials';
-
-import { Router, Request, Response } from 'express';
-const router = Router();
 
 // User registration
 router.post('/register', async (req: Request, res: Response) => {
@@ -27,7 +27,7 @@ router.post('/register', async (req: Request, res: Response) => {
         // Hash password for security
         const hashedPassword = await hashPassword(credentials.password);
         // Create the user in the database
-        const response = await createUser(credentials.username, hashedPassword);
+        const response = await createNewUser(credentials.username, hashedPassword);
         res.status(201).send(response)
     } catch (error) {
         return res.status(500).send('Error when hashing password')
@@ -39,24 +39,26 @@ router.post('/login', async (req: Request, res: Response) => {
     const credentials: Credentials = req.body; // Login credentials
 
     // Retrieve user from database: return error message if username is not found
-    const {user, usernameError} = await getUser(credentials.username);
-    if (!user) {
-        return res.status(403).send(usernameError);
+    const userCheck = await findUser(credentials.username);
+    if (!userCheck.user) {
+        return res.status(userCheck.code).send(userCheck.error);
     }
+    const currentUser = userCheck.user;
 
     // Validate password: return error message if password is incorrect
-    const {valid, validationError} = await validatePassword(user, credentials.password)
-    if (!valid) {
-        return res.status(403).send(validationError);
+    const passwordCheck = await validatePassword(currentUser, credentials.password)
+    if (!passwordCheck.valid) {
+        return res.status(passwordCheck.code).send(passwordCheck.error);
     }
 
     // Generate login token
-    const {token, tokenError} = await generateToken(user.username);
+    const loginToken = await generateToken(currentUser);
     // Record server error if something goes wrong creating the token
-    if (tokenError) {
-        return res.status(500).send("Server error: " + tokenError);
+    if (loginToken.error) {
+        return res.status(500).send("Server error when creating login token: " + loginToken.error);
     }
     // If successful, return token back to client
+    const token = loginToken.token;
     return res.status(200).send({ token });
 })
 

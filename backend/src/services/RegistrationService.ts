@@ -10,12 +10,12 @@ let userList: User[] = []
 
 // Make sure the username is not taken
 function checkIfUsernameExists(newUsername: string) {
-    // "Find" function is basically the same as a loop through the array
+    // Personal note: "Find" function is basically the same as a loop through the array
     const existingUser = userList.find(user => user.username === newUsername)
-    if (existingUser) {
-        return true;
-    } 
-    return false;
+
+    // If the username is taken, return true
+    let userExists = existingUser ? true : false;
+    return userExists;
 }
 
 // Ensure password meets security requirements
@@ -30,7 +30,7 @@ async function hashPassword(password: string) {
 }
 
 // Store the new user in the database
-function createUser(username: string, password: string) {
+function createNewUser(username: string, password: string) {
     // Create user
     const newUser: User = {
         id: userList.length + 1,
@@ -48,7 +48,7 @@ function createUser(username: string, password: string) {
     return response;
 }
 
-export { checkIfUsernameExists, checkPassword, hashPassword, createUser, userList }
+export { checkIfUsernameExists, checkPassword, hashPassword, createNewUser, userList }
 
 
 

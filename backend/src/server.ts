@@ -4,7 +4,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 
 // Import router functions from controllers
-import userRouter from './controllers/UserController';
+import authRouter from './controllers/AuthController';
 
 // Initialize the Express application
 const app = express();
@@ -20,7 +20,7 @@ app.use(cors());
 app.use(express.json());
 
 // Routes for API controllers
-app.use('/api/users', userRouter);
+app.use('/api/auth', authRouter);
 
 // Test API endpoint (GET)
 app.get('/api/test', (req: Request, res: Response) => {
