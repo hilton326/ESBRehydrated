@@ -7,36 +7,52 @@ import { User } from '../models/User';
 import { checkIfUsernameExists, checkPassword, hashPassword, createNewUser } from '../services/RegistrationService'
 import { findUser, validatePassword, generateToken } from '../services/AuthenticationService'
 // Data Transfer Objects (DTOs)
-import { Credentials } from '../dto/users/Credentials';
+import { Credentials } from '../dto/users/LoginCredentials';
 
 // User registration
 router.post('/register', async (req: Request, res: Response) => {
     const credentials: Credentials = req.body;
 
     // Make sure credentials are not empty
-    if (!credentials.username || !credentials.password) {
-        return res.status(400).send("Username and password are required.");
+    if (!credentials) {
+        return res.status(403).send("Username and password are required.");
     }
-    // Make sure the username is not taken
-    const existingUser = await checkIfUsernameExists(credentials.username);
-    if (existingUser) {
-        return res.status(400).send("User name already taken.")
+    if (!credentials.username || !credentials.password) {
+        return res.status(403).send("Username and password are required.");
     }
 
-    try {
-        // Hash password for security
-        const hashedPassword = await hashPassword(credentials.password);
-        // Create the user in the database
-        const response = await createNewUser(credentials.username, hashedPassword);
-        res.status(201).send(response)
-    } catch (error) {
-        return res.status(500).send('Error when hashing password')
+    // Make sure the username isn't already registered with another account
+    const existingUserCheck = await checkIfUsernameExists(credentials.username);
+    if (existingUserCheck.exists) {
+        return res.status(existingUserCheck.code).send(existingUserCheck.error);
     }
+
+    // Hash password for security
+    const hashedPasswordResponse = await hashPassword(credentials.password);
+    if (hashedPasswordResponse.error) {
+        return res.status(hashedPasswordResponse.code).send(hashedPasswordResponse.error);
+    }
+
+    // Create the user in the database
+    const newUserResponse = await createNewUser(credentials.username, hashedPasswordResponse.password);
+    // If the new ID is -1, something went wrong
+    if (newUserResponse.id == -1) {
+        return res.status(500).send(newUserResponse);
+    }
+    return res.status(201).send(newUserResponse);
 })
 
 // Logging in
 router.post('/login', async (req: Request, res: Response) => {
     const credentials: Credentials = req.body; // Login credentials
+    
+    // Make sure credentials are not empty
+    if (!credentials) {
+        return res.status(403).send("Username and password are required.");
+    }
+    if (!credentials.username || !credentials.password) {
+        return res.status(403).send("Username and password are required.");
+    }
 
     // Retrieve user from database: return error message if username is not found
     const userCheck = await findUser(credentials.username);
