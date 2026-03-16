@@ -1,5 +1,5 @@
 import { User } from '../models/User';
-import { RegistrationConfirmation } from '../dto/users/RegistrationForm';
+import { RegistrationForm } from '../dto/users/RegistrationForm';
 
 // Used to encrypt passwords
 const bcrypt = require('bcryptjs');
@@ -7,6 +7,12 @@ const jwt = require('jsonwebtoken');
 
 // Temporary user array (until we use a database)
 let userList: User[] = []
+
+
+/* List of things to do here:
+* Make sure email is an email
+* Make sure username does not contain @
+* Security reqs for password */
 
 // Make sure the username doesn't already exist in the database
 function checkIfUsernameExists(newUsername: string) {
@@ -42,11 +48,12 @@ async function hashPassword(password: string) {
 }
 
 // Store the new user in the database
-function createNewUser(username: string, hashedPassword: string) {
+function createNewUser(email: string, username: string, hashedPassword: string) {
     try {
         // Create user
         const newUser: User = {
             id: userList.length + 1,
+            email: email,
             username: username,
             password: hashedPassword,
             status: "unverified"

@@ -7,18 +7,19 @@ import { User } from '../models/User';
 import { checkIfUsernameExists, checkPassword, hashPassword, createNewUser } from '../services/RegistrationService'
 import { findUser, validatePassword, generateToken } from '../services/AuthenticationService'
 // Data Transfer Objects (DTOs)
-import { Credentials } from '../dto/users/LoginCredentials';
+import { RegistrationForm } from '../dto/users/RegistrationForm';
+import { LoginCredentials } from '../dto/users/LoginCredentials';
 
 // User registration
 router.post('/register', async (req: Request, res: Response) => {
-    const credentials: Credentials = req.body;
+    const credentials: RegistrationForm = req.body;
 
     // Make sure credentials are not empty
     if (!credentials) {
-        return res.status(403).send("Username and password are required.");
+        return res.status(403).send("Email and password are required.");
     }
-    if (!credentials.username || !credentials.password) {
-        return res.status(403).send("Username and password are required.");
+    if (!credentials.email || !credentials.username || !credentials.password) {
+        return res.status(403).send("Email and password are required.");
     }
 
     // Make sure the username isn't already registered with another account
@@ -34,7 +35,7 @@ router.post('/register', async (req: Request, res: Response) => {
     }
 
     // Create the user in the database
-    const newUserResponse = await createNewUser(credentials.username, hashedPasswordResponse.password);
+    const newUserResponse = await createNewUser(credentials.email, credentials.username, hashedPasswordResponse.password);
     // If the new ID is -1, something went wrong
     if (newUserResponse.id == -1) {
         return res.status(500).send(newUserResponse);
@@ -44,18 +45,18 @@ router.post('/register', async (req: Request, res: Response) => {
 
 // Logging in
 router.post('/login', async (req: Request, res: Response) => {
-    const credentials: Credentials = req.body; // Login credentials
+    const credentials: LoginCredentials = req.body; // Login credentials
     
     // Make sure credentials are not empty
     if (!credentials) {
         return res.status(403).send("Username and password are required.");
     }
-    if (!credentials.username || !credentials.password) {
+    if (!credentials.email || !credentials.password) {
         return res.status(403).send("Username and password are required.");
     }
 
     // Retrieve user from database: return error message if username is not found
-    const userCheck = await findUser(credentials.username);
+    const userCheck = await findUser(credentials.email);
     if (!userCheck.user) {
         return res.status(userCheck.code).send(userCheck.error);
     }
