@@ -2,7 +2,7 @@
 import './styles/main.css'
 import TitleBar from './components/TitleBar'
 import MessageDisplay from './components/MessageDisplay'
-import UserMenu from './components/UserMenu'
+import ProfileDisplay from './components/ProfileDisplay'
 
 function Chat() {
 
@@ -21,7 +21,7 @@ function Chat() {
       </div>
 
       <div id="sidebar">
-        <UserMenu username={"PlanKrab"} />
+        <ProfileDisplay username={"PlanKrab"} />
         
       </div>
     </div>

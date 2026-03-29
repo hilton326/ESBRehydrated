@@ -66,7 +66,7 @@
 }
 
 /* User settings menu container */
-#usermenu {
+#profile-display {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -79,10 +79,9 @@
 }
 
 /* User settings menu opener */
-.profile-dropdown {
+.profile-dropdown-button {
     cursor: pointer;
 }
-.profile-dropdown:hover {
+.profile-dropdown-button:hover {
     color:red;
 }
-

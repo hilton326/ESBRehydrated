@@ -16,10 +16,10 @@ router.post('/register', async (req: Request, res: Response) => {
 
     // Make sure credentials are not empty
     if (!credentials) {
-        return res.status(403).send("Email and password are required.");
+        return res.status(403).send("Please fill out all required fields.");
     }
     if (!credentials.email || !credentials.username || !credentials.password) {
-        return res.status(403).send("Email and password are required.");
+        return res.status(403).send("Please fill out all required fields.");
     }
 
     // Make sure the username isn't already registered with another account
