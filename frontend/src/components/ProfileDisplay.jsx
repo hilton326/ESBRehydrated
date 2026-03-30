@@ -3,9 +3,10 @@ import { useState } from 'react';
 import { TiArrowSortedDown } from "react-icons/ti";
 
 import '../styles/main.css';
-import thinkton from '../assets/legothinkton.png';
-import Image from './common/Image.tsx';
+import thinkton from '../assets/legothinkton.png'; // image placeholder
+import Image from './common/Image.jsx';
 import ProfileDropdown from './ProfileDropdown.jsx';
+import User from '../types/User.js';
 
 
 /* We need a UserSettingsMenu component
@@ -18,19 +19,22 @@ import ProfileDropdown from './ProfileDropdown.jsx';
 * The User CANNOT be null since you need to be logged in to use the site, but I'll have a fallback anyway.
 */
 
-function ProfileDisplay({ username }) {
+function ProfileDisplay(user) {
     const [dropDownOpen, setDropDownOpen] = useState(false);
 
     function openProfileDropdown() {
         setDropDownOpen(!dropDownOpen);
+        alert(dropDownOpen);
     }
 
     return (
         <div>
             {/* USER ICON, NAME, AND DROPDOWN BUTTON */}
             <div id='profile-display'>
-                <Image size={50} image={thinkton} alt={"user profile picture"} />
-                <h3>{username}</h3>
+                <Image size={50} 
+                    image={user.profile_picture || thinkton} alt={"user profile picture"} 
+                />
+                <h3>{user.username || "Guest"}</h3>
                 <h2 onClick={openProfileDropdown} className="profile-dropdown-button"> 
                     <TiArrowSortedDown /> 
                 </h2>
@@ -38,16 +42,11 @@ function ProfileDisplay({ username }) {
 
             {/* ACTUAL DROPDOWN MENU */}
             <div>
-                {dropDownOpen ? (
-                    <div>
-                        <ProfileDropdown /> 
-                    </div>
-                    ) : (
-                    <div> </div>
-                    )
-                };
+                {dropDownOpen 
+                    ? <div> <ProfileDropdown /> </div>
+                    : <div> </div>  
+                }
             </div>
-
             this is where dropdown will appear
         </div>
     )

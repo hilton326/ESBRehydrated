@@ -7,15 +7,8 @@ import Image from './Image.tsx'
 * A timestamp: String
 */
 
-interface Attributes {
-    username: string;
-    profile_picture: string;
-    body: string;
-    timestamp: string;
-}
-
 // Generic image component to more easily support dynamically sized, but restrained, images
-const Message: React.FC<Attributes> = ({ username, profile_picture, body, timestamp}) => {
+const Message = ({ username, profile_picture, body, timestamp }) => {
     return (
         <div>
             {username}

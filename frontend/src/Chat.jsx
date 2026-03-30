@@ -1,8 +1,8 @@
 
 import './styles/main.css'
 import TitleBar from './components/TitleBar'
-import MessageDisplay from './components/MessageDisplay'
-import ProfileDisplay from './components/ProfileDisplay'
+import MessageDisplay from './components/MessageDisplay.jsx'
+import ProfileDisplay from './components/ProfileDisplay.jsx'
 
 function Chat() {
 
@@ -21,7 +21,7 @@ function Chat() {
       </div>
 
       <div id="sidebar">
-        <ProfileDisplay username={"PlanKrab"} />
+        <ProfileDisplay />
         
       </div>
     </div>
