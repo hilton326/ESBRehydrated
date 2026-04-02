@@ -1,7 +1,12 @@
+import '../styles/main.css';
+
 function ProfileDropdown() {
     return (
-        <div>
-
+        <div id="profile-dropdown">
+            <ul>
+                <li> Profile Settings </li>
+                <li> Log Out </li>
+            </ul>
         </div>
     );
 }

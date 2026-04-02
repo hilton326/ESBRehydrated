@@ -24,7 +24,6 @@ function ProfileDisplay(user) {
 
     function openProfileDropdown() {
         setDropDownOpen(!dropDownOpen);
-        alert(dropDownOpen);
     }
 
     return (
@@ -47,7 +46,6 @@ function ProfileDisplay(user) {
                     : <div> </div>  
                 }
             </div>
-            this is where dropdown will appear
         </div>
     )
 }
