@@ -1,4 +1,4 @@
-import '../styles/main.css'
+
 
 // Generic image component
 function MessageDisplay() {

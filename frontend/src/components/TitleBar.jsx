@@ -1,6 +1,5 @@
-import '../styles/main.css'
-import ESBLogo from '../assets/ESB.webp'
-import Image from './common/Image.jsx'
+import ESBLogo from '../assets/ESB.webp';
+import Image from './common/Image.jsx';
 
 function TitleBar() {
     return (

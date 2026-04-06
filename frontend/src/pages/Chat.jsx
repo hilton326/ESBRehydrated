@@ -1,7 +1,6 @@
-import '../styles/main.css'
-import TitleBar from '../components/TitleBar.jsx'
-import MessageDisplay from '../components/MessageDisplay.jsx'
-import ProfileDisplay from '../components/ProfileDisplay.jsx'
+import TitleBar from '../components/TitleBar.jsx';
+import MessageDisplay from '../components/MessageDisplay.jsx';
+import ProfileDisplay from '../components/ProfileDisplay.jsx';
 
 function Chat() {
 

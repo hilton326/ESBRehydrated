@@ -2,11 +2,9 @@
 import { useState } from 'react';
 import { TiArrowSortedDown } from "react-icons/ti";
 
-import '../styles/main.css';
 import thinkton from '../assets/legothinkton.png'; // image placeholder
 import Image from './common/Image.jsx';
 import ProfileDropdown from './ProfileDropdown.jsx';
-import User from '../types/User.js';
 
 
 /* We need a UserSettingsMenu component

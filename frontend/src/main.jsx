@@ -4,6 +4,7 @@ import './index.css'
 import Chat from './pages/Chat.jsx'
 import Login from './pages/Login.jsx'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'; // Allows multiple pages
+import './styles/main.css'; // ONLY IMPORT THIS HERE
 
 createRoot(document.getElementById('root')).render(
   <BrowserRouter>

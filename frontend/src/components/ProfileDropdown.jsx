@@ -1,4 +1,4 @@
-import '../styles/main.css';
+
 
 function ProfileDropdown() {
     return (
