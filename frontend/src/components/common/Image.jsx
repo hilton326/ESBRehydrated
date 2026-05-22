@@ -1,4 +1,3 @@
-import '../../styles/main.css'
 
 // Generic image component to more easily support dynamically sized, but restrained, images
 const Image = ({ size, image, alt}) => {

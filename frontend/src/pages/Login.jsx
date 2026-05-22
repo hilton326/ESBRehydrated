@@ -1,23 +1,25 @@
 
-import TitleBar from '../components/TitleBar.jsx'
-import MessageDisplay from '../components/MessageDisplay.jsx'
-import ProfileDisplay from '../components/ProfileDisplay.jsx'
+import LoginButton from '../components/LoginButton.jsx';
+
 
 function Login() {
   return (
 
     <div id="page">
       
-      <div id="main">
-        <TitleBar/>
-        LOGIN
-        <MessageDisplay/>
-      </div>
+      <div id="login-main">
 
-      <div id="sidebar">
-        <ProfileDisplay />
+        <h2 classname="login-header">
+          Welcome back!
+        </h2>
+
+        <input className="login-input" type="text" placeholder="Username" />
+        <input className="login-input" type="password" placeholder="Password" />
+
+        <LoginButton />
         
       </div>
+
     </div>
   )
 }

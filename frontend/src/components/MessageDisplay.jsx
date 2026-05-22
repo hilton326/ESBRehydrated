@@ -1,6 +1,4 @@
 
-
-// Generic image component
 function MessageDisplay() {
     return (
         <div id="message-display">

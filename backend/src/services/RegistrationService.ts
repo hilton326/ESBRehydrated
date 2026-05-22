@@ -28,7 +28,7 @@ function checkIfUsernameExists(newUsername: string) {
         return response;
 
     } catch (serverError) {
-        return {exists: true, code: 500, error: "Unexpected server error: " + serverError};
+        return {exists: null, code: 500, error: "Unexpected server error: " + serverError};
     }
 }
 

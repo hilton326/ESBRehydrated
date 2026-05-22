@@ -4,7 +4,10 @@ import './index.css'
 import Chat from './pages/Chat.jsx'
 import Login from './pages/Login.jsx'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'; // Allows multiple pages
-import './styles/main.css'; // ONLY IMPORT THIS HERE
+
+// CSS IMPORTS: Only import CSS files in main.jsx, not in individual components or pages
+import './styles/main.css';
+import './styles/login.css';
 
 createRoot(document.getElementById('root')).render(
   <BrowserRouter>
