@@ -20,7 +20,7 @@ function checkIfUsernameExists(newUsername: string) {
         // Check database for user matching the username: later should call userRepository or whatever
         const user = userList.find(user => user.username === newUsername);
 
-        // Return true if username found; if not, return null
+        // Return true if username found
         // Also return status and error message if applicable
         const response = user 
             ? {exists: true, code: 403, error: "Sorry, that username already exists."} 

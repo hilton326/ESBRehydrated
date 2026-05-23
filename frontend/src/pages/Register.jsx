@@ -2,7 +2,7 @@
 import LoginButton from '../components/LoginButton.jsx';
 
 
-function Login() {
+function Register() {
   return (
 
     <div id="page">
@@ -13,12 +13,12 @@ function Login() {
         <div id="login-container">
 
           <h2 className="login-header">
-          WELCOME BACK!
+          JOIN THE PARTY!
           </h2>
 
-          <p className="login-text"> Username: </p>
+          <p className="login-text"> Enter a username: </p>
           <input className="login-input" type="text"/>
-          <p className="login-text"> Password: </p>
+          <p className="login-text"> Enter a password: </p>
           <input className="login-input" type="password"/>
 
           <LoginButton />
@@ -32,4 +32,4 @@ function Login() {
   )
 }
 
-export default Login
+export default Register

@@ -24,7 +24,7 @@ app.use('/api/auth', authRouter);
 
 // Test API endpoint (GET)
 app.get('/api/test', (req: Request, res: Response) => {
-    res.json({ message: 'Hello from Express.js!' });
+    res.json({ message: 'Hello from Express.js! Look, it\'s the server!' });
 });
 
 // Start the server: npx ts-node src/server.ts
