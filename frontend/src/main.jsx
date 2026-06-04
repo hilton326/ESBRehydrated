@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import Chat from './pages/Chat.jsx'
 import Login from './pages/Login.jsx'
+import Signup1 from './pages/Signup1.jsx'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'; // Allows multiple pages
 
 // CSS IMPORTS: Only import CSS files in main.jsx, not in individual components or pages
@@ -14,6 +15,7 @@ createRoot(document.getElementById('root')).render(
     <Routes>
       <Route path="/" element={<Chat />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup1 />} />
     </Routes>
   </BrowserRouter>,
 )

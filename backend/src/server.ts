@@ -2,10 +2,9 @@
 // Allows the server to accept requests from different origins
 import express, { Request, Response } from 'express';
 import cors from 'cors';
-
 // Load environment variables from .env file
 import 'dotenv/config';
-// Import database connection function
+// Import database connection functions
 import { testConnection, testData, shutdownPool } from './db';
 // Import router functions from controllers
 import authRouter from './controllers/AuthController';
@@ -13,7 +12,7 @@ import authRouter from './controllers/AuthController';
 // Initialize the Express application
 const app = express();
 
-// Set the backend port (use 8080 if nothing specified in env. variables)
+// Set the backend port (use 8080 if nothing specified in .env variables)
 const PORT = Number(process.env.SERVER_PORT) || 8080;
 
 /* Middleware:

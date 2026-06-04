@@ -1,3 +1,5 @@
+// This is the database connection configuration file.
+
 import { Pool, QueryResult } from 'pg';
 
 // Create a connection pool to the PostgreSQL database using environment variables
@@ -30,6 +32,7 @@ export const testConnection = async () => {
     }
 }
 
+// Test query for retrieving data; may be adjusted or removed later
 export const testData = async () => {
       try {
         const response = await query('SELECT name FROM people WHERE id = $1', [0]);
@@ -40,7 +43,7 @@ export const testData = async () => {
             console.log('Test query result:', response.rows[0].name);
         }
     } catch (err) {
-        console.error('didnt work bozo:', err);
+        console.error('Oops! Why\'s this showing? Error:', err);
         throw err; // Throw the error so it's handled by the caller (ex. server.ts)
     }
 }

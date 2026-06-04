@@ -1,29 +1,22 @@
-import { User } from '../models/User';
-import { RegistrationForm } from '../dto/users/RegistrationForm';
+// RegistrationService: Logic for creating a new account.
+
+import { Account } from '../models/Account';
+// Database functions from Repository
+import { checkIfAccountExists, createNewAccount } from '../repository/AccountRepository';
 
 // Used to encrypt passwords
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 
-// Temporary user array (until we use a database)
-let userList: User[] = []
-
-
-/* List of things to do here:
-* Make sure email is an email
-* Make sure username does not contain @
-* Security reqs for password */
-
-// Make sure the username doesn't already exist in the database
-function checkIfUsernameExists(newUsername: string) {
+// Make sure the provided email doesn't already exist in the database
+export async function checkIfEmailExists(email: string) {
     try {
-        // Check database for user matching the username: later should call userRepository or whatever
-        const user = userList.find(user => user.username === newUsername);
+        // Check database for existing account
+        const nameExists = await checkIfAccountExists(email);
 
-        // Return true if username found
+        // Return true if email found
         // Also return status and error message if applicable
-        const response = user 
-            ? {exists: true, code: 403, error: "Sorry, that username already exists."} 
+        const response = nameExists
+            ? {exists: true, code: 403, error: "There is already an account registered under this email address. Try logging in instead."} 
             : {exists: false, code: 200, error: null};
         return response;
 
@@ -32,13 +25,8 @@ function checkIfUsernameExists(newUsername: string) {
     }
 }
 
-// Ensure password meets security requirements
-function checkPassword(password: string) {
-    // WIP: requirements not yet decided
-}
-
 // Encrypt password using Bcrypt
-async function hashPassword(password: string) {
+export async function hashPassword(password: string) {
     try {
         const hashedPassword = await bcrypt.hash(password, 8);
         return {password: hashedPassword, code: 200, error: null};
@@ -47,26 +35,16 @@ async function hashPassword(password: string) {
     }
 }
 
-// Store the new user in the database
-function createNewUser(email: string, username: string, hashedPassword: string) {
+// Add the account to the database
+export async function registerAccount(email: string, name: string, hashedPassword: string) {
     try {
-        // Create user
-        const newUser: User = {
-            id: userList.length + 1,
-            email: email,
-            username: username,
-            password: hashedPassword,
-            status: "unverified"
-        }
-        userList.push(newUser);
-
-        // Response body
-        return {username: newUser.username, id: newUser.id, message: "New user created successfully!"};
+        // Create account in database
+        const newAccount: Account = await createNewAccount(email, name, hashedPassword)
+        // Response DTO
+        return {name: newAccount.name, id: newAccount.id, message: "New account created successfully!"};
 
     } catch (serverError) {
-        // If there is an error creating a user in the database
-        return {username: username, id: -1, message: "Error creating new user: " + serverError};
+        // If there is an error creating an account in the database
+        return {name: name, id: -1, message: "Error creating new account: " + serverError};
     }
 }
-
-export { checkIfUsernameExists, checkPassword, hashPassword, createNewUser, userList };

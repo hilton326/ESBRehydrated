@@ -1,6 +1,6 @@
 // In the future, I will link this to the database table
 
-import { User } from './User';
+import { User } from './Account';
 
 export interface Message {
     id: number;

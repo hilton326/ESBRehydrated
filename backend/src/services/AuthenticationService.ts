@@ -1,4 +1,4 @@
-import { User } from '../models/User';
+import { User } from '../models/Account';
 // Replace with database
 import { userList } from './RegistrationService';
 
