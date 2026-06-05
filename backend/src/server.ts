@@ -5,7 +5,7 @@ import cors from 'cors';
 // Load environment variables from .env file
 import 'dotenv/config';
 // Import database connection functions
-import { testConnection, testData, shutdownPool } from './db';
+import { testConnection, shutdownPool } from './db';
 // Import router functions from controllers
 import authRouter from './controllers/AuthController';
 
@@ -35,7 +35,6 @@ const main = async () => {
     try {
         // Test database connection
         await testConnection();
-        await testData();
         // If successful, start the server
         console.log("Starting server...");
         const server = app.listen(PORT, () =>

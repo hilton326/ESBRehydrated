@@ -7,7 +7,7 @@ const router = Router();
 import { Account } from '../models/Account';
 // Services (functions that handle the logic)
 import { checkIfEmailExists, hashPassword, registerAccount } from '../services/RegistrationService'
-// import { authenticate, generateToken } from '../services/AuthenticationService'
+import { authenticate, generateToken } from '../services/AuthenticationService'
 // Data Transfer Objects (DTOs)
 import { RegistrationForm } from '../dto/accounts/RegistrationForm';
 import { LoginCredentials } from '../dto/accounts/LoginCredentials';
@@ -17,12 +17,10 @@ router.post('/register', async (req: Request, res: Response) => {
     const formInput: RegistrationForm = req.body;
 
     // Make sure all three items were provided
-    if (formInput == null) {
-        return res.status(403).send("Please fill out all fields. Empty");
-    }
-    if (!formInput.name || !formInput.password || !formInput.email) {
-        return res.status(403).send("Please fill out all fields. One of them is empty");
-    }
+    if (formInput == null) { return res.status(400).send("Empty response received."); }
+    if (!formInput.email) { return res.status(400).send("E-mail address is required."); }
+    if (!formInput.name) { return res.status(400).send("Display name is required."); }
+    if (!formInput.password) { return res.status(400).send("Password is required."); }
 
     // Make sure the email isn't already registered with another account
     const emailExistsResponse = await checkIfEmailExists(formInput.email);
@@ -38,40 +36,42 @@ router.post('/register', async (req: Request, res: Response) => {
     const newAccountResponse = await registerAccount(formInput.email, formInput.name, hashedPasswordResponse.password);
     // If the new ID is -1, something went wrong
     if (newAccountResponse.id == -1) {
-        return res.status(500).send(newAccountResponse);
+        return res.status(500).send("Server error during account creation");
     }
     return res.status(201).send(newAccountResponse);
 })
 
 
-// // Logging In: Requires either email OR display name, password
-// router.post('/login', async (req: Request, res: Response) => {
-//     const credentials: LoginCredentials = req.body; 
-    
-//     // Make sure credentials are not empty
-//     if (!credentials) {
-//         return res.status(403).send("Please enter your email or display name and your password.");
-//     }
-//     if (!credentials.emailOrName || !credentials.password) {
-//         return res.status(403).send("Please enter your email or display name and your password.");
-//     }
-//     // Authenticate: return error message if name/email is not found or password is incorrect
-//     const accountCheckResponse = await authenticate(credentials.emailOrName, credentials.password);
-//     if (!accountCheckResponse.account) {
-//         return res.status(accountCheckResponse.code).send(accountCheckResponse.error);
-//     }
+// Logging In: Requires either email OR display name, password
+router.post('/login', async (req: Request, res: Response) => {
+    const credentials: LoginCredentials = req.body; 
 
-//     const currentAccount = accountCheckResponse.account;
-//     // If authentication is successful, generate a login token
-//     const loginToken = await generateToken(currentAccount);
-//     // Record server error if something goes wrong creating the token
-//     if (loginToken.error) {
-//         return res.status(500).send("Server error when creating login token: " + loginToken.error);
-//     }
-//     // If successful, return token back to client
-//     const token = loginToken.token;
-//     return res.status(200).send({ token });
-// })
+    // Make sure credentials are not empty
+    if (credentials == null) { return res.status(400).send("Empty response received."); }
+    if (!credentials.identifier) { return res.status(400).send("E-mail address or display name is required."); }
+    if (!credentials.password) { return res.status(400).send("Password is required."); }
+    if (!credentials.isEmail) { return res.status(400).send("isEmail flag not set."); }
+    console.log("Credentials received");
+    
+    // Authenticate: return error message if name/email is not found or password is incorrect
+    const authenticationResponse = await authenticate(credentials.identifier, credentials.password, credentials.isEmail);
+    if (!authenticationResponse.authenticated || !authenticationResponse.account) {
+        console.error("Authentication error: " + authenticationResponse.error);
+        return res.status(authenticationResponse.code).send(authenticationResponse.error);
+    }
+
+    const currentAccount = authenticationResponse.account;
+    // If authentication is successful, generate a login token
+    const loginToken = await generateToken(currentAccount);
+    // Record server error if something goes wrong creating the token
+    if (loginToken.error) {
+        console.error("Server error when creating login token: " + loginToken.error);
+        return res.status(500).send("Server error when creating login token");
+    }
+    // If successful, return token back to client
+    const token = loginToken.token;
+    return res.status(200).send({ token });
+})
 
 export default router;
 
