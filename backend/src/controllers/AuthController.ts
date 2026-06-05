@@ -50,7 +50,7 @@ router.post('/login', async (req: Request, res: Response) => {
     if (credentials == null) { return res.status(400).send("Empty response received."); }
     if (!credentials.identifier) { return res.status(400).send("E-mail address or display name is required."); }
     if (!credentials.password) { return res.status(400).send("Password is required."); }
-    if (!credentials.isEmail) { return res.status(400).send("isEmail flag not set."); }
+    if (!credentials.isEmail == null) { return res.status(400).send("isEmail flag not set."); }
     console.log("Credentials received");
     
     // Authenticate: return error message if name/email is not found or password is incorrect

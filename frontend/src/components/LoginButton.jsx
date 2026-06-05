@@ -1,17 +1,20 @@
 import React from 'react';
-import { test } from '../api/client.js'; // Import the client for API calls
+import { loginRequest } from '../api/client.js'; // Import the client for API calls
 
-async function handleLogin() {
-    try {
-        const response = await test();
-        console.log('Test response:', response);
-        alert(response.message); // Display the message from the API response
-    } catch (error) {
-        console.error('Test error:', error);
-    }
-}
+const LoginButton = ({emailOrName, password}) => {
 
-const LoginButton = () => {
+    const handleLogin = async () => {
+            console.log(emailOrName, password);
+
+            const response = await loginRequest(emailOrName, password);
+            console.log('Test response:', response);
+    
+            if (response) {
+                alert("Login successful!");
+            } else {
+                alert("Authentication error");
+            }
+        }
     return (
         <div>
             <button className="login-button" onClick={handleLogin}>

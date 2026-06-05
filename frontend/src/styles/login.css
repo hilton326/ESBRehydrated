@@ -7,8 +7,10 @@ body {
 }
 
 #login-main {
-    width: 50vw;
-    height: 30vh;
+    min-width: 50vw;
+    min-height: 50vh;
+    max-width: 70vw;
+    max-height: 70vh;
     display: flex;
     flex-direction: column;
     border-style: dotted;

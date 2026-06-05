@@ -1,14 +1,16 @@
-
+'use client';
 import LoginButton from '../components/LoginButton.jsx';
+import { useState } from 'react';
 
+function LoginPage() {
+  const [emailOrName, setEmailOrName] = useState('');
+  const [password, setPassword] = useState('');
 
-function Login() {
   return (
 
     <div id="page">
       
       <div id="login-main">
-
 
         <div id="login-container">
 
@@ -16,15 +18,19 @@ function Login() {
           WELCOME BACK!
           </h2>
 
-          <p className="login-text"> Username: </p>
-          <input className="login-input" type="text"/>
-          <p className="login-text"> Password: </p>
-          <input className="login-input" type="password"/>
+          <p className="login-text"> Email or display name: </p>
+          <div>
+            <input className="login-input" type="text" value={emailOrName} onChange={e => setEmailOrName(e.target.value)} />
+          </div>
 
-          <LoginButton />
+          <p className="login-text"> Password: </p>
+          <div>
+            <input className="login-input" type="password" value={password} onChange={e => setPassword(e.target.value)} />
+          </div>
+
+          <LoginButton emailOrName={emailOrName} password={password} />
 
         </div>
-        
         
       </div>
 
@@ -32,4 +38,4 @@ function Login() {
   )
 }
 
-export default Login
+export default LoginPage;

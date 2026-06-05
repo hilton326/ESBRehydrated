@@ -2,13 +2,27 @@
 
 import { Pool, QueryResult } from 'pg';
 
-// Create a connection pool to the PostgreSQL database using environment variables
-const pool = new Pool({
+// Retrieve database connection parameters from environment variables
+const env = {
     host: process.env.DATABASE_HOST,
     port: Number(process.env.DATABASE_PORT || 5432),
     database: process.env.DATABASE_NAME,
     user: process.env.DATABASE_USER,
     password: process.env.DATABASE_PASSWORD,
+}
+
+if (!env.host) { throw new Error('Hostname missing from environment variables!')}
+if (!env.database) { throw new Error('Database name missing from environment variables!')}
+if (!env.user) { throw new Error('User missing from environment variables!')}
+if (!env.password) { throw new Error('Password missing from environment variables!')}
+
+// Create a connection pool to the PostgreSQL database using environment variables
+const pool = new Pool({
+    host: env.host,
+    port: env.port,
+    database: env.database,
+    user: env.user,
+    password: env.password
 });
 
 // Handle errors on the pool (e.g., if the database connection is lost)
@@ -28,7 +42,7 @@ export const testConnection = async () => {
         console.log('Database connection successful. Current time:', response.rows[0].now);
     } catch (err) {
         console.error('Database connection error:', err);
-        throw err; // Throw the error so it's handled by the caller (ex. server.ts)
+        throw err;
     }
 }
 
@@ -44,7 +58,7 @@ export const testData = async () => {
         }
     } catch (err) {
         console.error('Oops! Why\'s this showing? Error:', err);
-        throw err; // Throw the error so it's handled by the caller (ex. server.ts)
+        throw err; 
     }
 }
 
