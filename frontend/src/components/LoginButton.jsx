@@ -18,7 +18,7 @@ const LoginButton = ({emailOrName, password}) => {
     return (
         <div>
             <button className="login-button" onClick={handleLogin}>
-                Login
+                Log In
             </button>
         </div>
     )

@@ -1,7 +1,10 @@
+// Client.js: Handles server communications
+
 const API = import.meta.env.VITE_API_BASE;
 
 // registrationRequest: sends registration form data to the server
 export async function registrationRequest(email, name, password) {
+  // Create object containing all three fields
   const request = { email: email, name: name, password: password };
     
     // Send the POST request
@@ -11,15 +14,22 @@ export async function registrationRequest(email, name, password) {
       body: JSON.stringify(request)
     });
 
-    if (!response.ok) {
-      console.error("Failed to create account: ", response.status);
-      return null;
+    if (!response) {
+      alert("Server unreachable");
+      return false;
     }
 
-    console.log("Account created successfully! ", response.status);
     const data = await response.json();
-    console.log(data);
-    return data;
+
+    if (!response.ok) {
+      console.error("Server failed to create account:", response.status, data.error);
+      alert("Error creating account: " + String(data.error));
+      return false;
+    }
+
+    console.log("Account created successfully! ", response.status, data);
+    alert("Account created successfully!")
+    return true;
 }
 
 // loginRequest: sends login form data to the server

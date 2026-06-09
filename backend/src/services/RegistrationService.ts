@@ -16,7 +16,7 @@ export async function checkIfEmailExists(email: string) {
         // Return true if email found
         // Also return status and error message if applicable
         const response = nameExists
-            ? {exists: true, code: 403, error: "There is already an account registered under this email address. Try logging in instead."} 
+            ? {exists: true, code: 400, error: "There is already an account registered under this email address. Try logging in instead."} 
             : {exists: false, code: 200, error: null};
         return response;
 
