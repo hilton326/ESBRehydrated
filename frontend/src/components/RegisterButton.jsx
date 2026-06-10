@@ -34,7 +34,10 @@ const RegisterButton = ({email, name, password, confirmPassword}) => {
             return;
         }
 
-        const response = await registrationRequest(email, name, password);
+        const registration = await registrationRequest(email, name, password);
+        if (registration.successful) {
+            console.log("To next page");
+        }
     }
 
     return (

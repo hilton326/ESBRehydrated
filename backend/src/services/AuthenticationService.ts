@@ -15,13 +15,14 @@ export async function authenticate(identifier: string, password: string, isEmail
         let matchingAccount: Account;
         // Look up account in the database based on provided identifier
         if (isEmail == true) {
-            console.log("getAccountByEmail called");
+            console.log("Searching by email...");
             matchingAccount = await getAccountByEmail(identifier);
             if (!matchingAccount) {
                 return {account: null, authenticated: false, code: 400, error: "No account is associated with that email."}
             }
         } else {
-            console.log("getAccountByName called");
+            console.log("Searching by display name...");
+            // Note: Need a function to search password on an  
             matchingAccount = await getAccountByName(identifier);
             if (!matchingAccount) {
                 return {account: null, authenticated: false, code: 400, error: "No account is associated with that display name."}
@@ -46,7 +47,7 @@ export async function authenticate(identifier: string, password: string, isEmail
 export function generateToken(account: Account) {
     try {
         // Throw an exception immediately if the JWT secret is not defined
-        if (!secretKey) throw new Error('Missing JWT_SECRET');
+        if (!secretKey) throw new Error('Missing JWT_SECRET! Are the environment variables set?');
 
         // For now, login tokens will last for one hour
         return {token: jwt.sign({ accountId: account.id }, secretKey, { expiresIn: '1h'}), error: null};

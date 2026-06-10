@@ -62,16 +62,15 @@ router.post('/login', async (req: Request, res: Response) => {
 
     const currentAccount = authenticationResponse.account;
     // If authentication is successful, generate a login token
-    const loginToken = await generateToken(currentAccount);
+    const loginToken = generateToken(currentAccount);
     // Record server error if something goes wrong creating the token
     if (loginToken.error) {
         console.error("Server error when creating login token: " + loginToken.error);
         return res.status(500).json({error: "Server error when creating login token"});
     }
     // If successful, return token back to client
-    // Note: Need to send the account info back but without the password. Need a new DTO
     const token = loginToken.token;
-    return res.status(200).send({ token });
+    return res.status(200).json({token: token});
 })
 
 export default router;
