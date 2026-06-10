@@ -7,7 +7,7 @@ import { JwtRequest, verifyToken } from '../services/MiddlewareService';
 const router = Router();
 
 // Accessing main chat application: Requires a JWT token
-router.get('/chat', verifyToken, (req: JwtRequest, res: Response) => {
+router.get('/', verifyToken, (req: JwtRequest, res: Response) => {
     return res.status(200).json({account: req.account});
 });
 

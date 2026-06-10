@@ -1,7 +1,9 @@
 import React from 'react';
 import { loginRequest } from '../api/client.js'; // Import the client for API calls
+import { useNavigate } from "react-router-dom";
 
 const LoginButton = ({email, password}) => {
+    const navigate = useNavigate();
 
     const inputChecker = (email, password) => {
         // Make sure inputs aren't empty
@@ -18,18 +20,21 @@ const LoginButton = ({email, password}) => {
     }
 
     const handleLogin = async () => {
-            const inputCheck = inputChecker(email, password);
-            if (inputCheck.result === false) {
-                alert(inputCheck.error);
-                return;
-            }
-
-            const login = await loginRequest(email, password);
-            if (login.successful) {
-                console.log("Storing token and proceeding to main page");
-                console.log(login.token);
-            }
+        // Check that credentials exist before contacting server
+        const inputCheck = inputChecker(email, password);
+        if (inputCheck.result === false) {
+            alert(inputCheck.error);
+            return;
         }
+        // Attempt to authenticate
+        const login = await loginRequest(email, password);
+        // If successful, store the token and redirect to main page
+        if (login.successful) {
+            console.log("Storing token and proceeding to main page");
+            navigate('/chat');
+        }
+    }
+
     return (
         <div>
             <button className="login-button" onClick={handleLogin}>

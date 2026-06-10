@@ -2,32 +2,32 @@
 // Allows the server to accept requests from different origins
 import express, { Request, Response } from 'express';
 import cors from 'cors';
+// Allows processing of cookies
+import cookieParser from 'cookie-parser';
 // Load environment variables from .env file
 import 'dotenv/config';
 // Import database connection functions
 import { testConnection, shutdownPool } from './db';
 // Import router functions from controllers
 import authRouter from './controllers/AuthController';
+import mainRouter from './controllers/ChatController';
 
 // Initialize the Express application
 const app = express();
-
 // Set the backend port (use 8080 if nothing specified in .env variables)
 const PORT = Number(process.env.SERVER_PORT) || 8080;
 
-/* Middleware:
-* Enables CORS for all routes, which allows frontend applications on other domains to access this API.
-* Parses incoming JSON requests and makes the data available in req.body.
-* This is important for handling data sent in POST requests. */
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 
 // Import API routes from controllers
 app.use('/api/auth', authRouter);
+app.use('/api/chat', mainRouter);
 
 // Test API endpoint (GET)
 app.get('/api/test', (req: Request, res: Response) => {
-    res.json({ message: 'Hello from Express.js! Look, it\'s the server!' });
+    res.json({ message: 'Hello from Express.js!'});
 });
 
 // Server main function
