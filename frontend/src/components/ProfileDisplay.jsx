@@ -17,21 +17,25 @@ import ProfileDropdown from './ProfileDropdown.jsx';
 * The User CANNOT be null since you need to be logged in to use the site, but I'll have a fallback anyway.
 */
 
-function ProfileDisplay(user) {
+function ProfileDisplay(account) {
     const [dropDownOpen, setDropDownOpen] = useState(false);
 
     function openProfileDropdown() {
         setDropDownOpen(!dropDownOpen);
     }
-
+    
+    // Uhh might need useEffect here too lmao
+    console.log(account);
+    console.log(account.name);
+    
     return (
         <div>
             {/* USER ICON, NAME, AND DROPDOWN BUTTON */}
             <div id='profile-display'>
                 <Image size={50} 
-                    image={user.profile_picture || thinkton} alt={"user profile picture"} 
+                    image={account.profile_picture || thinkton} alt={"user profile picture"} 
                 />
-                <h3>{user.username || "Guest"}</h3>
+                <h3>{account.name || "PlanKrab"}</h3>
                 <h2 onClick={openProfileDropdown} className="profile-dropdown-button"> 
                     <TiArrowSortedDown /> 
                 </h2>

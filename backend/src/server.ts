@@ -16,8 +16,10 @@ import mainRouter from './controllers/ChatController';
 const app = express();
 // Set the backend port (use 8080 if nothing specified in .env variables)
 const PORT = Number(process.env.SERVER_PORT) || 8080;
+// Set the client URL
+const CLIENT = process.env.CLIENT_URL || 'http://localhost:5173';
 
-app.use(cors());
+app.use(cors({ origin: CLIENT, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 

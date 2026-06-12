@@ -22,19 +22,19 @@ export const verifyToken = async (req: JwtRequest, res: Response, next: NextFunc
         if (!token) {
             // Make sure headers are correct
             const authHeader = req.headers['authorization'];
-            if (!authHeader) return res.status(401).json({data: req, error:'Token is missing'});
+            if (!authHeader) return res.status(401).json({error:'Token is missing'});
             // Extract token from header
             token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
-            if (!token) return res.status(401).json({data: req, error:'Token not received correctly'});
+            if (!token) return res.status(401).json({error:'Token not received correctly'});
         }
 
         // Verify JWT token
         const payload = jwt.verify(token, secretKey) as { accountId: number, iat: number, exp: number };
-        if (!payload.accountId) return res.status(401).json({data: req, error:'Invalid token payload'});
+        if (!payload.accountId) return res.status(401).json({error:'Invalid token payload'});
 
         // Retrieve account by ID (from database)
         const matchingAccount: Account = await getAccountById(payload.accountId);
-        if (!matchingAccount) return res.status(401).json({data: req, error:'Account not found'});
+        if (!matchingAccount) return res.status(401).json({error:'Account not found'});
 
         // Modify the request to include the (non-sensitive) account info
         req.account = {id: matchingAccount.id, email: matchingAccount.email, name: matchingAccount.name };

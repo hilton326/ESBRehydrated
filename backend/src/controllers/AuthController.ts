@@ -8,6 +8,7 @@ import { Account } from '../models/Account';
 // Services (functions that handle the logic)
 import { checkIfEmailExists, hashPassword, registerAccount } from '../services/RegistrationService'
 import { authenticate, generateToken } from '../services/AuthenticationService'
+import { JwtRequest, verifyToken } from '../services/MiddlewareService';
 // Data Transfer Objects (DTOs)
 import { RegistrationForm } from '../dto/accounts/RegistrationForm';
 import { LoginCredentials } from '../dto/accounts/LoginCredentials';
@@ -80,7 +81,7 @@ router.post('/login', async (req: Request, res: Response) => {
         const isProduction = (process.env.NODE_ENV === 'production');
         res.cookie('auth_token', token, {
             httpOnly: true,
-            secure: isProduction, // security level
+            secure: isProduction, // security level: true or false
             sameSite: 'lax', 
             maxAge: 60 * 60 * 1000 // 1 hour (ms) — match JWT expiry
         });
@@ -94,7 +95,7 @@ router.post('/login', async (req: Request, res: Response) => {
     }
 });
 
-// Logout function: Clears the cookie
+// Logout endpoint: Clears the cookie
 router.post('/logout', (req: Request, res: Response) => {
     try {
         const isProduction = process.env.NODE_ENV === 'production';
@@ -109,6 +110,13 @@ router.post('/logout', (req: Request, res: Response) => {
         return res.status(500).json({error:"Server error"});
     } 
 });
+
+/* whoAmI endpoint: Verify current login session using cookie.
+* Prerequisite for accessing most routes! */
+router.get('/me', verifyToken, (req: JwtRequest, res: Response) => {
+    return res.status(200).json({account: req.account});
+});
+
 
 export default router;
 
