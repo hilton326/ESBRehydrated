@@ -1,6 +1,7 @@
 
 
 function ProfileDropdown() {
+
     return (
         <div id="profile-dropdown">
             <ul>

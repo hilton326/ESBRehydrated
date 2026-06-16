@@ -7,6 +7,8 @@ import ProfileDisplay from '../components/ProfileDisplay.jsx';
 
 import { whoAmI } from '../api/client.js'; // Import the client for API calls
 
+import { io } from "socket.io-client";
+
 export default function Chat() {
   const navigate = useNavigate();
 
@@ -18,6 +20,7 @@ export default function Chat() {
   // useEffect since page content is dependent on server validating a login session
   useEffect(() => {
     let mounted = true;
+    // Immediately Invoked Function Expression
     (async () => {
       // Contact server, which will validate the login session cookie if present
       console.log("help");
@@ -42,6 +45,11 @@ export default function Chat() {
   if (auth.loading) return <div> Loading... </div>;
   // Do not show any content if there is no login session
   if (!auth.loggedIn) return null;
+
+  // Uhh socket thing
+  const socket = io("http://localhost:8080");
+  socket.on("message", (data) => console.log("got", data));
+  socket.emit("message", { name: auth.account.name, text: "hello everyone" } );
 
  // Normal content (assuming login session is validated)
  return (
