@@ -11,6 +11,10 @@ import { testConnection, shutdownPool } from './db'; // database connection func
 import authRouter from './controllers/AuthController';
 import mainRouter from './controllers/ChatController';
 
+// Data transfer objects
+import { ClientMessage }  from './dto/messaging/ClientMessage';
+import { ServerMessage }  from './dto/messaging/ServerMessage';
+
 // Initialize the Express application
 const app = express();
 // Initialize server socket
@@ -49,11 +53,12 @@ const main = async () => {
         // Start listening for clients (they can only join after logging in)
         io.on("connection", (socket) => {
             // Listen for messages
-            socket.on("message", (msg: { name: string, text: string }) => {
+            socket.on("message", (msg: ClientMessage) => {
                 console.log("Message received: ", msg.text);
-                console.log("from ", msg.name);
+                console.log("from ", msg.sender);
+                const time = Date.now();
                 // Broadcast to all connected clients (including sender)
-                io.emit("message", { from: socket.id, name: msg.name, text: msg.text });
+                io.emit("message", { from: socket.id, name: msg.sender, text: msg.text, timestamp: time });
             });
 
             // Handle disconnection
@@ -62,23 +67,33 @@ const main = async () => {
             });
         });
 
-        // Handle graceful shutdown
+        // Handle shutdown of the server
+        let shuttingDown = false;
         const shutdown = async () => {
+            // Make sure shutdown isn't triggered more than once
+            if (shuttingDown) return;
+            shuttingDown = true;
             console.log('Shutting down server...');
-            server.close(async () => {
-                await io.close(); // Close socket.io adapter
-                await shutdownPool(); // Close database pool
+            try {
+                // Stop accepting new web socket connections
+                await io.close();
+                // Close HTTP server
+                server.close();
+                // Close database pool
+                await shutdownPool();
                 console.log('Server shutdown complete.');
                 process.exit(0); // Terminate process
-            });
+            } catch (error) {
+                console.error("Error during server shutdown: ", error);
+                process.exit(1);
+            }
         };
-
         // Call shutdown function on termination signals
         process.on('SIGINT', shutdown); // Handles Ctrl+C in terminal
         process.on('SIGTERM', shutdown); // Handles other termination signals
         
-    } catch (err) {
-        console.error('Error starting server:', err);
+    } catch (error) {
+        console.error('Error starting server:', error);
         process.exit(1); // Exit with error code
     }
 };

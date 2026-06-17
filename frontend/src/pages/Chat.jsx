@@ -7,8 +7,6 @@ import ProfileDisplay from '../components/ProfileDisplay.jsx';
 
 import { whoAmI } from '../api/client.js'; // Import the client for API calls
 
-import { io } from "socket.io-client";
-
 export default function Chat() {
   const navigate = useNavigate();
 
@@ -46,18 +44,13 @@ export default function Chat() {
   // Do not show any content if there is no login session
   if (!auth.loggedIn) return null;
 
-  // Uhh socket thing
-  const socket = io("http://localhost:8080");
-  socket.on("message", (data) => console.log("got", data));
-  socket.emit("message", { name: auth.account.name, text: "hello everyone" } );
-
  // Normal content (assuming login session is validated)
  return (
     <div id="page">
       
       <div id="main">
         <TitleBar/>
-        <MessageDisplay/>
+        <MessageDisplay account={auth.account} />
       </div>
 
       <div id="sidebar">

@@ -37,7 +37,7 @@ export const verifyToken = async (req: JwtRequest, res: Response, next: NextFunc
         if (!matchingAccount) return res.status(401).json({error:'Account not found'});
 
         // Modify the request to include the (non-sensitive) account info
-        req.account = {id: matchingAccount.id, email: matchingAccount.email, name: matchingAccount.name };
+        req.account = {id: matchingAccount.id, email: matchingAccount.email, name: matchingAccount.name, profilePicture: undefined };
         // Pass control back to the controller that called this function
         return next();
 

@@ -1,10 +1,10 @@
-// In the future, I will link this to the database table
+// Linked to message table
 
-import { User } from './Account';
+import { Account } from './Account';
 
 export interface Message {
     id: number;
-    sender: User;
-    message: string;
+    sender: Account; // linked by foreign key
+    text: string;
     timestamp: string; // String for now, depends on what I do for database
 }
