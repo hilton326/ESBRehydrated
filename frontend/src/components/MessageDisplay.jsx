@@ -1,42 +1,37 @@
-import { io, Socket } from "socket.io-client";
-import { useState, useEffect, useRef } from 'react';
+import { useState, useCallback } from 'react';
 
-function MessageDisplay({account}) {
+import MessageInput from './MessageInput.jsx';
 
-    const [message, setMessage] = useState('');
+export default function MessageDisplay({account}) {
+
+    // const [message, setMessage] = useState('');
 
     const name = account?.name ?? 'Thinkton';
 
-    const socketRef = useRef(null);
+    // Message array
+    const [messages, setMessages] = useState([]);
 
-    // Client socket
-    useEffect(() => {
-        socketRef.current = io("http://localhost:8080");
-        socketRef.current.on("message", (data) => console.log("got", data));
-
-        return () => {
-            socketRef.current?.off("message");
-            socketRef.current?.disconnect();
-            socketRef.current = null;
-        };
-
+    /* Update array to include new messages.
+    *  useCallback allows the messages to be updated from the MessageInput component.
+    */
+    const updateMsgList = useCallback(newMsg => {
+        // "prev" represents previous contents of the array- we just add newMsg to it
+        console.log("New message received: ", newMsg);
+        setMessages(prev => [...prev, newMsg]);
     }, []);
-
-    const sendMessage = (msg) => {
-        let time = Date.now();
-        socketRef.current?.emit("message", { sender: name, text: msg, timestamp: time } );
-        setMessage("");
-    }
 
     return (
         <div id="message-display">
-            { /* insert list of messages here */}
-            <input type="text" value={message} onChange={e => setMessage(e.target.value)} />
-            <button onClick={() => sendMessage(message)} >
-                Send
-            </button>
+            <div id="message-list">
+                {messages.map((msg, index) => (
+                    <div key={index}>{msg.sender}: {msg.text}</div>
+                ))}
+            </div>
+
+            <div id="message-input">
+                < MessageInput name={name} onNewMessage={updateMsgList} />
+            </div>
         </div>
+        
     )
 }
-
-export default MessageDisplay;

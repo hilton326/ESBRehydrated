@@ -58,7 +58,7 @@ const main = async () => {
                 console.log("from ", msg.sender);
                 const time = Date.now();
                 // Broadcast to all connected clients (including sender)
-                io.emit("message", { from: socket.id, name: msg.sender, text: msg.text, timestamp: time });
+                io.emit("message", { from: socket.id, sender: msg.sender, text: msg.text, timestamp: time });
             });
 
             // Handle disconnection

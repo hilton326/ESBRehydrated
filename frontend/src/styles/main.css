@@ -35,7 +35,7 @@
     border-width: 4px;
 }
 
-/* Top title bar */
+/* Top title bar: 20% of page height */
 #titlebar {
     display: flex;
     flex-direction: row;
@@ -44,21 +44,45 @@
     border-color: white;
     border-width: 2px;
     color:aqua;
-    height: 80px;
+    min-height: 60px;
+    height: 8%;
 }
 
-/* Message display */
+/* Message display container: 80% of page height */
 #message-display {
-    border-style: solid;
-    border-color: cyan;
-    border-width: 3px;
-    height: 75vh;
+    display: flex;
+    flex-direction: column;
+    border: 3px solid cyan;
+    height: 100%;
 }
+
+/* List of messages */
+#message-list {
+    display: flex;
+    flex-direction: column;
+    border-style: solid;
+    border-color: rgb(251, 255, 0);
+    border-width: 3px;
+    height: 90%;
+    color:rgb(200, 255, 0);
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+/* Message input box: Bottom of message display */
+#message-input {
+    display: flex;
+    flex-direction: row;
+    height: 15%;
+    min-height: 120px;
+}
+
 /* ---------------------------------------------------------------------------------------- */
 
 /* The right sidebar (20% of the page width) */
 #sidebar {
-    width: 20vw;
+    width: 15vw;
     height: 100vh;
     display: flex;
     flex-direction: column;
