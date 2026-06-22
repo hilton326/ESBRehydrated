@@ -51,14 +51,25 @@ const main = async () => {
         );
 
         // Start listening for clients (they can only join after logging in)
+        let msgCounter = 0;
+        let prevSender = '';
         io.on("connection", (socket) => {
             // Listen for messages
             socket.on("message", (msg: ClientMessage) => {
+                msgCounter++;
                 console.log("Message received: ", msg.text);
                 console.log("from ", msg.sender);
-                const time = new Date();
                 // Broadcast to all connected clients (including sender)
-                io.emit("message", { from: socket.id, sender: msg.sender, text: msg.text, timestamp: time });
+                io.emit("message", { 
+                    id: msgCounter, 
+                    socket: socket.id, 
+                    sender: msg.sender, 
+                    text: msg.text, 
+                    timestamp: new Date(), 
+                    profilePicture: '',
+                    prevSender: prevSender  
+                });
+                prevSender = msg.sender;
             });
 
             // Handle disconnection

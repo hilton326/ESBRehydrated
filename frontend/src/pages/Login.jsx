@@ -7,9 +7,9 @@ function LoginPage() {
   const [password, setPassword] = useState('');
 
   return (
-
     <div>
-      
+      <title>Chill - Welcome Back! </title>
+
       <div id="login-main">
 
         <div id="login-container">

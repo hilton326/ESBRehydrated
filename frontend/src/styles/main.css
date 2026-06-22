@@ -69,6 +69,7 @@
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
+    margin-top: 5px;
 }
 
 #message {
@@ -103,6 +104,14 @@
 
 #msgBodyText {
     font-size: 11px;
+    margin-bottom: 3px;
+}
+
+#msgBodyTextGrouped {
+    font-size: 11px;
+    margin-left: 50px;
+    margin-top: 0;
+    margin-bottom: 3px;
 }
 
 #msgTimestamp {

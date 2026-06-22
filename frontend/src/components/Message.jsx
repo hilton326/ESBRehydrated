@@ -1,25 +1,43 @@
+import React from 'react';
 import Image from './Image.jsx'
 import thinkton from '../assets/legothinkton.png'; // image placeholder
 
-/* Message component
+/* Message component props:
 * sender = sender of message
-* me = current user
-* profilePicture = profile picture of sender
 * msgBody = message text
-* timestamp = time message was sent by server */
-const Message = ({ sender, me, profilePicture, msgBody, timestamp }) => {
+* timestamp = time message was sent by server
+* senderProfile = profile picture of sender
+* prevSender = sender of the previous message; used for deciding what CSS to use
+* currentUser = currently logged in user; again,used for appearance */
+
+/* React Memo will only re-render each Message if its props get changed.
+* This increases performance since the entire message list won't re-render on every sent message.
+*/
+const Message = React.memo(function Message({ sender, msgBody, timestamp, senderProfile, prevSender, currentUser }) {
 
     // Placeholder PFP
-    const picture = profilePicture ?? thinkton;
+    const picture = thinkton;
 
     // Convert the timestamp into readable date and time
     const datetime = timestamp.split('T');
     const date = datetime[0];
     const time = datetime[1].slice(0,8);
 
-    // Use different CSS to distinguish messages the current user sent and those that others send
-    const myMessage = (sender == me);
-    const sentMessage = 
+    // Distinguish messages the current user sent and those that others send
+    const thisIsMyMessage = (sender == currentUser);
+    // If a message has the same sender as the previous message, group them together
+    const messageIsGrouped = (sender == prevSender);
+
+    // The component returns one of four HTML elements depending on the values of the above expressions:
+    // Used when you send multiple messages in succession
+    const myMessageGrouped = 
+        <div id="message-self" >
+            <div id="msgTextContainer">
+                <p id="msgBodyTextGrouped"> {msgBody} </p>
+            </div>
+        </div>;
+    // Used when you first send a message
+    const myMessage = 
         <div id="message-self" >
             <Image size={30} image={picture} alt={"user profile picture"} />
             <div id="msgTextContainer">
@@ -28,7 +46,15 @@ const Message = ({ sender, me, profilePicture, msgBody, timestamp }) => {
                 <p id="msgBodyText"> {msgBody} </p>
             </div>
         </div>;
-    const receivedMessage =
+    // Used when another person sends multiple messages in succession
+    const otherMessageGrouped =
+        <div id="message" >
+            <div id="msgTextContainer">
+                <p id="msgBodyTextGrouped"> {msgBody} </p>
+            </div>
+        </div>;
+    // Used when another person first sends a message 
+    const otherMessage =
         <div id="message" >
             <Image size={30} image={picture} alt={"user profile picture"} />
             <div id="msgTextContainer">
@@ -38,8 +64,13 @@ const Message = ({ sender, me, profilePicture, msgBody, timestamp }) => {
             </div>
         </div>;
 
-    const content = myMessage ? sentMessage : receivedMessage;
-    return content;
-}
+    const messageVariants = {
+        'true_true': myMessageGrouped,
+        'true_false': myMessage,
+        'false_true': otherMessageGrouped,
+        'false_false': otherMessage,
+    };
+    return messageVariants[`${thisIsMyMessage}_${messageIsGrouped}`];
+});
 
 export default Message;
