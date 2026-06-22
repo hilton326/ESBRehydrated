@@ -56,7 +56,7 @@ const main = async () => {
             socket.on("message", (msg: ClientMessage) => {
                 console.log("Message received: ", msg.text);
                 console.log("from ", msg.sender);
-                const time = Date.now();
+                const time = new Date();
                 // Broadcast to all connected clients (including sender)
                 io.emit("message", { from: socket.id, sender: msg.sender, text: msg.text, timestamp: time });
             });

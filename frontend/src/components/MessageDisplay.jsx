@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 
 import MessageInput from './MessageInput.jsx';
+import Message from './Message.jsx';
 
 export default function MessageDisplay({account}) {
 
@@ -24,13 +25,13 @@ export default function MessageDisplay({account}) {
         <div id="message-display">
             <div id="message-list">
                 {messages.map((msg, index) => (
-                    <div key={index}>{msg.sender}: {msg.text}</div>
+                    <Message key={index} sender={msg.sender} me={name} msgBody={msg.text} timestamp={msg.timestamp} />
                 ))}
             </div>
 
-            <div id="message-input">
+            
                 < MessageInput name={name} onNewMessage={updateMsgList} />
-            </div>
+            
         </div>
         
     )

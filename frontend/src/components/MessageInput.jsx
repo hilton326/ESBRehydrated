@@ -12,11 +12,7 @@ export default function MessageInput({name, onNewMessage }) {
 
         // Receive new messages from server and update message list
         socketRef.current.on("message", (data) => {
-            console.log("Received", data);
-            console.log(data.sender);
-            if (data.sender != name) {
-                onNewMessage(data);
-            }
+            onNewMessage(data);
         });
 
         // Handle disconnection
@@ -28,20 +24,18 @@ export default function MessageInput({name, onNewMessage }) {
 
     }, [onNewMessage, name]);
 
-    // Send new message to server and update message list
+    // Send new message to server
     const sendNewMsg = (msg) => {
-        const msgBody = { sender: name, text: msg, timestamp: Date.now() };
+        const msgBody = { sender: name, text: msg};
         socketRef.current?.emit("message", msgBody );
-        onNewMessage(msgBody);
+        //onNewMessage(msgBody);
         setNewMsg('');
     }
 
     return (
-        <div id="message-input">
-            <input type="text" value={newMsg} onChange={e => setNewMsg(e.target.value)} />
-            <button onClick={() => sendNewMsg(newMsg)} >
-                Send
-            </button>
-        </div>
+        <form id="message-input" onSubmit={e => { e.preventDefault(); sendNewMsg(newMsg); }}>
+            <input id="message-input-field" type="text" value={newMsg} onChange={e => setNewMsg(e.target.value)} />
+            <button id="send-button" type="submit"> Send </button>
+        </form>
     )
 }

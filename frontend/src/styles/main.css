@@ -7,6 +7,8 @@
 #page {
     display: flex;
     flex-direction: row;
+    width: 1024px;
+    height: 768px;
 }
 
 /* Image container (Image.jsx) */
@@ -26,8 +28,8 @@
 
 /* Main 80% of the page width */
 #main {
-    width: 80vw;
-    height: 100vh;
+    width: 80%;
+    height: 100%;
     display: flex;
     flex-direction: column;
     border-style: dotted;
@@ -44,8 +46,7 @@
     border-color: white;
     border-width: 2px;
     color:aqua;
-    min-height: 60px;
-    height: 8%;
+    height: 70px;
 }
 
 /* Message display container: 80% of page height */
@@ -60,30 +61,102 @@
 #message-list {
     display: flex;
     flex-direction: column;
-    border-style: solid;
+    /* border-style: solid;
     border-color: rgb(251, 255, 0);
-    border-width: 3px;
-    height: 90%;
+    border-width: 3px; */
+    height: 500px;
     color:rgb(200, 255, 0);
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
 }
 
+#message {
+    display: flex;
+    flex-direction: row;
+    margin-left: 2px;
+    width: 98%;
+    position: relative;
+    background: rgba(0,0,0,0);
+}
+
+#message-self {
+    display: flex;
+    flex-direction: row;
+    margin-left: 2px;
+    width: 98%;
+    position: relative;
+    background: rgba(0,0,0,0.35);
+    color: rgb(0, 255, 145);
+}
+
+#msgTextContainer {
+    display: flex;
+    flex-direction: column;
+}
+
+#msgSenderText {
+    font-weight: bold;
+    font-size: 12px;
+    margin-bottom: 0;
+}
+
+#msgBodyText {
+    font-size: 11px;
+}
+
+#msgTimestamp {
+    position: absolute;
+    font-size: 11px;
+    top: 0;
+    right: 0;
+    margin-right: 5px;
+}
+
 /* Message input box: Bottom of message display */
 #message-input {
     display: flex;
     flex-direction: row;
-    height: 15%;
-    min-height: 120px;
+    /* height: 15%; */
+    border: 1px solid rgb(234, 255, 0); 
+}
+
+#message-input-field {
+    width: 100%;
+    height: 80%;
+    /* border-style: solid;
+    border-radius: 20px;
+
+    border-color: rgb(6, 145, 244); */
+    border-width: 2px;
+    background-color: transparent;
+    color: white;
+    font-size: 11px;
+
+    margin-bottom: 10px;
+}
+
+#send-button {
+    /* Design */
+    border-style: solid;
+    border-radius: 5px;
+    background-color: rgb(192, 244, 6);
+    border-width: 2px;
+    border-color: rgb(4, 0, 128);
+}
+
+/* On hover */
+#send-button:hover {
+    background-color:rgb(3, 92, 234);
+    text-decoration: underline;
 }
 
 /* ---------------------------------------------------------------------------------------- */
 
 /* The right sidebar (20% of the page width) */
 #sidebar {
-    width: 15vw;
-    height: 100vh;
+    width: 15%;
+    height: 100%;
     display: flex;
     flex-direction: column;
     border-style: dotted;
@@ -100,7 +173,7 @@
     border-color: white;
     border-width: 2px;
     color:aqua;
-    gap: 10px;
+    gap: 5px;
     margin-top: 5px;
 }
 

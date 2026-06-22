@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { TiArrowSortedDown } from "react-icons/ti";
 
 import thinkton from '../assets/legothinkton.png'; // image placeholder
-import Image from './common/Image.jsx';
+import Image from './Image.jsx';
 import ProfileDropdown from './ProfileDropdown.jsx';
 
 function ProfileDisplay({account}) {
@@ -21,13 +21,13 @@ function ProfileDisplay({account}) {
         <div>
             {/* USER ICON, NAME, AND DROPDOWN BUTTON */}
             <div id='profile-display'>
-                <Image size={50} 
+                <Image size={40} 
                     image={profilePicture} alt={"user profile picture"} 
                 />
-                <h3>{name}</h3>
-                <h2 onClick={openProfileDropdown} className="profile-dropdown-button"> 
+                <h4>{name}</h4>
+                <h3 onClick={openProfileDropdown} className="profile-dropdown-button"> 
                     <TiArrowSortedDown /> 
-                </h2>
+                </h3>
             </div>
 
             {/* ACTUAL DROPDOWN MENU */}
