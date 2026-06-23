@@ -46,8 +46,7 @@ export default function Chat() {
 
  // Normal content (assuming login session is validated)
  return (
-    <div id="page">
-      <title>Special:Chat</title>
+    <div id="page" className="chat">
       
       <div id="main">
         <TitleBar/>

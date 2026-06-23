@@ -1,3 +1,10 @@
+body {
+    background-color: rgb(0, 56, 71);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 #root {
   max-width: 1920px;
   padding: 1rem;
@@ -9,6 +16,9 @@
     flex-direction: row;
     width: 1024px;
     height: 768px;
+    border-style: solid;
+    border-color: rgb(44, 8, 249);
+    border-width: 2px;
 }
 
 /* Image container (Image.jsx) */
@@ -16,7 +26,7 @@
     align-items: center;
     justify-content: center;
     display: flex;
-    margin: 10px;
+    /* margin: 10px; */
     overflow: hidden;
 }
 .image {
@@ -24,6 +34,11 @@
     height: 100%;
     object-fit: cover;
 }
+
+.chat {
+    border-radius: 4px;
+}
+
 /* ---------------------------------------------------------------------------------------- */
 
 /* Main 80% of the page width */
@@ -32,9 +47,6 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    border-style: dotted;
-    border-color: rgb(249, 8, 8);
-    border-width: 4px;
 }
 
 /* Top title bar: 20% of page height */
@@ -47,13 +59,13 @@
     border-width: 2px;
     color:aqua;
     height: 70px;
+    gap: 16px;
 }
 
 /* Message display container: 80% of page height */
 #message-display {
     display: flex;
     flex-direction: column;
-    border: 3px solid cyan;
     height: 100%;
 }
 
@@ -61,34 +73,34 @@
 #message-list {
     display: flex;
     flex-direction: column;
-    /* border-style: solid;
-    border-color: rgb(251, 255, 0);
-    border-width: 3px; */
     height: 500px;
-    color:rgb(200, 255, 0);
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
     margin-top: 5px;
+    margin-bottom: 5px;
+    background-image: url("../assets/Wiki-background.webp");
+    z-index: 0;
 }
 
 #message {
     display: flex;
     flex-direction: row;
     margin-left: 2px;
-    width: 98%;
+    width: 99%;
     position: relative;
-    background: rgba(0,0,0,0);
+    background: rgba(255, 255, 255, 0.5);
+    color: rgb(4, 59, 130); 
 }
 
 #message-self {
     display: flex;
     flex-direction: row;
     margin-left: 2px;
-    width: 98%;
+    width: 99%;
     position: relative;
-    background: rgba(0,0,0,0.35);
-    color: rgb(0, 255, 145);
+    background: rgba(255, 255, 255, 0.7);
+    color: rgb(4, 59, 130);
 }
 
 #msgTextContainer {
@@ -98,17 +110,18 @@
 
 #msgSenderText {
     font-weight: bold;
-    font-size: 12px;
-    margin-bottom: 0;
+    font-size: 13px;
+    margin-bottom: 3px;
 }
 
 #msgBodyText {
-    font-size: 11px;
+    font-size: 12px;
+    margin-top: 3px;
     margin-bottom: 3px;
 }
 
 #msgBodyTextGrouped {
-    font-size: 11px;
+    font-size: 12px;
     margin-left: 50px;
     margin-top: 0;
     margin-bottom: 3px;
@@ -116,7 +129,7 @@
 
 #msgTimestamp {
     position: absolute;
-    font-size: 11px;
+    font-size: 12px;
     top: 0;
     right: 0;
     margin-right: 5px;
@@ -126,45 +139,29 @@
 #message-input {
     display: flex;
     flex-direction: row;
-    /* height: 15%; */
-    border: 1px solid rgb(234, 255, 0); 
+    width: 98%;
+    height: 70px;
+    border: 2px solid rgb(0, 255, 145);
+    margin-bottom: 5px;
+    margin-left: 5px;
 }
 
 #message-input-field {
-    width: 100%;
-    height: 80%;
-    /* border-style: solid;
-    border-radius: 20px;
-
-    border-color: rgb(6, 145, 244); */
-    border-width: 2px;
+    width: 90%;
+    height: 75%;
+    margin-top: 5px;
+    margin-right: 5px;
     background-color: transparent;
     color: white;
     font-size: 11px;
-
     margin-bottom: 10px;
-}
-
-#send-button {
-    /* Design */
-    border-style: solid;
-    border-radius: 5px;
-    background-color: rgb(192, 244, 6);
-    border-width: 2px;
-    border-color: rgb(4, 0, 128);
-}
-
-/* On hover */
-#send-button:hover {
-    background-color:rgb(3, 92, 234);
-    text-decoration: underline;
 }
 
 /* ---------------------------------------------------------------------------------------- */
 
 /* The right sidebar (20% of the page width) */
 #sidebar {
-    width: 15%;
+    width: 20%;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -183,7 +180,6 @@
     border-width: 2px;
     color:aqua;
     gap: 5px;
-    margin-top: 5px;
 }
 
 /* User settings menu opener */

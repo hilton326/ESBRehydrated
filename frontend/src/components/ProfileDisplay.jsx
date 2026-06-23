@@ -21,9 +21,7 @@ function ProfileDisplay({account}) {
         <div>
             {/* USER ICON, NAME, AND DROPDOWN BUTTON */}
             <div id='profile-display'>
-                <Image size={40} 
-                    image={profilePicture} alt={"user profile picture"} 
-                />
+                <Image size={40} image={profilePicture} alt={"user profile picture"} margin={10} />
                 <h4>{name}</h4>
                 <h3 onClick={openProfileDropdown} className="profile-dropdown-button"> 
                     <TiArrowSortedDown /> 

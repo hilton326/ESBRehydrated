@@ -51,14 +51,14 @@ const main = async () => {
         );
 
         // Start listening for clients (they can only join after logging in)
-        let msgCounter = 0;
-        let prevSender = '';
+        let msgCounter = 0; // set this to the last message ID in the DB + 1
+        let prevSender = ''; // also set this based on the DB
         io.on("connection", (socket) => {
             // Listen for messages
             socket.on("message", (msg: ClientMessage) => {
                 msgCounter++;
-                console.log("Message received: ", msg.text);
-                console.log("from ", msg.sender);
+                console.log("Message received:", msg.text, "from", msg.sender);
+                
                 // Broadcast to all connected clients (including sender)
                 io.emit("message", { 
                     id: msgCounter, 

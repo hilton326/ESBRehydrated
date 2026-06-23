@@ -1,6 +1,9 @@
 import { io, Socket } from "socket.io-client";
 import { useState, useEffect, useRef } from 'react';
 
+import Image from './Image.jsx';
+import thinkton from '../assets/legothinkton.png'; // image placeholder
+
 export default function MessageInput({name, onNewMessage }) {
 
     const [newMsg, setNewMsg] = useState('');
@@ -33,9 +36,9 @@ export default function MessageInput({name, onNewMessage }) {
     }
 
     return (
-        <form id="message-input" onSubmit={e => { e.preventDefault(); sendNewMsg(newMsg); }}>
-            <input id="message-input-field" type="text" value={newMsg} onChange={e => setNewMsg(e.target.value)} />
-            <button id="send-button" type="submit"> Send </button>
+        <form id="message-input" className="chat" onSubmit={e => { e.preventDefault(); sendNewMsg(newMsg); }}>
+            <Image size={60} image={thinkton} alt={"user profile picture"} margin={5} />
+            <input id="message-input-field" className="chat" type="text" value={newMsg} onChange={e => setNewMsg(e.target.value)} />
         </form>
     )
 }

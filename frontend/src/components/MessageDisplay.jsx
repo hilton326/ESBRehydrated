@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 import MessageInput from './MessageInput.jsx';
 import Message from './Message.jsx';
@@ -17,6 +17,9 @@ export default function MessageDisplay({account}) {
         setMessages(prev =>  [...prev, newMsg] );
     }, []);
 
+    // Record length of messages array to keep track of renders
+    useEffect(() => console.log('messages length', messages.length), [messages.length]);
+
     return (
         <div id="message-display">
             <div id="message-list">
@@ -24,7 +27,6 @@ export default function MessageDisplay({account}) {
                     <Message key={msg.id} sender={msg.sender} msgBody={msg.text} timestamp={msg.timestamp} senderProfile={msg.profilePicture} prevSender={msg.prevSender} currentUser={name}  />
                 ))}
             </div>
-
                 < MessageInput name={name} onNewMessage={updateMsgList} />
             
         </div>
