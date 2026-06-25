@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Image from './Image.jsx';
 import thinkton from '../assets/legothinkton.png'; // image placeholder
 
-export default function MessageInput({name, onNewMessage }) {
+export default function MessageInput({accountID, accountName, onNewMessage }) {
 
     const [newMsg, setNewMsg] = useState('');
     const socketRef = useRef(null);
@@ -25,11 +25,11 @@ export default function MessageInput({name, onNewMessage }) {
             socketRef.current = null;
         };
 
-    }, [onNewMessage, name]);
+    }, [onNewMessage]);
 
     // Send new message to server
     const sendNewMsg = (msg) => {
-        const msgBody = { sender: name, text: msg};
+        const msgBody = { senderID: accountID, senderName: accountName, text: msg};
         socketRef.current?.emit("message", msgBody );
         //onNewMessage(msgBody);
         setNewMsg('');

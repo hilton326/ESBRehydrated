@@ -13,16 +13,16 @@ const jwt = require('jsonwebtoken');
 export async function authenticate(identifier: string, password: string, isEmail: boolean) {
     try {
         let matchingAccount: Account;
-        // Look up account in the database based on provided identifier
+        // Look up account in the database based on provided identifier (email)
         if (isEmail == true) {
-            console.log("Searching by email...");
+            console.log("Searching for email ", identifier, "...");
             matchingAccount = await getAccountByEmail(identifier);
             if (!matchingAccount) {
                 return {account: null, authenticated: false, code: 400, error: "No account is associated with that email."}
             }
         } else {
+            // This is currently unused since I realized the issues of duplicate names
             console.log("Searching by display name...");
-            // Note: Need a function to search password on an  
             matchingAccount = await getAccountByName(identifier);
             if (!matchingAccount) {
                 return {account: null, authenticated: false, code: 400, error: "No account is associated with that display name."}

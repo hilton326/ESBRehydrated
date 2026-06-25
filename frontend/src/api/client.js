@@ -112,7 +112,7 @@ export async function whoAmI() {
   }
 }
 
-
+// Test function
 export async function test() {
     // test API call
     const response = await fetch(`${API}/test`, {

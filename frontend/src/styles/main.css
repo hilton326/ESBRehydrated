@@ -5,22 +5,6 @@ body {
     justify-content: center;
 }
 
-#root {
-  max-width: 1920px;
-  padding: 1rem;
-}
-
-/* Applied to the entire page */
-#page {
-    display: flex;
-    flex-direction: row;
-    width: 1024px;
-    height: 768px;
-    border-style: solid;
-    border-color: rgb(44, 8, 249);
-    border-width: 2px;
-}
-
 /* Image container (Image.jsx) */
 .image-container {
     align-items: center;
@@ -35,13 +19,27 @@ body {
     object-fit: cover;
 }
 
+/* ---------------------------------------------------------------------------------------- */
+
+/* Page properties */
+#page {
+    display: flex;
+    flex-direction: row;
+    width: 1024px;
+    height: 768px;
+    border-style: solid;
+    border-color: rgb(44, 8, 249);
+    border-width: 2px;
+}
+
+/* General properties for elements on the chat page */
 .chat {
     border-radius: 4px;
 }
 
 /* ---------------------------------------------------------------------------------------- */
 
-/* Main 80% of the page width */
+/* Main 80% of the page width: contains title bar and message display */
 #main {
     width: 80%;
     height: 100%;
@@ -49,7 +47,7 @@ body {
     flex-direction: column;
 }
 
-/* Top title bar: 20% of page height */
+/* Top title bar */
 #titlebar {
     display: flex;
     flex-direction: row;
@@ -62,7 +60,7 @@ body {
     gap: 16px;
 }
 
-/* Message display container: 80% of page height */
+/* Message display container */
 #message-display {
     display: flex;
     flex-direction: column;
@@ -83,6 +81,7 @@ body {
     z-index: 0;
 }
 
+/* Individual message (received) */
 #message {
     display: flex;
     flex-direction: row;
@@ -93,6 +92,7 @@ body {
     color: rgb(4, 59, 130); 
 }
 
+/* Individual message (sent) */
 #message-self {
     display: flex;
     flex-direction: row;
@@ -103,30 +103,27 @@ body {
     color: rgb(4, 59, 130);
 }
 
+/* Message text fields */
 #msgTextContainer {
     display: flex;
     flex-direction: column;
 }
-
 #msgSenderText {
     font-weight: bold;
     font-size: 13px;
     margin-bottom: 3px;
 }
-
 #msgBodyText {
     font-size: 12px;
     margin-top: 3px;
     margin-bottom: 3px;
 }
-
 #msgBodyTextGrouped {
     font-size: 12px;
     margin-left: 50px;
     margin-top: 0;
     margin-bottom: 3px;
 }
-
 #msgTimestamp {
     position: absolute;
     font-size: 12px;
@@ -145,7 +142,6 @@ body {
     margin-bottom: 5px;
     margin-left: 5px;
 }
-
 #message-input-field {
     width: 90%;
     height: 75%;

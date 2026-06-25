@@ -4,7 +4,8 @@ import { Account } from './Account';
 
 export interface Message {
     id: number;
-    sender: Account; // linked by foreign key
     text: string;
-    timestamp: string; // String for now, depends on what I do for database
+    sender: Account; // linked by foreign key
+    prevSender: Account; // linked by foreign key
+    timestamp: string;
 }

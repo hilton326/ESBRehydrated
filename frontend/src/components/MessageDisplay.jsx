@@ -4,7 +4,11 @@ import MessageInput from './MessageInput.jsx';
 import Message from './Message.jsx';
 
 export default function MessageDisplay({account}) {
+    // Use IDs for comparing accounts
+    const id = account?.id ?? 0;
     const name = account?.name ?? 'Thinkton';
+
+    console.log(account);
     // Message array
     const [messages, setMessages] = useState([]);
 
@@ -24,11 +28,10 @@ export default function MessageDisplay({account}) {
         <div id="message-display">
             <div id="message-list">
                 {messages.map((msg) => (
-                    <Message key={msg.id} sender={msg.sender} msgBody={msg.text} timestamp={msg.timestamp} senderProfile={msg.profilePicture} prevSender={msg.prevSender} currentUser={name}  />
+                    < Message key={msg.id} sender={msg.sender} msgBody={msg.text} timestamp={msg.timestamp} senderProfile={msg.profilePicture} prevSender={msg.prevSender} currentUser={id}  />
                 ))}
             </div>
-                < MessageInput name={name} onNewMessage={updateMsgList} />
-            
+                < MessageInput accountID={id} accountName={name} onNewMessage={updateMsgList} />
         </div>
         
     )

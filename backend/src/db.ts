@@ -42,6 +42,7 @@ export const testConnection = async () => {
         console.log('Database connection successful. Current time:', response.rows[0].now);
     } catch (err) {
         console.error('Database connection error:', err);
+        console.log(env.password);
         throw err;
     }
 }
