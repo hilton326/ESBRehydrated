@@ -11,8 +11,12 @@ import { testConnection, shutdownPool } from './db'; // database connection func
 import authRouter from './controllers/AuthController';
 import mainRouter from './controllers/ChatController';
 
+// Important services
+import { getMessageCount, checkForAccount, newMessage } from './services/MessageService';
+
 // Important objects
 import { ClientMessage }  from './dto/messaging/ClientMessage';
+import { ServerMessage }  from './dto/messaging/ServerMessage';
 import { Message }  from './models/Message';
 
 // Initialize the Express application
@@ -50,11 +54,10 @@ const main = async () => {
             console.log(`Server is running on http://localhost:${PORT}`)
         );
 
-
         let clientCounter = 0;
-        let msgCounter = 0; // set this to the last message ID in the DB + 1
-        let prevSenderID = 0; // also set this based on the DB
+        let prevSenderID = 0; 
         let prevSenderName = '';
+        let msgCounter = await getMessageCount() ?? 0;
 
          // Start listening for clients (they can only join after logging in)
         io.on("connection", (socket) => {
@@ -65,26 +68,22 @@ const main = async () => {
             socket.on("message", async (msg: ClientMessage) => {
                 try {
                     console.log("Message received:", msg.text, "from", msg.senderName);
+
+                    // msgType 0 is for system messages
                     let msgType = 0;
 
                     // Verify that the account exists
-                    let accountExists = false;
-                    try {
-                        accountExists = await checkForAccount(msg.senderID);
-                    } catch (error) {
-                        console.error("Unexpected error while checking for account:", error);
-                    }
-                    
+                    const accountExists = await checkForAccount(msg.senderID);
                     if (!accountExists) {
                         // If the account somehow doesn't exist, send a system message?
-                        console.log("Account couldn't be verified.");
+                        console.error("Account couldn't be verified.");
                     } else {
                         msgCounter++;
                         // 1 = Message has same sender as the previous one, 2 = Message has different sender
                         msgType = (msg.senderID == prevSenderID) ? 1 : 2;
 
                         // Broadcast to all connected clients (including sender)
-                        const serverMessage = {
+                        const serverMessage: ServerMessage = {
                             id: msgCounter, 
                             socket: socket.id,
                             msgType: msgType,  
@@ -105,7 +104,7 @@ const main = async () => {
                         // Add message to database
                         let messageStored = false;
                         try {
-                            accountExists = await newMessage(serverMessage);
+                            messageStored = await newMessage(serverMessage);
                         } catch (error) {
                             console.error("Unexpected error while storing message in database:", error);
                         }
@@ -114,7 +113,7 @@ const main = async () => {
                             console.log("Note: Failed to store message #", msgCounter, "in the database.");
                         }
                     }
-                    
+
                 } catch (error) {
                     console.error("Unexpected error while sending message: ", error);
                 }

@@ -28,7 +28,15 @@ export default function MessageDisplay({account}) {
         <div id="message-display">
             <div id="message-list">
                 {messages.map((msg) => (
-                    < Message key={msg.id} sender={msg.sender} msgBody={msg.text} timestamp={msg.timestamp} senderProfile={msg.profilePicture} prevSender={msg.prevSender} currentUser={id}  />
+                    < Message 
+                        key={msg.serverMessage.id} 
+                        sender={msg.serverMessage.sender} 
+                        msgBody={msg.serverMessage.text} 
+                        timestamp={msg.serverMessage.timestamp} 
+                        senderProfile={msg.serverMessage.profilePicture} 
+                        prevSender={msg.serverMessage.prevSender} 
+                        currentUser={id}  
+                    />
                 ))}
             </div>
                 < MessageInput accountID={id} accountName={name} onNewMessage={updateMsgList} />

@@ -17,7 +17,6 @@ const Message = React.memo(function Message({sender, msgBody, timestamp, senderP
 
     // Placeholder PFP
     const picture = thinkton;
-
     // Convert the timestamp into readable date and time
     const datetime = timestamp.split('T');
     const date = datetime[0];
