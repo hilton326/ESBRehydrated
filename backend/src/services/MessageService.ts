@@ -24,15 +24,19 @@ export const newMessage = async(msg: ServerMessage) => {
     }
 
     // If the previous sender is not null, also make sure its ID is a real account
-    if (msg.prevSenderID) {
+    let prevSenderID;
+    if (msg.prevSenderID != 0) {
         const prevSenderCheck = await checkForAccount(msg.prevSenderID);
         if (!prevSenderCheck) { 
             console.error("Invalid ID for previous sender:" + msg.prevSenderID);
             return false;
         }
+        prevSenderID = msg.prevSenderID;
+    } else {
+        prevSenderID = null;
     }
-
-    const added = await storeNewMessage(msg.text, msg.senderID, msg.prevSenderID, String(msg.timestamp));
+    console.log("Timestamp before adding to DB:",msg.timestamp);
+    const added = await storeNewMessage(msg.text, msg.senderID, prevSenderID, String(msg.timestamp));
     if (added) { 
         return true; 
     }

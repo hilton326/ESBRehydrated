@@ -8,7 +8,6 @@ export default function MessageDisplay({account}) {
     const id = account?.id ?? 0;
     const name = account?.name ?? 'Thinkton';
 
-    console.log(account);
     // Message array
     const [messages, setMessages] = useState([]);
 
@@ -29,13 +28,14 @@ export default function MessageDisplay({account}) {
             <div id="message-list">
                 {messages.map((msg) => (
                     < Message 
-                        key={msg.serverMessage.id} 
-                        sender={msg.serverMessage.sender} 
-                        msgBody={msg.serverMessage.text} 
-                        timestamp={msg.serverMessage.timestamp} 
-                        senderProfile={msg.serverMessage.profilePicture} 
-                        prevSender={msg.serverMessage.prevSender} 
-                        currentUser={id}  
+                        key={msg.id}
+                        msgBody={msg.text}
+                        msgType={msg.msgType}  
+                        senderID={msg.senderID} 
+                        senderName={msg.senderName}
+                        senderProfile={msg.profilePicture}   
+                        timestamp={msg.timestamp} 
+                        currentUserID={id}
                     />
                 ))}
             </div>

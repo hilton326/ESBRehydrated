@@ -13,23 +13,22 @@ import thinkton from '../assets/legothinkton.png'; // image placeholder
 /* React Memo will only re-render each Message if its props get changed.
 * This increases performance since the entire message list won't re-render on every sent message.
 */
-const Message = React.memo(function Message({sender, msgBody, timestamp, senderProfile, prevSender, currentUser }) {
+const Message = React.memo(function Message({msgBody, msgType, senderID, senderName, senderProfile, timestamp, currentUserID }) {
 
     // Placeholder PFP
     const picture = thinkton;
     // Convert the timestamp into readable date and time
+    console.log(timestamp);
     const datetime = timestamp.split('T');
     const date = datetime[0];
     const time = datetime[1].slice(0,8);
 
     // Distinguish messages the current user sent and those that others send
-    const thisIsMyMessage = (sender == currentUser);
+    const thisIsMyMessage = (senderID == currentUserID);
     // If a message has the same sender as the previous message, group them together
-    const messageIsGrouped = (sender == prevSender);
+    const messageIsGrouped = (msgType == 1);
 
-    console.log(msgBody);
-
-    // The component returns one of four HTML elements depending on the values of the above expressions:
+    // The component returns one of four HTML elements depending on the values of msgType:
     // Used when you send multiple messages in succession
     const myMessageGrouped = 
         <div id="message-self" >
@@ -42,7 +41,7 @@ const Message = React.memo(function Message({sender, msgBody, timestamp, senderP
         <div id="message-self" >
             <Image size={30} image={picture} alt={"user profile picture"} margin={10} />
             <div id="msgTextContainer">
-                <p id="msgSenderText"> {sender} </p>
+                <p id="msgSenderText"> {senderName} </p>
                 <p id="msgTimestamp"> {date} {time} </p>
                 <p id="msgBodyText"> {msgBody} </p>
             </div>
@@ -59,7 +58,7 @@ const Message = React.memo(function Message({sender, msgBody, timestamp, senderP
         <div id="message" >
             <Image size={30} image={picture} alt={"user profile picture"} margin={10} />
             <div id="msgTextContainer">
-                <p id="msgSenderText"> {sender} </p>
+                <p id="msgSenderText"> {senderName} </p>
                 <p id="msgTimestamp"> {date} {time} </p>
                 <p id="msgBodyText"> {msgBody} </p>
             </div>
