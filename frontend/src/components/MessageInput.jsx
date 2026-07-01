@@ -15,9 +15,10 @@ export default function MessageInput({accountID, accountName, onNewMessage }) {
 
         // Receive new messages from server and update message list
         socketRef.current.on("message", (data) => {
-            const msgObject = data.serverMessage;
-            if (msgObject) {
-                onNewMessage(msgObject);
+            //console.log("I got somethin", data);
+            //const msgObject = data.serverMessage;
+            if (data) {
+                onNewMessage(data);
             }
         });
 

@@ -7,8 +7,6 @@ export interface ServerMessage {
     senderID: number,
     senderName: string,
     text: string,
-    timestamp: Date,
+    timestamp: Date | string,
     profilePicture: string,
-    prevSenderID: number,
-    prevSenderName: string;
-};
+}

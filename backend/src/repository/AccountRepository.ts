@@ -8,11 +8,11 @@ export const getAccountById = async (id: number) => {
     try {
         const response = await query('SELECT * FROM accounts WHERE id = $1', [id]);
         // Return all of the associated account data
-        return response.rows[0];
+        return response.rows[0] ?? null;
     
     } catch (err) {
         console.error('Error searching for account by ID:', err);
-        throw err;
+        return null;
     }
 }
 
@@ -21,11 +21,11 @@ export const getAccountByEmail = async (email: string) => {
     try {
         const response = await query('SELECT * FROM accounts WHERE email = $1', [email]);
         // Return all of the associated account data
-        return response.rows[0];
+        return response.rows[0] ?? null;
     
     } catch (err) {
         console.error('Error searching for account by email:', err);
-        throw err;
+        return null;
     }
 }
 
@@ -34,11 +34,11 @@ export const getAccountByName = async (name: string) => {
     try {
         const response = await query('SELECT * FROM accounts WHERE name = $1', [name]);
         // Return all of the associated account data
-        return response.rows[0];
+        return response.rows[0] ?? null;
     
     } catch (err) {
         console.error('Error searching for account by name:', err);
-        throw err;
+        return null;
     }
 }
 
@@ -51,7 +51,7 @@ export const checkIfAccountExists = async (email: string) => {
     
     } catch (err) {
         console.error('Error checking for account:', err);
-        throw err;
+        return null;
     }
 }
 
@@ -67,7 +67,7 @@ export const createNewAccount = async (email: string, name: string, password: st
     
     } catch (err) {
         console.error('Error creating account in database:', err);
-        throw err;
+        return null;
     }
 }
 

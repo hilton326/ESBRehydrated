@@ -12,7 +12,7 @@ import authRouter from './controllers/AuthController';
 import mainRouter from './controllers/ChatController';
 
 // Important services
-import { getMessageCount, checkForAccount, newMessage } from './services/MessageService';
+import { getRecentMessages, getMessageCount, checkForAccount, newMessage } from './services/MessageService';
 
 // Important objects
 import { ClientMessage }  from './dto/messaging/ClientMessage';
@@ -60,20 +60,68 @@ const main = async () => {
         let msgCounter = await getMessageCount() ?? 0;
 
          // Start listening for clients (they can only join after logging in)
-        io.on("connection", (socket) => {
+        io.on("connection", async (socket) => {
             clientCounter++;
             console.log("New connection established.", clientCounter, "clients currently connected.");
 
+            // Temporary solution to test if fetching from DB works.
+            try {
+                // Retrieve last 100 messages from the database
+                const recentMessageList = await getRecentMessages(100);
+                if (recentMessageList == null) {
+                    console.log("Failed to fetch recent messages from the database");
+                } else {
+                    // Convert each Message into a ServerMessage
+                    // Send in reverse order so they display oldest to newest
+                    for (let i = recentMessageList.length - 1; i >= 0; i--) {
+                        const msg = recentMessageList[i];
+                        // Make sure the message exists
+                        if (!msg) {
+                            console.log("No", i, "th message found");
+                            continue;
+                        }
+                        // If there is no sender, skip this message
+                        if (!msg.sender) {
+                            console.log("Skipping message ", msg.id, ". Sender couldn't be verified.");
+                            continue;
+                        }
+                        // Determine message type using previous sender info
+                        let msgType = 2;    
+                        if (msg.prevSender) {
+                            msgType = (msg.sender.id == msg.prevSender.id) ? 1 : 2;
+                        }
+
+                        const msgFromDB: ServerMessage = {
+                            id: msg.id, 
+                            socket: socket.id,
+                            msgType: msgType, 
+                            senderID: msg.sender.id,
+                            senderName: msg.sender.name, 
+                            text: msg.text, 
+                            timestamp: msg.timestamp, 
+                            profilePicture: '',
+                        };
+                        // console.log("Message ID", msg.id);
+                        // console.log(msgFromDB);
+                        // Broadcast ONLY to the new client that joined
+                        socket.emit("message", msgFromDB);
+                    }
+                    console.log("Recent messages sent over");
+                }
+            } catch (error) {
+                console.error("Failed to process message list:", error);
+            }
+        
             // Listen for messages
             socket.on("message", async (msg: ClientMessage) => {
                 try {
                     console.log("Message received:", msg.text, "from", msg.senderName);
 
                     // msgType 0 is for system messages
-                    let msgType = 0;
+                    let msgType = 2;
 
                     // Verify that the account exists
-                    const accountExists = await checkForAccount(msg.senderID);
+                    const accountExists = checkForAccount(msg.senderID);
                     if (!accountExists) {
                         // If the account somehow doesn't exist, send a system message?
                         console.error("Account couldn't be verified.");
@@ -92,26 +140,18 @@ const main = async () => {
                             text: msg.text, 
                             timestamp: new Date(), 
                             profilePicture: '',
-                            prevSenderID: prevSenderID,
-                            prevSenderName: prevSenderName 
                         };
-                        io.emit("message", {serverMessage});
+                        io.emit("message", serverMessage);
+
+                        // Add message to database
+                        const messageStored = await newMessage(serverMessage, prevSenderID);
+                        if (!messageStored) {
+                            console.log("Note: Failed to store message #", msgCounter, "in the database.");
+                        }
 
                         // Update previous sender info to use for the next message
                         prevSenderID = msg.senderID;
                         prevSenderName = msg.senderName;
-
-                        // Add message to database
-                        let messageStored = false;
-                        try {
-                            messageStored = await newMessage(serverMessage);
-                        } catch (error) {
-                            console.error("Unexpected error while storing message in database:", error);
-                        }
-
-                        if (!messageStored) {
-                            console.log("Note: Failed to store message #", msgCounter, "in the database.");
-                        }
                     }
 
                 } catch (error) {

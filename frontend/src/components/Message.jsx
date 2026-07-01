@@ -18,10 +18,10 @@ const Message = React.memo(function Message({msgBody, msgType, senderID, senderN
     // Placeholder PFP
     const picture = thinkton;
     // Convert the timestamp into readable date and time
-    console.log(timestamp);
-    const datetime = timestamp.split('T');
-    const date = datetime[0];
-    const time = datetime[1].slice(0,8);
+    // console.log(timestamp);
+    // const datetime = timestamp.split('T');
+    // const date = datetime[0];
+    // const time = datetime[1].slice(0,8);
 
     // Distinguish messages the current user sent and those that others send
     const thisIsMyMessage = (senderID == currentUserID);
@@ -42,7 +42,7 @@ const Message = React.memo(function Message({msgBody, msgType, senderID, senderN
             <Image size={30} image={picture} alt={"user profile picture"} margin={10} />
             <div id="msgTextContainer">
                 <p id="msgSenderText"> {senderName} </p>
-                <p id="msgTimestamp"> {date} {time} </p>
+                <p id="msgTimestamp"> {timestamp} </p>
                 <p id="msgBodyText"> {msgBody} </p>
             </div>
         </div>;
@@ -59,7 +59,7 @@ const Message = React.memo(function Message({msgBody, msgType, senderID, senderN
             <Image size={30} image={picture} alt={"user profile picture"} margin={10} />
             <div id="msgTextContainer">
                 <p id="msgSenderText"> {senderName} </p>
-                <p id="msgTimestamp"> {date} {time} </p>
+                <p id="msgTimestamp"> {timestamp} </p>
                 <p id="msgBodyText"> {msgBody} </p>
             </div>
         </div>;

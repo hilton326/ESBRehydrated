@@ -5,42 +5,60 @@ import { QueryResult } from 'pg';
 
 import { Message }  from '../models/Message';
 
-// getAllMessages: Retrieves every message currently in the database.
-// WARNING: If we increase the maximum message count, this query will become very slow.
+
+// getMessageById: Looks up a message based on the database ID
+export const getMessageById = async (id: number) => {
+    try {
+        const response = await query('SELECT * FROM messages WHERE id = $1', [id]);
+        return response.rows[0] ?? null;
+    
+    } catch (err) {
+        console.error('Error searching for message by ID:', err);
+        return null;
+    }
+}
+
+// fetchAllMessages: Retrieves every message currently in the database (from newest to oldest).
+// WARNING: This is only included for testing and can be very slow. Do not use unless maximum messages is limited.
 export const fetchAllMessages = async () => {
     try {
         const response = await query
-            ('SELECT * FROM messages' +
-             'ORDER BY id ASC' +
-             'LIMIT 100' );
+        (
+            `SELECT * FROM messages
+             ORDER BY id DESC`
+        );
         return response.rows[0] ?? null;
     
     } catch (error) {
-        console.error('Error returning messages', error);
-        throw error;
+        console.error('Error returning all messages', error);
+        return null;
     }
 };
 
-// fetchRecentMessages: Retrieves the last 100 messages in the database.
-export const fetchRecentMessages = async () => {
+// fetchRecentMessages: Retrieves the last (messageCount) messages in the database.
+export const fetchRecentMessages = async (messageCount: number) => {
     try {
         const response = await query
-            ('SELECT * FROM messages' +
-             'ORDER BY id DESC' +
-             'LIMIT 100' );
-        return response.rows[0] ?? null;
+        (
+            `SELECT * FROM messages
+            ORDER BY id DESC
+            LIMIT $1`,
+            [messageCount] 
+        );
+        
+        return response.rows ?? null;
     
     } catch (error) {
-        console.error('Error returning messages', error);
-        throw error;
+        console.error('Error returning last', messageCount, 'messages', error);
+        return null;
     }
 };
 
 // getLastMessageID: Retrieves the most recent message and gets its ID.
 export const getLastMessageID = async () => {
     try {
-        const response = await query(
-            `SELECT * FROM messages 
+        const response = await query
+        (   `SELECT * FROM messages 
              ORDER BY id DESC
              LIMIT 1`
         );
@@ -48,14 +66,15 @@ export const getLastMessageID = async () => {
     
     } catch (error) {
         console.error('Error returning last message ID', error);
-        throw error;
+        return null;
     }
 };
 
 // newMessage: Stores a new message in the database.
 export const storeNewMessage = async (text: string, senderID: number, prevSenderID: number | null, timestamp: string) => {
     try {
-        const response = await query(
+        const response = await query
+        (
             `INSERT INTO messages (text, sender, prev_sender, timestamp)
              VALUES ($1, $2, $3, $4) RETURNING *`, 
              [text, senderID, prevSenderID, timestamp]
@@ -64,6 +83,6 @@ export const storeNewMessage = async (text: string, senderID: number, prevSender
     
     } catch (error) {
         console.error('Error storing message in database:', error);
-        throw error;
+        return null;
     }
 };
