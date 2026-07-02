@@ -11,7 +11,10 @@ export default function MessageInput({accountID, accountName, onNewMessage }) {
 
     // Use socket.io client to receive new messages
     useEffect(() => {
-        socketRef.current = io("http://localhost:8080");
+        // Establish connection with server
+        socketRef.current = io("http://localhost:8080", {
+            withCredentials: true // send cookie
+        });
 
         // Receive new messages from server and update message list
         socketRef.current.on("message", (data) => {

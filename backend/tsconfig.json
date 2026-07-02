@@ -1,3 +1,5 @@
+// npm i -D @types/{new module}
+
 {
   "compilerOptions": {
     "rootDir": "./src",

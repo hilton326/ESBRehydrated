@@ -113,8 +113,32 @@ router.post('/logout', (req: Request, res: Response) => {
 
 /* whoAmI endpoint: Verify current login session using cookie.
 * Prerequisite for accessing most routes! */
-router.get('/me', verifyToken, (req: JwtRequest, res: Response) => {
-    return res.status(200).json({account: req.account});
+router.get('/me', async (req: JwtRequest, res: Response) => {
+    // Extract token from cookie
+    const cookieToken = req.cookies?.auth_token;
+    let token = cookieToken ?? null;
+
+    if (!token) {
+        // Fall back to authorization header if cookie not present
+        // // Make sure headers are correct
+        // const authHeader = req.headers['authorization'];
+        // if (!authHeader) return res.status(401).json({error:'Token is missing'});
+        // // Extract token from header
+        // token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+        // if (!token) return res.status(401).json({error:'Token not received correctly'});
+
+        console.log("The cookie isn't present");
+        return res.status(400).json({error: 'Invalid or expired token'});
+    }
+
+    // Call middleware service to validate the JWT token 
+    const authData = await verifyToken(token);
+    if (!authData.account) {
+        return res.status(400).json({error: authData.error});
+    }
+
+    // Return account data if authentication successful
+    return res.status(200).json({account: authData.account});
 });
 
 
