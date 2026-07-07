@@ -25,10 +25,10 @@ const Message = React.memo(function Message({msgBody, msgType, senderID, senderN
 
     // Distinguish messages the current user sent and those that others send
     const thisIsMyMessage = (senderID == currentUserID);
-    // If a message has the same sender as the previous message, group them together
-    const messageIsGrouped = (msgType == 1);
+    // If a message has the same sender as the previous message (msgType = 2), group them together
+    const messageIsGrouped = (msgType == 2);
 
-    // The component returns one of four HTML elements depending on the values of msgType:
+    // The component returns one of four HTML elements depending on the values of the above expressions:
     // Used when you send multiple messages in succession
     const myMessageGrouped = 
         <div id="message-self" >
@@ -63,7 +63,18 @@ const Message = React.memo(function Message({msgBody, msgType, senderID, senderN
                 <p id="msgBodyText"> {msgBody} </p>
             </div>
         </div>;
+    // Used when the system sends a message (usually when someone joins or leaves)
+    const systemMessage = 
+        <div id="message-system" >
+            <div id="msgTextContainer">
+                <p id="systemMsgText"> {msgBody} </p>
+            </div>
+        </div>;
+    
+    // If msgType = 0, it's a system message
+    if (msgType == 0) return systemMessage;
 
+    // If not, return one of the others
     const messageVariants = {
         'true_true': myMessageGrouped,
         'true_false': myMessage,

@@ -1,13 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from 'react';
 
-import TitleBar from '../components/TitleBar.jsx';
-import MessageDisplay from '../components/MessageDisplay.jsx';
-import ProfileDisplay from '../components/ProfileDisplay.jsx';
+import ChatController from '../components/ChatController.jsx';
 
-import { whoAmI } from '../api/client.js'; // Import the client for API calls
+import { whoAmI } from '../api/client.js'; // For API calls
 
-export default function Chat() {
+export default function ChatPage() {
   const navigate = useNavigate();
 
   /* Loading: Loading state
@@ -21,12 +19,12 @@ export default function Chat() {
     // Immediately Invoked Function Expression
     (async () => {
       // Contact server, which will validate the login session cookie if present
-      console.log("help");
       const response = await whoAmI();
 
       /* Make sure the component is still mounted before trying to update state.
       * Ex. If someone navigates away from page while this page is still awaiting the server. */
       if (!mounted) return;
+
       // If validation not successful, redirect to login page
       if (!response.successful) {
         navigate('/login');
@@ -36,27 +34,19 @@ export default function Chat() {
       // Set account data and stop loading
       setAuth({loading: false, loggedIn: true, account: response.account})
     })();
+    // Cleanup function
     return () => {mounted = false};
-  }, [navigate]);
+  }, [navigate, setAuth]);
 
   // If loading state is set, show loading screen (WIP)
   if (auth.loading) return <div> Loading... </div>;
   // Do not show any content if there is no login session
   if (!auth.loggedIn) return null;
 
- // Normal content (assuming login session is validated)
- return (
-    <div id="page" className="chat">
-      
-      <div id="main">
-        <TitleBar/>
-        <MessageDisplay account={auth.account} />
-      </div>
-
-      <div id="sidebar">
-        <ProfileDisplay account={auth.account} />
-        
-      </div>
+  // Normal content (assuming login session is validated)
+  return (
+    <div>
+      <ChatController account={auth.account} />
     </div>
   );  
 }

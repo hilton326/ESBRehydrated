@@ -12,7 +12,7 @@ import authRouter from './controllers/AuthController';
 import mainRouter from './controllers/ChatController';
 
 // Important services
-import { getRecentMessages, getMessageCount, checkForAccount, newMessage } from './services/MessageService';
+import { getRecentMessages, getMessageCount, checkForAccount, newMessage, assignMsgType } from './services/MessageService';
 import { verifyToken } from "./services/MiddlewareService"; // middleware function
 
 // Important objects
@@ -40,7 +40,6 @@ const httpServer = http.createServer(app);
 // Also configure CORS for socket.io
 const io = new Server(httpServer, { cors: { origin: CLIENT, credentials: true } });
 
-
 // Import API routes from controllers
 app.use('/api/auth', authRouter);
 app.use('/api/chat', mainRouter);
@@ -66,8 +65,10 @@ const main = async () => {
         let prevSenderName = '';
         let msgCounter = await getMessageCount() ?? 0;
 
-        // Authenticate using cookie for every incoming socket connection
-        // If this check fails, the client cannot connect
+        /* *****************************************************************
+        * Authenticate using cookie for every incoming socket connection
+        * If this check fails, the client cannot connect
+        */
         io.use(async (socket, next) => {
             try {
                 // Locate the cookie
@@ -100,7 +101,9 @@ const main = async () => {
             }
         });
 
-         // When a new client connection is established (they can only join after logging in)
+        /* *****************************************************************
+        * On new user connection (they can only join after logging in)
+        */
         io.on("connection", async (socket) => {
             clientCounter++;
             console.log("New connection established.", clientCounter, "clients currently connected.");
@@ -127,9 +130,9 @@ const main = async () => {
                             continue;
                         }
                         // Determine message type using previous sender info
-                        let msgType = 2;    
+                        let msgType = 1;    
                         if (msg.prevSender) {
-                            msgType = (msg.sender.id == msg.prevSender.id) ? 1 : 2;
+                            msgType = assignMsgType(msg.sender.id, msg.prevSender.id);
                         }
 
                         const msgFromDB: ServerMessage = {
@@ -142,8 +145,7 @@ const main = async () => {
                             timestamp: msg.timestamp, 
                             profilePicture: '',
                         };
-                        // console.log("Message ID", msg.id);
-                        // console.log(msgFromDB);
+                        
                         // Broadcast ONLY to the new client that joined
                         socket.emit("message", msgFromDB);
                     }
@@ -152,8 +154,33 @@ const main = async () => {
             } catch (error) {
                 console.error("Failed to process message list:", error);
             }
-        
-            // Listen for messages
+
+            msgCounter++;
+            // Broadcast a system message to alert everyone of the new person joining
+            const joinMsg: ServerMessage = {
+                id: msgCounter,
+                socket: socket.id,
+                msgType: 0,
+                senderID: 0, 
+                senderName: "System",
+                text: "~ " + socket.data.user.name + " has entered the Krusty Krab. ~",
+                timestamp: new Date(),
+                profilePicture: ''
+            };
+            io.emit("message", joinMsg);
+
+            // Add message to database
+            const messageStored = await newMessage(joinMsg, prevSenderID);
+            if (!messageStored) {
+                console.error("Failed to store message #", msgCounter, "in the database.");
+            }
+
+            // Reset previous sender ID to 0
+            prevSenderID = 0;
+            
+            /* *****************************************************************
+            * On new message
+            */
             socket.on("message", async (msg: ClientMessage) => {
                 try {
                     // If user isn't authenticated, do not proceed
@@ -175,10 +202,8 @@ const main = async () => {
                         console.log("Message received:", msg.text, "from", senderName);
                         msgCounter++;
 
-                        // msgType: 0 is for system messages
-                        // 1 = Message has same sender as the previous one, 2 = Message has different sender
-                        let msgType = 2;
-                        msgType = (msg.senderID == prevSenderID) ? 1 : 2;
+                        // Assign the message type
+                        const msgType = assignMsgType(senderID, prevSenderID);
 
                         // Broadcast to all connected clients (including sender)
                         const serverMessage: ServerMessage = {
@@ -209,10 +234,36 @@ const main = async () => {
                 }
             });
 
-            // Handle disconnection
-            socket.on('disconnect', () => {
+            
+            /* *****************************************************************
+            * On user disconnection
+            */
+            socket.on('disconnect', async () => {
                 clientCounter--;
                 console.log("A client disconnected.", clientCounter, "clients currently connected.");
+                msgCounter++;
+
+                // Broadcast a system message to alert everyone of the new person joining
+                const leaveMsg: ServerMessage = {
+                    id: msgCounter,
+                    socket: socket.id,
+                    msgType: 0,
+                    senderID: 0, 
+                    senderName: "System",
+                    text: "~ " + socket.data.user.name + " has left the Krusty Krab. ~",
+                    timestamp: new Date(),
+                    profilePicture: ''
+                };
+                io.emit("message", leaveMsg);
+
+                // Add message to database
+                const messageStored = await newMessage(leaveMsg, prevSenderID);
+                if (!messageStored) {
+                    console.error("Failed to store message #", msgCounter, "in the database.");
+                }
+
+                // Reset previous sender ID to 0
+                prevSenderID = 0;
             });
         });
 

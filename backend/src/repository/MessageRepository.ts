@@ -71,7 +71,7 @@ export const getLastMessageID = async () => {
 };
 
 // newMessage: Stores a new message in the database.
-export const storeNewMessage = async (text: string, senderID: number, prevSenderID: number | null, timestamp: string) => {
+export const storeNewMessage = async (text: string, senderID: number, prevSenderID: number, timestamp: string) => {
     try {
         const response = await query
         (

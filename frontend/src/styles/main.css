@@ -103,6 +103,19 @@ body {
     color: rgb(4, 59, 130);
 }
 
+/* System message */
+#message-system {
+    display: flex;
+    flex-direction: row;
+    margin-left: 2px;
+    align-items: center;
+    justify-content: center;
+    width: 99%;
+    position: relative;
+    background: rgba(255, 255, 255, 0.5);
+    color: rgb(0, 0, 0); 
+}
+
 /* Message text fields */
 #msgTextContainer {
     display: flex;
@@ -130,6 +143,11 @@ body {
     top: 0;
     right: 0;
     margin-right: 5px;
+}
+#systemMsgText {
+    font-weight: bold;
+    font-size: 13px;
+    margin-bottom: 6px;
 }
 
 /* Message input box: Bottom of message display */
