@@ -10,8 +10,10 @@ export default function MessageInput({onNewMessage}) {
 
     // On ENTER press, forward message up to ChatController to send
     const handleSend = (msg) => {
-        onNewMessage(msg);
-        setNewMsg('');
+        if (msg) {
+            onNewMessage(msg);
+            setNewMsg('');
+        }   
     }
 
     return (

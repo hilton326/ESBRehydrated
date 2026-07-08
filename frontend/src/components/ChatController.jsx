@@ -30,7 +30,19 @@ export default function ChatController({account}) {
                 /* Update message display array:
                 * "prev" represents previous contents of the array. We just add newMsg to it */
                 setMessages(prev =>  [...prev, newMsg] );
-                console.log("message #", newMsg.id);
+                //console.log("message #", newMsg.id);
+            }
+        });
+
+        // Listen for member list updates
+        socketRef.current.on("clients:init", (memberList) => {
+            if (memberList) {
+                console.log("Member list initialized:", memberList);
+            }
+        });
+        socketRef.current.on("clients:update", (memberList) => {
+            if (memberList) {
+                console.log("Member list updated:", memberList);
             }
         });
 

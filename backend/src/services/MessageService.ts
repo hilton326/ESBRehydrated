@@ -53,26 +53,14 @@ export const newMessage = async(msg: any, prevSenderID: number) => {
 
     // Previous sender ID safety check
     const prevSenderCheck = await checkForAccount(prevSenderID);
-        if (!prevSenderCheck) { 
-            console.error("Invalid ID for previous sender:" + prevSenderID);
-            return false;
-        }
+    if (!prevSenderCheck) { 
+        console.error("Invalid ID for previous sender:" + prevSenderID);
+        return false;
+    }
 
     const added = await storeNewMessage(msg.text, msg.senderID, prevSenderID, String(msg.timestamp));
     if (added) { 
         return true; 
     }
     return false;
-}
-
-// Quickly determine message type, which is needed for the client to figure out how to display it
-export const assignMsgType = (sender: number, prevSender: number ) => {
-    // Type 0 = System message (primarily used for join and leave logs). No sender data is associated.
-    if (sender == 0) return 0;
-
-    // Type 1 = Message has different sender from previous, so it has full sender info
-    // Type 2 = Message has same sender as previous, so it has less info
-    const msgType = (sender != prevSender) ? 1 : 2;
-
-    return msgType;
 }
