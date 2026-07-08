@@ -9,15 +9,16 @@ import { testConnection, shutdownPool } from './db'; // database connection func
 
 // Router functions from controllers
 import authRouter from './controllers/AuthController';
-import mainRouter from './controllers/ChatController';
+//import profileRouter from './controllers/ProfileController';
 
 // Important services
 import { getRecentMessages, getMessageCount, checkForAccount, newMessage } from './services/MessageService';
 import { verifyToken } from "./services/MiddlewareService"; // middleware function
 
 // Important objects
-import { ClientMessage }  from './dto/messaging/ClientMessage';
-import { ServerMessage }  from './dto/messaging/ServerMessage';
+import { ClientMessage }  from './types/MessageTypes';
+import { ServerMessage }  from './types/MessageTypes';
+import { AccountInfo } from './types/AccountTypes';
 
 // Initialize the Express application
 const app = express();
@@ -42,7 +43,7 @@ const io = new Server(httpServer, { cors: { origin: CLIENT, credentials: true } 
 
 // Import API routes from controllers
 app.use('/api/auth', authRouter);
-app.use('/api/chat', mainRouter);
+//app.use('/api/chat', mainRouter);
 
 // Test API endpoint (GET)
 app.get('/api/test', (req: Request, res: Response) => {
@@ -66,7 +67,7 @@ const main = async () => {
 
         // # of clients connected and list of connected clients
         let clientCounter = 0;
-        let clientList = new Map<number, { id: number, name: string, profilePicture: string }>();
+        let clientList: AccountInfo[] = [];
         // Keep track of the sender of the previous message (used for determining message display type)
         let prevSenderID = 0;
         let prevSenderName = '';
@@ -74,7 +75,7 @@ const main = async () => {
         let msgCounter = await getMessageCount() ?? 0; 
 
         // Customizable emit function: Best used for excluding specific sockets from an io.emit broadcast
-        const customIoEmit = (exceptSocketId: string, data: any, identifier: string) => {
+        const customIoEmit = (identifier: string, data: any, exceptSocketId: string) => {
             if (exceptSocketId) {
                 for (const [socketId, socket] of io.sockets.sockets.entries()) {
                     if (socketId === exceptSocketId) continue;
@@ -143,16 +144,12 @@ const main = async () => {
             clientCounter++;
             console.log(socket.data.client.name, "has joined.", clientCounter, "clients currently connected.");
 
-            // Update client list to include new client
-            clientList.set(client.id, {
-                id: client.id, 
-                name: client.name, 
-                profilePicture: client.profilePicture ?? ''
-            });
+            // Update socket list to include new client
+            clientList.push({id: client.id, name: client.name, profilePicture: client.profilePicture ?? ''});
 
-            // Send new list to new client, then broadcast updated list to other clients
-            socket.emit("clients:init", Array.from(clientList.values()));
-            customIoEmit(socket.id, Array.from(clientList.values()), "clients:update");
+            // Send entire list to new client, then broadcast new client info to other clients
+            socket.emit("clients:init", clientList);
+            customIoEmit("clients:add", client, socket.id);
 
             // Fetch recent messages from database (so the new client may see them)
             try {
@@ -279,7 +276,6 @@ const main = async () => {
                 }
             });
 
-            
             /* *****************************************************************
             * On user disconnection
             */
@@ -290,8 +286,9 @@ const main = async () => {
                 console.log(socket.data.client.name, "left.", clientCounter, "clients currently connected.");
 
                 // Delete client from list
-                clientList.delete(client.id);
-                customIoEmit(socket.id, Array.from(clientList.values()), "clients:update");
+                const i = clientList.indexOf(client);
+                clientList.splice(i, 1);
+                customIoEmit("clients:remove", client, "");
 
                 msgCounter++;
                 // Broadcast a system message to alert everyone of the new person joining
@@ -312,7 +309,6 @@ const main = async () => {
                 if (!messageStored) {
                     console.error("Failed to store message #", msgCounter, "in the database.");
                 }
-
                 // Reset previous sender ID to 0
                 prevSenderID = 0;
             });

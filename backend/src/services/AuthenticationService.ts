@@ -1,4 +1,4 @@
-import { Account } from '../models/Account';
+import { Account } from '../types/AccountTypes';
 // Database operations
 import { getAccountByEmail, getAccountByName  } from '../repository/AccountRepository';
 

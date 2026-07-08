@@ -40,9 +40,14 @@ export default function ChatController({account}) {
                 console.log("Member list initialized:", memberList);
             }
         });
-        socketRef.current.on("clients:update", (memberList) => {
-            if (memberList) {
-                console.log("Member list updated:", memberList);
+        socketRef.current.on("clients:add", (newMember) => {
+            if (newMember) {
+                console.log("New member:", newMember);
+            }
+        });
+        socketRef.current.on("clients:remove", (deleteMember) => {
+            if (deleteMember) {
+                console.log("Member to delete:", deleteMember);
             }
         });
 

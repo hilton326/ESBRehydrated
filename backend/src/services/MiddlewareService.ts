@@ -1,6 +1,6 @@
 // imports
 import { Request, Response, NextFunction} from 'express';
-import { Account } from '../models/Account';
+import { Account } from '../types/AccountTypes';
 import { getAccountById } from '../repository/AccountRepository';
 
 const secretKey = process.env.JWT_SECRET;

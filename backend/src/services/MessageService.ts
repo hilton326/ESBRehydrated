@@ -1,5 +1,5 @@
 
-import { Message }  from '../models/Message';
+import { Message }  from '../types/MessageTypes';
 import { getLastMessageID, storeNewMessage, fetchRecentMessages } from '../repository/MessageRepository';
 import { getAccountById } from '../repository/AccountRepository';
 

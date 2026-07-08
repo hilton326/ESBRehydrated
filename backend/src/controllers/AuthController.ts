@@ -4,14 +4,14 @@
 import { Router, Request, Response } from 'express';
 const router = Router();
 // Model imports
-import { Account } from '../models/Account';
+import { Account } from '../types/AccountTypes';
 // Services (functions that handle the logic)
 import { checkIfEmailExists, hashPassword, registerAccount } from '../services/RegistrationService'
 import { authenticate, generateToken } from '../services/AuthenticationService'
 import { JwtRequest, verifyToken } from '../services/MiddlewareService';
 // Data Transfer Objects (DTOs)
-import { RegistrationForm } from '../dto/accounts/RegistrationForm';
-import { LoginCredentials } from '../dto/accounts/LoginCredentials';
+import { RegistrationForm } from '../types/AuthTypes';
+import { LoginCredentials } from '../types/AuthTypes';
 
 // Registration: Requires email address, display name, and password
 router.post('/register', async (req: Request, res: Response) => {

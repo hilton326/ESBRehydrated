@@ -1,6 +1,6 @@
 // RegistrationService: Logic for creating a new account.
 
-import { Account } from '../models/Account';
+import { Account } from '../types/AccountTypes';
 // Database functions from Repository
 import { checkIfAccountExists, createNewAccount } from '../repository/AccountRepository';
 

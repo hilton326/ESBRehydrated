@@ -3,7 +3,7 @@
 import { query } from '../db';
 import { QueryResult } from 'pg';
 
-import { Message }  from '../models/Message';
+import { Message }  from '../types/MessageTypes';
 
 
 // getMessageById: Looks up a message based on the database ID
