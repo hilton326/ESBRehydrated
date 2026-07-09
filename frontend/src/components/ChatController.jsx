@@ -5,6 +5,7 @@ import TitleBar from './TitleBar.jsx';
 import MessageDisplay from './MessageDisplay.jsx';
 import MessageInput from './MessageInput.jsx';
 import ProfileDisplay from './ProfileDisplay.jsx';
+import MemberList from './MemberList.jsx';
 
 export default function ChatController({account}) {
 
@@ -12,10 +13,12 @@ export default function ChatController({account}) {
     const id = account?.id ?? 0;
     const name = account?.name ?? 'Thinkton';
     
-    // Message array
-    const [messages, setMessages] = useState([]);
     // Permanent instance of the socket connection
     const socketRef = useRef(null);
+    // Message array 
+    const [messages, setMessages] = useState([]);
+    // Member array (who is currently in the chat)
+    const [members, setMembers] = useState([]);
 
     // Receiving messages: Use socket.io client to receive new messages
     useEffect(() => {
@@ -34,20 +37,35 @@ export default function ChatController({account}) {
             }
         });
 
-        // Listen for member list updates
+        /* Member list updates:
+            * "clients:init" = Server sends entire member list when you first join 
+            * "clients:add" = Signal that someone joined; server sends matching info to be added
+            * "clients:remove" = Signal that someone left; server sends matching info to be removed
+        */
         socketRef.current.on("clients:init", (memberList) => {
             if (memberList) {
                 console.log("Member list initialized:", memberList);
+                setMembers(memberList);
             }
         });
         socketRef.current.on("clients:add", (newMember) => {
             if (newMember) {
                 console.log("New member:", newMember);
+                setMembers(prev => [...prev, newMember] );
             }
         });
         socketRef.current.on("clients:remove", (deleteMember) => {
             if (deleteMember) {
                 console.log("Member to delete:", deleteMember);
+                // Filter out members that match the info returned from the server
+                setMembers(prev => {
+                    console.log("Members before deletion: ", prev);
+                    const update = prev.filter(member => member.id !== deleteMember.id);
+                    
+                    console.log("members after:", update);
+                    console.log("removed?", prev.length !== update.length);
+                    return update;
+                });
             }
         });
 
@@ -78,7 +96,7 @@ export default function ChatController({account}) {
             </div>
             <div id="sidebar">
                 <ProfileDisplay account={account}/>
-                {/* <MemberList/> */}
+                <MemberList memberList={members} /> 
             </div>
         </div> 
     );

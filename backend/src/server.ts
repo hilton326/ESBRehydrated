@@ -61,6 +61,8 @@ const main = async () => {
         const server = httpServer.listen(PORT, () =>
             console.log(`Server is running on http://localhost:${PORT}`)
         );
+        // Shutdown state. Do not try to perform any other actions during shutdown.
+        let shuttingDown = false;
 
         /* *****************************************************************
         * Global Functions & Variables */ 
@@ -75,14 +77,13 @@ const main = async () => {
         let msgCounter = await getMessageCount() ?? 0; 
 
         // Customizable emit function: Best used for excluding specific sockets from an io.emit broadcast
-        const customIoEmit = (identifier: string, data: any, exceptSocketId: string) => {
-            if (exceptSocketId) {
-                for (const [socketId, socket] of io.sockets.sockets.entries()) {
+        const customIoEmit = (action: string, data: any, exceptSocketId: string) => {
+            for (const [socketId, socket] of io.sockets.sockets.entries()) {
+                if (exceptSocketId) {
                     if (socketId === exceptSocketId) continue;
-                    socket.emit(identifier, data);
                 }
-            } else {
-                io.emit(identifier, data);
+                socket.emit(action, data);
+                console.log("Sent", data, "to", socket.data.client.name, "during", action);
             }
         };
 
@@ -138,6 +139,7 @@ const main = async () => {
         * On new client connection (they can only join after logging in)
         */
         io.on("connection", async (socket) => {
+            if (shuttingDown) return;
             // Verify that the new client is authorized
             const client = socket.data.client;
             if (!client) return;
@@ -225,6 +227,7 @@ const main = async () => {
             * On new message
             */
             socket.on("message", async (msg: ClientMessage) => {
+                if (shuttingDown) return;
                 try {
                     // If user isn't authenticated, do not proceed
                     if (!client) {
@@ -281,14 +284,14 @@ const main = async () => {
             */
             socket.on('disconnect', async () => {
                 if (!client) return;
-
+                if (shuttingDown) return;
                 clientCounter--;
                 console.log(socket.data.client.name, "left.", clientCounter, "clients currently connected.");
 
                 // Delete client from list
                 const i = clientList.indexOf(client);
                 clientList.splice(i, 1);
-                customIoEmit("clients:remove", client, "");
+                customIoEmit("clients:remove", client, "",);
 
                 msgCounter++;
                 // Broadcast a system message to alert everyone of the new person joining
@@ -317,7 +320,7 @@ const main = async () => {
         /* *****************************************************************
         * SERVER SHUTDOWN
         * Handle shutdown of the server */
-        let shuttingDown = false;
+        
         const shutdown = async () => {
             // Make sure shutdown isn't triggered more than once
             if (shuttingDown) return;
