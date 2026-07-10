@@ -77,6 +77,12 @@ export default function ChatController({account}) {
         };
     }, []);
 
+    // When a new message is added, scroll to the bottom of the message list
+    useEffect(() => {
+        var objDiv = document.getElementById("message-list");
+        objDiv.scrollTop = objDiv.scrollHeight;
+    }, [messages]);
+
     /* Sending messages:
     * useCallback allows new messages to be passed up from the MessageInput component.
     * Note: updateMsgList is not called until the server receives the message and then broadcasts it to the chat. */
@@ -96,7 +102,7 @@ export default function ChatController({account}) {
             </div>
             <div id="sidebar">
                 <ProfileDisplay account={account}/>
-                <MemberList memberList={members} /> 
+                <MemberList accountID={id} memberList={members} /> 
             </div>
         </div> 
     );

@@ -7,7 +7,11 @@ import { getAccountById } from '../repository/AccountRepository';
 // Return the ID of the last message plus one
 export const getMessageCount = async() => {
     const msgCount = await getLastMessageID();
-    return msgCount ? msgCount : 0;
+    if (!msgCount) {
+        console.log("Couldn't receive message count from database. Resetting msgCounter to 1");
+        return 1;
+    }
+    return msgCount+1;
 }
 
 export const getRecentMessages = async(count: number) => {
