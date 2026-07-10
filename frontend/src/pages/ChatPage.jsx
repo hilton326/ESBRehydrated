@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from 'react';
 
-import ChatController from '../components/ChatController.jsx';
+import ChatController from '../components/main/ChatController.jsx';
 
 import { whoAmI } from '../api/client.js'; // For API calls
 

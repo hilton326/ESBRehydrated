@@ -1,5 +1,5 @@
 'use client';
-import RegisterButton from '../components/RegisterButton.jsx';
+import RegisterButton from '../components/login/RegisterButton.jsx';
 import { useState } from 'react';
 
 function RegistrationPage() {

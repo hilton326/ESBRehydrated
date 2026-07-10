@@ -1,5 +1,5 @@
 import React from 'react';
-import { registrationRequest } from '../api/client.js'; // Import the client for API calls
+import { registrationRequest } from '../../api/client.js'; // Import the client for API calls
 
 const RegisterButton = ({email, name, password, confirmPassword}) => {
 

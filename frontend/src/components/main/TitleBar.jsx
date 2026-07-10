@@ -1,5 +1,5 @@
-import ESBLogo from '../assets/ESB_Rehydrated_cropped.png';
-import Image from './Image.jsx';
+import ESBLogo from '../../assets/ESB_Rehydrated_cropped.png';
+import Image from '../common/Image.jsx';
 
 function TitleBar() {
     return (

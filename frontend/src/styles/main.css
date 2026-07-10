@@ -217,5 +217,18 @@ body {
     margin-top: 5px;
 }
 
+/* Member list container */
+#member-list {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    z-index: 0;
+    color: white;
+}
+
 
 /* ---------------------------------------------------------------------------------------- */

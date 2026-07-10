@@ -5,7 +5,7 @@ export default function MemberList({memberList}) {
     //     console.log(memberList[m]);
     // }
     return (
-        <div>
+        <div id="member-list">
             {memberList.map(member => (
                 <li key={member.id}>
                     {member.name}

@@ -1,5 +1,5 @@
 'use client';
-import LoginButton from '../components/LoginButton.jsx';
+import LoginButton from '../components/login/LoginButton.jsx';
 import { useState } from 'react';
 
 function LoginPage() {

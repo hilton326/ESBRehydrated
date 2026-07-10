@@ -1,5 +1,5 @@
 import React from 'react';
-import { loginRequest } from '../api/client.js'; // Import the client for API calls
+import { loginRequest } from '../../api/client.js'; // Import the client for API calls
 import { useNavigate } from "react-router-dom";
 
 const LoginButton = ({email, password}) => {

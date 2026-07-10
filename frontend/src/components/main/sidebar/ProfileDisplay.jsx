@@ -2,8 +2,8 @@
 import { useState } from 'react';
 import { TiArrowSortedDown } from "react-icons/ti";
 
-import thinkton from '../assets/legothinkton.png'; // image placeholder
-import Image from './Image.jsx';
+import thinkton from '../../../assets/legothinkton.png'; // image placeholder
+import Image from '../../common/Image.jsx';
 import ProfileDropdown from './ProfileDropdown.jsx';
 
 function ProfileDisplay({account}) {

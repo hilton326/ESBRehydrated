@@ -2,10 +2,10 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { io, Socket } from "socket.io-client";
 
 import TitleBar from './TitleBar.jsx';
-import MessageDisplay from './MessageDisplay.jsx';
-import MessageInput from './MessageInput.jsx';
-import ProfileDisplay from './ProfileDisplay.jsx';
-import MemberList from './MemberList.jsx';
+import MessageDisplay from './messaging/MessageDisplay.jsx';
+import MessageInput from './messaging/MessageInput.jsx';
+import ProfileDisplay from './sidebar/ProfileDisplay.jsx';
+import MemberList from './sidebar/MemberList.jsx';
 
 export default function ChatController({account}) {
 

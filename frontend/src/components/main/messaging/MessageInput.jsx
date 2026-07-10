@@ -1,7 +1,6 @@
 import { useState } from 'react';
-
-import Image from './Image.jsx';
-import thinkton from '../assets/legothinkton.png'; // image placeholder
+import Image from '../../common/Image.jsx';
+import thinkton from '../../../assets/legothinkton.png'; // image placeholder
 
 export default function MessageInput({onNewMessage}) {
 

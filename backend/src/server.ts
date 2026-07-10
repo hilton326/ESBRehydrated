@@ -83,7 +83,7 @@ const main = async () => {
                     if (socketId === exceptSocketId) continue;
                 }
                 socket.emit(action, data);
-                console.log("Sent", data, "to", socket.data.client.name, "during", action);
+                // console.log("Sent", data, "to", socket.data.client.name, "during", action);
             }
         };
 
@@ -320,7 +320,6 @@ const main = async () => {
         /* *****************************************************************
         * SERVER SHUTDOWN
         * Handle shutdown of the server */
-        
         const shutdown = async () => {
             // Make sure shutdown isn't triggered more than once
             if (shuttingDown) return;
