@@ -8,7 +8,7 @@ import thinkton from '../../../assets/legothinkton.png'; // image placeholder
 * timestamp = time message was sent by server
 * senderProfile = profile picture of sender
 * prevSender = sender of the previous message; used for deciding what CSS to use
-* currentUser = currently logged in user; again,used for appearance */
+* currentUser = currently logged in user; again, used for appearance */
 
 /* React Memo will only re-render each Message if its props get changed.
 * This increases performance since the entire message list won't re-render on every sent message.

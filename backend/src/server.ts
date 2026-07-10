@@ -75,7 +75,7 @@ const main = async () => {
         let prevSenderName = '';
         // Set the next message ID based on the # of messages in the database
         let msgCounter = await getMessageCount() ?? 0; 
-
+        
         // Customizable emit function: Best used for excluding specific sockets from an io.emit broadcast
         const customIoEmit = (action: string, data: any, exceptSocketId: string) => {
             for (const [socketId, socket] of io.sockets.sockets.entries()) {
@@ -141,18 +141,34 @@ const main = async () => {
         io.on("connection", async (socket) => {
             if (shuttingDown) return;
             // Verify that the new client is authorized
-            const client = socket.data.client;
-            if (!client) return;
-            clientCounter++;
-            console.log(socket.data.client.name, "has joined.", clientCounter, "clients currently connected.");
+            const currentClient = socket.data.client;
+            if (!currentClient) return;
 
-            // Update socket list to include new client
-            clientList.push({id: client.id, name: client.name, profilePicture: client.profilePicture ?? ''});
+            console.log("New client", currentClient.name, "authorized.");
+            console.log("Current client list:", clientList);
 
-            // Send entire list to new client, then broadcast new client info to other clients
+            /* Make sure the client is not already present before adding it.
+            * This stops the client from occasionally being added twice when they refresh their chat. */
+            let notPresent = true;
+            clientList.forEach(client => {
+                if (client.id === currentClient.id) {
+                    console.log("Connection Notice:", currentClient.name, "is already in the list.");
+                    notPresent = false;
+                }
+            })
+            if (!notPresent) return;
+
+            // If the client is not already in the list, add it
+            clientList.push({id: currentClient.id, name: currentClient.name, profilePicture: currentClient.profilePicture ?? ''});
+            console.log("Client list after adding", currentClient.name, ":", clientList);
+            // Broadcast the new client to all other clients
+            customIoEmit("clients:add", currentClient, socket.id);
+            // Send entire list to new client
             socket.emit("clients:init", clientList);
-            customIoEmit("clients:add", client, socket.id);
-
+            
+            clientCounter = clientList.length;
+            console.log(socket.data.client.name, "has joined.", clientCounter, "clients currently connected.");
+            
             // Fetch recent messages from database (so the new client may see them)
             try {
                 // Retrieve last 100 messages from the database
@@ -208,7 +224,7 @@ const main = async () => {
                 msgType: 0,
                 senderID: 0, 
                 senderName: "System",
-                text: "~ " + client.name + " has entered the Krusty Krab. ~",
+                text: "~ " + currentClient.name + " has entered the Krusty Krab. ~",
                 timestamp: new Date(),
                 profilePicture: ''
             };
@@ -230,13 +246,13 @@ const main = async () => {
                 if (shuttingDown) return;
                 try {
                     // If user isn't authenticated, do not proceed
-                    if (!client) {
+                    if (!currentClient) {
                         return;
 
                     } else {
                         // Get sender information from the authentication check
-                        let senderID = client.id;
-                        let senderName = client.name;
+                        let senderID = currentClient.id;
+                        let senderName = currentClient.name;
                         if (!senderID || !senderName) {
                             console.log("Note: couldn't retrieve authenticated user info. Falling back to info sent from client.")
                             senderID = msg.senderID;
@@ -244,8 +260,8 @@ const main = async () => {
                         }
 
                         // Increment message ID counter
-                        console.log("Message received:", msg.text, "from", senderName);
                         msgCounter++;
+                        console.log("Message received:", msg.text, "from", senderName);
 
                         // Assign the message type
                         const msgType = assignMsgType(senderID, prevSenderID);
@@ -259,7 +275,7 @@ const main = async () => {
                             senderName: senderName,
                             text: msg.text, 
                             timestamp: new Date(), 
-                            profilePicture: client.profilePicture ?? '',
+                            profilePicture: currentClient.profilePicture ?? '',
                         };
                         io.emit("message", serverMessage);
 
@@ -267,6 +283,8 @@ const main = async () => {
                         const messageStored = await newMessage(serverMessage, prevSenderID);
                         if (!messageStored) {
                             console.error("Failed to store message #", msgCounter, "in the database.");
+                        } else {
+                            msgCounter++;
                         }
 
                         // Update previous sender info to use for the next message
@@ -283,15 +301,25 @@ const main = async () => {
             * On user disconnection
             */
             socket.on('disconnect', async () => {
-                if (!client) return;
+                if (!currentClient) return;
                 if (shuttingDown) return;
-                clientCounter--;
-                console.log(socket.data.client.name, "left.", clientCounter, "clients currently connected.");
+
+                console.log(currentClient.name, "has requested to leave.");
+                console.log("Client list:", currentClient.name, ":", clientList);
 
                 // Delete client from list
-                const i = clientList.indexOf(client);
-                clientList.splice(i, 1);
-                customIoEmit("clients:remove", client, "",);
+                clientList = clientList.filter(client => client.id !== currentClient.id);
+                // const i = clientList.indexOf(currentClient);
+                // if (i == -1) {
+                //     console.log("Disconnect Notice:", currentClient.name, "is not in the list.");
+                //     return;
+                // }
+                // clientList.splice(i, 1);
+                console.log("Client list after removing", currentClient.name, ":", clientList);
+                customIoEmit("clients:remove", currentClient, "");
+
+                clientCounter = clientList.length;
+                console.log(socket.data.client.name, "has left.", clientCounter, "clients currently connected.");
 
                 msgCounter++;
                 // Broadcast a system message to alert everyone of the new person joining

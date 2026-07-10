@@ -3,7 +3,6 @@ import MessageInput from './MessageInput.jsx';
 import Message from './Message.jsx';
 
 export default function MessageDisplay({accountID, messageList}) {
-
     return (
         <div id="message-list">
             {messageList.map((msg) => (
