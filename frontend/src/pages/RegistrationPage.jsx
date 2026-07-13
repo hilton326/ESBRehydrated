@@ -11,7 +11,7 @@ function RegistrationPage() {
 
   return (
 
-    <div id="page">
+    <div>
       <title>Chill - Join the Party! </title>
 
       <div id="login-main">

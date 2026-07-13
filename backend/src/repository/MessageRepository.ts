@@ -36,7 +36,7 @@ export const fetchAllMessages = async () => {
 };
 
 // fetchRecentMessages: Retrieves the last (messageCount) messages in the database.
-export const fetchRecentMessages = async (messageCount: number) => {
+export const getRecentMessages = async (messageCount: number) => {
     try {
         const response = await query
         (
@@ -70,7 +70,7 @@ export const getLastMessageID = async () => {
     }
 };
 
-// newMessage: Stores a new message in the database.
+// storeNewMessage: Stores a new message in the database.
 export const storeNewMessage = async (text: string, senderID: number, prevSenderID: number, timestamp: string) => {
     try {
         const response = await query

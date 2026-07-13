@@ -12,7 +12,7 @@ import authRouter from './controllers/AuthController';
 //import profileRouter from './controllers/ProfileController';
 
 // Important services
-import { getRecentMessages, getMessageCount, checkForAccount, newMessage } from './services/MessageService';
+import { buildRecentMsgList, getMessageCount, prepareMessage, storeMessage } from './services/MessageService';
 import { verifyToken } from "./services/MiddlewareService"; // middleware function
 
 // Important objects
@@ -51,7 +51,7 @@ app.get('/api/test', (req: Request, res: Response) => {
 });
 
 // Server main function
-const main = async () => {
+async function main() {
     try {
         /* *****************************************************************
         * SERVER STARTUP
@@ -83,17 +83,6 @@ const main = async () => {
                 // console.log("Sent", data, "to", socket.data.client.name, "during", action);
             }
         };
-
-        // Quickly determine message type, which is needed for the client to figure out how to display it
-        const assignMsgType = (sender: number, prevSender: number ) => {
-            // Type 0 = System message (primarily used for join and leave logs). No sender data is associated.
-            if (sender == 0) return 0;
-
-            // Type 1 = Message has different sender from previous, so it has full sender info
-            // Type 2 = Message has same sender as previous, so it has less info
-            const msgType = (sender != prevSender) ? 1 : 2;
-            return msgType;
-        }
 
         /* *****************************************************************
         * Authenticate using cookie for every incoming socket connection
@@ -138,9 +127,8 @@ const main = async () => {
             // Verify that the new client is authorized
             const currentClient = socket.data.client;
             if (!currentClient) return;
-
             console.log("New client", currentClient.name, "authorized.");
-            console.log("Current client list:", clientList);
+            // console.log("Current client list:", clientList);
 
             /* Make sure the client is not already present before adding it to the list.
             * This stops the client from occasionally being added twice when they refresh their chat. */
@@ -155,7 +143,7 @@ const main = async () => {
 
             // Add the new client to the list
             clientList.push({id: currentClient.id, name: currentClient.name, profilePicture: currentClient.profilePicture ?? ''});
-            console.log("Client list after adding", currentClient.name, ":", clientList);
+            // console.log("Client list after adding", currentClient.name, ":", clientList);
             // Broadcast the new client's information to all other clients
             customIoEmit("clients:add", currentClient, socket.id);
             // Send entire list to new client
@@ -165,7 +153,7 @@ const main = async () => {
             // Fetch recent messages from database (so the new client may see them)
             try {
                 // Retrieve last 100 messages from the database
-                const recentMessageList = await getRecentMessages(100);
+                const recentMessageList = await buildRecentMsgList(100);
                 if (recentMessageList == null) {
                     console.log("Failed to fetch recent messages from the database");
                 } else {
@@ -183,23 +171,12 @@ const main = async () => {
                             console.log("Skipping message ", msg.id, ". Sender couldn't be verified.");
                             continue;
                         }
-                        // Determine message type using previous sender info
-                        let msgType = 1;    
+                        // Check if previous sender is defined
+                        let psender = 0;
                         if (msg.prevSender) {
-                            msgType = assignMsgType(msg.sender.id, msg.prevSender.id);
+                            psender = msg.prevSender.id;
                         }
-
-                        const msgFromDB: ServerMessage = {
-                            id: msg.id, 
-                            socket: socket.id,
-                            msgType: msgType, 
-                            senderID: msg.sender.id,
-                            senderName: msg.sender.name, 
-                            text: msg.text, 
-                            timestamp: msg.timestamp, 
-                            profilePicture: '',
-                        };
-                        // Send ONLY to the new client that joined
+                        const msgFromDB: ServerMessage = prepareMessage(msg.id, msg.text, socket.id, msg.sender.id, msg.sender.name, msg.sender.profilePicture ?? '', psender, msg.timestamp);
                         socket.emit("message", msgFromDB);
                     }
                     console.log("Recent messages sent over");
@@ -210,24 +187,15 @@ const main = async () => {
 
             // Broadcast a system message to alert everyone of the new person joining
             msgCounter++;
-            const joinMsg: ServerMessage = {
-                id: msgCounter,
-                socket: socket.id,
-                msgType: 0,
-                senderID: 0, 
-                senderName: "System",
-                text: "~ " + currentClient.name + " has entered the Krusty Krab. ~",
-                timestamp: new Date(),
-                profilePicture: ''
-            };
+            const joinText = "~ " + currentClient.name + " has entered the Krusty Krab. ~";
+            const joinMsg: ServerMessage = prepareMessage(msgCounter, joinText, socket.id, 0, "System", "", prevSenderID, String(new Date()));
             io.emit("message", joinMsg);
 
             // Add message to database
-            const messageStored = await newMessage(joinMsg, prevSenderID);
+            const messageStored = await storeMessage(joinMsg, prevSenderID);
                 if (!messageStored) {
-                    console.error("Failed to store message #", msgCounter, "in the database.");
+                    console.log("Failed to store message #", msgCounter, "in the database.");
                 }
-            msgCounter++;
 
             // Reset previous sender ID to 0
             prevSenderID = 0;
@@ -245,28 +213,16 @@ const main = async () => {
                         // Increment message ID counter
                         msgCounter++;
                         console.log("Message received:", msg.text, "from", currentClient.name);
-                        // Assign the message type
-                        const msgType = assignMsgType(currentClient.id, prevSenderID);
 
-                        // Broadcast to all connected clients (including sender)
-                        const message: ServerMessage = {
-                            id: msgCounter, 
-                            socket: socket.id,
-                            msgType: msgType,  
-                            senderID: currentClient.id ?? msg.senderID,
-                            senderName: currentClient.name ?? msg.senderName,
-                            text: msg.text, 
-                            timestamp: new Date(), 
-                            profilePicture: currentClient.profilePicture ?? '',
-                        };
+                        // Broadcast message to all clients (including sender)
+                        const message: ServerMessage = prepareMessage(msgCounter, msg.text, socket.id, currentClient.id, currentClient.name, currentClient.profilePicture ?? '', prevSenderID, String(new Date()));
                         io.emit("message", message);
 
                         // Add message to database
-                        const messageStored = await newMessage(message, prevSenderID);
+                        const messageStored = await storeMessage(message, prevSenderID);
                             if (!messageStored) {
-                                console.error("Failed to store message #", msgCounter, "in the database.");
+                                console.log("Failed to store message #", msgCounter, "in the database.");
                             }
-                        msgCounter++;
                         // Update previous sender info to use for the next message
                         prevSenderID = currentClient.id ?? msg.senderID;
                     }
@@ -283,33 +239,24 @@ const main = async () => {
                 if (shuttingDown) return;
 
                 console.log(currentClient.name, "has requested to leave.");
-                console.log("Client list before remove:", currentClient.name, ":", clientList);
-
+                //console.log("Client list before remove:", currentClient.name, ":", clientList);
                 // Delete client from list and signal clients to update their displays
                 clientList = clientList.filter(client => client.id !== currentClient.id);
-                console.log("Client list after remove:", currentClient.name, ":", clientList);
+                //console.log("Client list after remove:", currentClient.name, ":", clientList);
                 customIoEmit("clients:remove", currentClient, "");
                 console.log(socket.data.client.name, "has left.", clientList.length, "clients currently connected.");
 
+                msgCounter++;
                 // Broadcast a system message to alert everyone of the new person leaving
-                const leaveMsg: ServerMessage = {
-                    id: msgCounter,
-                    socket: socket.id,
-                    msgType: 0,
-                    senderID: 0, 
-                    senderName: "System",
-                    text: "~ " + socket.data.client.name + " has left the Krusty Krab. ~",
-                    timestamp: new Date(),
-                    profilePicture: ''
-                };
+                const leaveText = "~ " + currentClient.name + " has left the Krusty Krab. ~";
+                const leaveMsg: ServerMessage = prepareMessage(msgCounter, leaveText, socket.id, 0, "System", "", prevSenderID, String(new Date()));
                 io.emit("message", leaveMsg);
 
                 // Add message to database
-                const messageStored = await newMessage(leaveMsg, prevSenderID);
+                const messageStored = await storeMessage(leaveMsg, prevSenderID);
                     if (!messageStored) {
-                        console.error("Failed to store message #", msgCounter, "in the database.");
+                        console.log("Failed to store message #", msgCounter, "in the database.");
                     }
-                msgCounter++;
                 // Reset previous sender ID to 0
                 prevSenderID = 0;
             });

@@ -32,6 +32,7 @@ export default function ChatController({account}) {
             if (newMsg) {
                 /* Update message display array:
                 * "prev" represents previous contents of the array. We just add newMsg to it */
+                console.log(newMsg);
                 setMessages(prev =>  [...prev, newMsg] );
                 //console.log("message #", newMsg.id);
             }

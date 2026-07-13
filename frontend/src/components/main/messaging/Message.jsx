@@ -31,43 +31,43 @@ const Message = React.memo(function Message({msgBody, msgType, senderID, senderN
     // The component returns one of four HTML elements depending on the values of the above expressions:
     // Used when you send multiple messages in succession
     const myMessageGrouped = 
-        <div id="message-self" >
-            <div id="msgTextContainer">
-                <p id="msgBodyTextGrouped"> {msgBody} </p>
+        <div className="message-self" >
+            <div className="msgTextContainer">
+                <p className="msgBodyTextGrouped"> {msgBody} </p>
             </div>
         </div>;
     // Used when you send a message following someone else's
     const myMessage = 
-        <div id="message-self" >
+        <div className="message-self" >
             <Image size={30} image={picture} alt={"user profile picture"} margin={10} />
-            <div id="msgTextContainer">
-                <p id="msgSenderText"> {senderName} </p>
-                <p id="msgTimestamp"> {timestamp} </p>
-                <p id="msgBodyText"> {msgBody} </p>
+            <div className="msgTextContainer">
+                <p className="msgSenderText"> {senderName} </p>
+                <p className="msgTimestamp"> {timestamp} </p>
+                <p className="msgBodyText"> {msgBody} </p>
             </div>
         </div>;
     // Used when another person sends multiple messages in succession
     const otherMessageGrouped =
-        <div id="message" >
-            <div id="msgTextContainer">
-                <p id="msgBodyTextGrouped"> {msgBody} </p>
+        <div className="message" >
+            <div className="msgTextContainer">
+                <p className="msgBodyTextGrouped"> {msgBody} </p>
             </div>
         </div>;
     // Used when another person sends a message following yours or someone else's
     const otherMessage =
-        <div id="message" >
+        <div className="message" >
             <Image size={30} image={picture} alt={"user profile picture"} margin={10} />
-            <div id="msgTextContainer">
-                <p id="msgSenderText"> {senderName} </p>
-                <p id="msgTimestamp"> {timestamp} </p>
-                <p id="msgBodyText"> {msgBody} </p>
+            <div className="msgTextContainer">
+                <p className="msgSenderText"> {senderName} </p>
+                <p className="msgTimestamp"> {timestamp} </p>
+                <p className="msgBodyText"> {msgBody} </p>
             </div>
         </div>;
     // Used when the system sends a message (usually when someone joins or leaves)
     const systemMessage = 
-        <div id="message-system" >
-            <div id="msgTextContainer">
-                <p id="systemMsgText"> {msgBody} </p>
+        <div className="message-system" >
+            <div className="msgTextContainer">
+                <p className="systemMsgText"> {msgBody} </p>
             </div>
         </div>;
     

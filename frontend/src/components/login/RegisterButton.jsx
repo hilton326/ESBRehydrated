@@ -1,7 +1,9 @@
 import React from 'react';
 import { registrationRequest } from '../../api/client.js'; // Import the client for API calls
+import { useNavigate } from "react-router-dom";
 
 const RegisterButton = ({email, name, password, confirmPassword}) => {
+    const navigate = useNavigate();
 
     const inputChecker = (email, name, password, confirmPassword) => {
         // Make sure inputs aren't empty
@@ -36,7 +38,8 @@ const RegisterButton = ({email, name, password, confirmPassword}) => {
 
         const registration = await registrationRequest(email, name, password);
         if (registration.successful) {
-            console.log("To next page");
+            alert("Account created successfully! Now, log in to start chatting.")
+            navigate('/login');
         }
     }
 

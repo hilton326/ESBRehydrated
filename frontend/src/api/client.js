@@ -37,7 +37,6 @@ export async function registrationRequest(email, name, password) {
     }
 
     console.log("Account created successfully! ", response.status, data);
-    alert("Account created successfully!")
     return {successful: true, error: null};
 
   } catch (error) {

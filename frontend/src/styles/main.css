@@ -27,9 +27,10 @@ body {
     flex-direction: row;
     width: 1024px;
     height: 768px;
-    border-style: solid;
-    border-color: rgb(44, 8, 249);
-    border-width: 2px;
+    border-style: dotted;
+    border-color: aqua;
+    border-width: 4px;
+    padding: 5px;
 }
 
 /* General properties for elements on the chat page */
@@ -66,87 +67,91 @@ body {
 #message-display {
     display: flex;
     flex-direction: column;
+    min-height: 0;
     height: 100%;
+    margin-top: 5px;
 }
 
 /* List of messages */
 #message-list {
     display: flex;
     flex-direction: column;
-    width: 100%;
-    height: 79%;
-    /* flex: 1 1 auto; */
+    width: auto;
+    height: auto;
+    flex: 1 1 auto; 
     min-height: 0;
     overflow-y: auto;
-    margin-top: 5px;
-    margin-bottom: 5px;
     background-image: url("../assets/Wiki-background.webp");
-    z-index: 0;
+
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 4px;
 }
 
 /* Individual message (received) */
-#message {
+.message {
     display: flex;
     flex-direction: row;
-    width: 99%;
+    width: 100%;
     position: relative;
     background: rgba(255, 255, 255, 0.5);
-    color: rgb(4, 59, 130); 
+    color: rgb(0, 40, 90);
 }
 
 /* Individual message (sent) */
-#message-self {
+.message-self {
     display: flex;
     flex-direction: row;
-    margin-left: 2px;
-    width: 99%;
+    width: 100%;
     position: relative;
     background: rgba(255, 255, 255, 0.7);
-    color: rgb(4, 59, 130);
+    color: rgb(0, 40, 90);
 }
 
 /* System message */
-#message-system {
+.message-system {
     display: flex;
     flex-direction: row;
-    margin-left: 2px;
-    align-items: center;
-    justify-content: center;
-    width: 99%;
+    text-align: center;
+    width: 100%;
     position: relative;
     background: rgba(255, 255, 255, 0.5);
-    color: rgb(0, 0, 0); 
+    color: rgb(0, 0, 0);
 }
 
 /* Message text fields */
-#msgTextContainer {
+.msgTextContainer {
     display: flex;
     flex-direction: column;
+    min-width: 0;
+    flex: 1 1 0;
+    padding-right: 15px;
 }
-#msgSenderText {
+.msgSenderText {
     font-weight: bold;
     font-size: 13px;
     margin-bottom: 3px;
 }
-#msgBodyText {
+.msgBodyText {
     font-size: 12px;
     margin-top: 3px;
     margin-bottom: 3px;
 }
-#msgBodyTextGrouped {
+.msgBodyTextGrouped {
     font-size: 12px;
     margin-left: 50px;
     margin-top: 0;
     margin-bottom: 3px;
 }
-#msgTimestamp {
+.msgTimestamp {
     position: absolute;
-    font-size: 12px;
     top: 0;
     right: 0;
-    margin-right: 5px;
+    font-size: 12px;
+    padding-right: 15px;
+    font-weight: bold;
 }
-#systemMsgText {
+.systemMsgText {
     font-weight: bold;
     font-size: 13px;
     margin-bottom: 6px;
@@ -157,17 +162,18 @@ body {
     display: flex;
     flex-direction: row;
     width: 99%;
-    height: 70px;
-    border: 2px solid rgb(0, 255, 145);
-    margin-bottom: 5px;
-    margin-left: 5px;
+    margin-top: 4px;
+    padding-left: 3px;
+    padding-right: 2px;
+    height: 10%;
+    border: 3px solid rgb(120, 246, 233);
     background-color: rgb(1, 53, 80);
+    z-index: 50;
 }
 #message-input-field {
     width: 90%;
     height: 75%;
-    margin-top: 5px;
-    margin-right: 5px;
+    margin: 5px;
     background-color: transparent;
     color: white;
     font-size: 11px;
