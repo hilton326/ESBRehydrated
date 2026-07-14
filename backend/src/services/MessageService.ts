@@ -5,11 +5,12 @@ import { getAccountById } from '../repository/AccountRepository';
 // getMessageCount: Figure out what the next message ID should be (the ID of the last message plus one)
 export async function getMessageCount() {
     // Retrieve total # of messages from database
-    const msgCount = await getLastMessageID();
+    const msgCount = Number(await getLastMessageID());
     if (!msgCount) {
         console.log("Couldn't receive message count from database. Resetting msgCounter to 1");
         return 1;
     }
+    console.log(msgCount, msgCount+1);
     return msgCount+1;
 };
 
@@ -64,7 +65,7 @@ export function prepareMessage(msgID: number, msgText: string, socketID: string,
         timestamp: timestamp, 
         profilePicture: senderPFP,
     };
-    //console.log(msgText, senderID, prevSenderID, message.msgType);
+    //console.log(message);
     return message;
 };
 

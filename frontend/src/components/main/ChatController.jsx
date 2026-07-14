@@ -75,6 +75,9 @@ export default function ChatController({account}) {
             socketRef.current?.off("message");
             socketRef.current?.disconnect();
             socketRef.current = null;
+            // Reset message and member lists
+            setMessages([]);
+            setMembers([]);
         };
     }, []);
 

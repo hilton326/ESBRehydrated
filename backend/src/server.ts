@@ -124,11 +124,10 @@ async function main() {
         */
         io.on("connection", async (socket) => {
             if (shuttingDown) return;
-            // Verify that the new client is authorized
+            // Verify that the new client is authorized (has an active login session)
             const currentClient = socket.data.client;
             if (!currentClient) return;
             console.log("New client", currentClient.name, "authorized.");
-            // console.log("Current client list:", clientList);
 
             /* Make sure the client is not already present before adding it to the list.
             * This stops the client from occasionally being added twice when they refresh their chat. */
@@ -143,7 +142,6 @@ async function main() {
 
             // Add the new client to the list
             clientList.push({id: currentClient.id, name: currentClient.name, profilePicture: currentClient.profilePicture ?? ''});
-            // console.log("Client list after adding", currentClient.name, ":", clientList);
             // Broadcast the new client's information to all other clients
             customIoEmit("clients:add", currentClient, socket.id);
             // Send entire list to new client
@@ -157,7 +155,6 @@ async function main() {
                 if (recentMessageList == null) {
                     console.log("Failed to fetch recent messages from the database");
                 } else {
-                    // Convert each Message object into a ServerMessage object (expected by client)
                     // Send in reverse order so they display oldest to newest
                     for (let i = recentMessageList.length - 1; i >= 0; i--) {
                         const msg = recentMessageList[i];
@@ -237,12 +234,10 @@ async function main() {
             socket.on('disconnect', async () => {
                 if (!currentClient) return;
                 if (shuttingDown) return;
-
                 console.log(currentClient.name, "has requested to leave.");
-                //console.log("Client list before remove:", currentClient.name, ":", clientList);
+
                 // Delete client from list and signal clients to update their displays
                 clientList = clientList.filter(client => client.id !== currentClient.id);
-                //console.log("Client list after remove:", currentClient.name, ":", clientList);
                 customIoEmit("clients:remove", currentClient, "");
                 console.log(socket.data.client.name, "has left.", clientList.length, "clients currently connected.");
 
