@@ -83,7 +83,8 @@ router.post('/login', async (req: Request, res: Response) => {
             httpOnly: true,
             secure: isProduction, // security level: true or false
             sameSite: 'lax', 
-            maxAge: 60 * 60 * 1000 // 1 hour (ms) — match JWT expiry
+            maxAge: 60 * 60 * 1000, // 1 hour (ms) — match JWT expiry
+            path: '/',
         });
 
         // Report success back to client

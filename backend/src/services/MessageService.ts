@@ -10,7 +10,7 @@ export async function getMessageCount() {
         console.log("Couldn't receive message count from database. Resetting msgCounter to 1");
         return 1;
     }
-    console.log(msgCount, msgCount+1);
+    
     return msgCount+1;
 };
 

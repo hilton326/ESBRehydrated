@@ -17,7 +17,7 @@ export async function registrationRequest(email, name, password) {
     const request = { email: email, name: name, password: password };
     
     // Send the POST request
-    const response = await fetch(`${API}/auth/register`, {
+    const response = await fetch(`/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', },
       body: JSON.stringify(request)
@@ -52,7 +52,7 @@ export async function loginRequest(emailOrName, password) {
     const request = { identifier: emailOrName, password: password, isEmail: true };
     
     // Send the POST request
-    const response = await fetch(`${API}/auth/login`, {
+    const response = await fetch(`/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', },
       credentials: 'include', // Required for cookies
@@ -86,7 +86,7 @@ export async function loginRequest(emailOrName, password) {
 If successful, relevant account data is returned and access is granted to the xhat page! */
 export async function whoAmI() {
   try {
-    const response = await fetch(`${API}/auth/me`, {
+    const response = await fetch(`/api/auth/me`, {
       method: 'GET',
       headers: { 'Accept': 'application/json', },
       credentials: 'include', // Required for cookies
@@ -112,9 +112,9 @@ export async function whoAmI() {
 }
 
 // Test function
-export async function test() {
+export async function testAPI() {
     // test API call
-    const response = await fetch(`${API}/test`, {
+    const response = await fetch(`/api/test`, {
       headers: {
         'Content-Type': 'application/json',
       },

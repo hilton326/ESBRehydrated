@@ -23,7 +23,7 @@ export default function ChatController({account}) {
     // Receiving messages: Use socket.io client to receive new messages
     useEffect(() => {
         // Establish connection with server
-        socketRef.current = io("http://localhost:8080", {
+        socketRef.current = io({
             withCredentials: true // send cookie
         });
 

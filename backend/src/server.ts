@@ -13,22 +13,34 @@ import authRouter from './controllers/AuthController';
 
 // Important services
 import { buildRecentMsgList, getMessageCount, prepareMessage, storeMessage } from './services/MessageService';
-import { verifyToken } from "./services/MiddlewareService"; // middleware function
+import { verifyToken } from "./services/MiddlewareService"; 
 
 // Important objects
-import { ClientMessage }  from './types/MessageTypes';
-import { ServerMessage }  from './types/MessageTypes';
+import { ClientMessage, ServerMessage } from './types/MessageTypes';
 import { AccountInfo } from './types/AccountTypes';
 
 // Initialize the Express application
 const app = express();
 // Set the server port (use 8080 if nothing specified in .env variables)
 const PORT = Number(process.env.SERVER_PORT) ?? 8080;
-// Set the client URL
-const CLIENT = process.env.CLIENT_URL ?? 'http://localhost:5173';
+// // Set the client URL
+// const CLIENT = process.env.CLIENT_URL ?? 'http://localhost:5173';
+
+// CORS control function
+function corsOrigin(origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+    if (!origin) return callback(null, true);
+
+    /* Test the origin of the request:
+    * https?:\/\/ - either "http://" or "https://"
+    * (localhost|127\.0\.0\.1): - either localhost or its IP address representation
+    * \d+ - Finally, any forwarded port number
+    */
+    if (/^https?:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) return callback(null, true);
+    return callback(null, false);
+}
 
 // Enable CORS for cross-origin requests: allows the server to accept requests from different origins
-app.use(cors({ origin: CLIENT, credentials: true }));
+app.use(cors({ origin: corsOrigin, credentials: true }));
 app.use(express.json()); // Allow sending JSON responses
 
 // Allow processing of cookies
@@ -39,7 +51,7 @@ const cookie = require('cookie');
 // Initialize server socket
 const httpServer = http.createServer(app);
 // Also configure CORS for socket.io
-const io = new Server(httpServer, { cors: { origin: CLIENT, credentials: true } });
+const io = new Server(httpServer, { cors: { origin: corsOrigin, credentials: true } });
 
 // Import API routes from controllers
 app.use('/api/auth', authRouter);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { loginRequest } from '../../api/client.js'; // Import the client for API calls
+import { loginRequest, testAPI } from '../../api/client.js'; // Import the client for API calls
 import { useNavigate } from "react-router-dom";
 
 const LoginButton = ({email, password}) => {
@@ -28,6 +28,8 @@ const LoginButton = ({email, password}) => {
         }
         // Attempt to authenticate
         const login = await loginRequest(email, password);
+        const test = await testAPI();
+        console.log(test);
         // If successful, store the token and redirect to main page
         if (login.successful) {
             console.log("Storing token and proceeding to main page");
