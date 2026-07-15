@@ -40,6 +40,8 @@ const RegisterButton = ({email, name, password, confirmPassword}) => {
         if (registration.successful) {
             alert("Account created successfully! Now, log in to start chatting.")
             navigate('/login');
+        } else {
+            alert(String(registration.error));
         }
     }
 

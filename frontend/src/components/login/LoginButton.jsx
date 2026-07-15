@@ -34,6 +34,8 @@ const LoginButton = ({email, password}) => {
         if (login.successful) {
             console.log("Storing token and proceeding to main page");
             navigate('/chat');
+        } else {
+            alert(String(login.error));
         }
     }
 

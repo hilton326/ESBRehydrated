@@ -1,7 +1,5 @@
 // Client.js: Handles server communications
 
-const API = import.meta.env.VITE_API_BASE;
-
 // Reusable error handler
 function handleServerUnreachable(error) {
   console.error("Critical error: " + error)
@@ -32,8 +30,7 @@ export async function registrationRequest(email, name, password) {
 
     if (!response.ok) {
       console.error("Server failed to create account:", response.status, data.error);
-      alert("Error creating account: " + String(data.error));
-      return {successful: false, error: String(data.error)};
+      return {successful: false, error: "Error creating account: " + String(data.error)};
     }
 
     console.log("Account created successfully! ", response.status, data);
@@ -69,12 +66,44 @@ export async function loginRequest(emailOrName, password) {
     // Authentication error
     if (!response.ok) {
       console.error("Failed to authenticate:", response.status, data.error);
-      alert(String(data.error));
-      return {successful: false, token: null, error: String(data.error)};
+      return {successful: false, error: String(data.error)};
     }
 
     // Authentication successful
     console.log("Login successful! ", response.status);
+    return {successful: true, error: null};
+
+  } catch (error) {
+      return handleServerUnreachable(error);
+  }
+}
+
+/* logout: Logs out of the app and returns to login page. 
+* When successful, returns an HTTP only cookie containing a JWT token. */
+export async function logoutRequest() {
+  try {
+    // Send the POST request
+    const response = await fetch(`/api/auth/logout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', },
+      credentials: 'include', // Required for cookies
+    });
+
+    if (!response) {
+      return handleServerUnreachable("No response from server");
+    }
+
+    // Retrieve response
+    const data = await response.json();
+
+    // Logout error
+    if (!response.ok) {
+      console.error("Failed to logout:", response.status, data.error);
+      return {successful: false, error: String(data.error)};
+    }
+
+    // Logout successful
+    console.log("Logout successful. ", response.status);
     return {successful: true, error: null};
 
   } catch (error) {

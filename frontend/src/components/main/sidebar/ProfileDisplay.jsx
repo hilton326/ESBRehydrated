@@ -29,7 +29,7 @@ function ProfileDisplay({account}) {
             </div>
 
             {/* ACTUAL DROPDOWN MENU */}
-            <div>
+            <div id='profile-display'>
                 {dropDownOpen 
                     ? <div> <ProfileDropdown /> </div>
                     : <div> </div>  
