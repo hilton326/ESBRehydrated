@@ -6,3 +6,5 @@ This is a recreation of Fandom's wiki chatrooms, which were removed in the Unite
 * Database: PostgreSQL
 
 The actual chatrooms use Socket.io for websocket based client-server connections.
+
+**WIP. First release expected in August-September 2026.**
