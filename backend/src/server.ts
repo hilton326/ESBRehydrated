@@ -163,7 +163,7 @@ async function main() {
             // Fetch recent messages from database (so the new client may see them)
             try {
                 // Retrieve last 100 messages from the database
-                const recentMessageList = await buildRecentMsgList(100);
+                const recentMessageList = await buildRecentMsgList(500);
                 if (recentMessageList == null) {
                     console.log("Failed to fetch recent messages from the database");
                 } else {

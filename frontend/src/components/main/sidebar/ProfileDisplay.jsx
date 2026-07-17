@@ -5,6 +5,7 @@ import { TiArrowSortedDown } from "react-icons/ti";
 import thinkton from '../../../assets/legothinkton.png'; // image placeholder
 import Image from '../../common/Image.jsx';
 import ProfileDropdown from './ProfileDropdown.jsx';
+import Popup from '../../common/PopupYesNo.jsx';
 
 function ProfileDisplay({account}) {
     // Dropdown controller
@@ -26,10 +27,11 @@ function ProfileDisplay({account}) {
                 <h3 onClick={openProfileDropdown} className="profile-dropdown-button"> 
                     <TiArrowSortedDown /> 
                 </h3>
+                
             </div>
 
             {/* ACTUAL DROPDOWN MENU */}
-            <div id='profile-display'>
+            <div id="profile-display">
                 {dropDownOpen 
                     ? <div> <ProfileDropdown /> </div>
                     : <div> </div>  

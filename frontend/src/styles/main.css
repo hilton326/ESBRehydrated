@@ -27,6 +27,84 @@ body {
     color:red;
 }
 
+.overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.7);
+    z-index: 1000;
+}
+
+.popup {
+    width: 300px;
+    height: 150px;
+
+    background-color: rgb(1, 53, 80);
+    border: 2px solid cyan;
+    border-radius: 4px;
+}
+
+.popup-title {
+    color: cyan;
+    margin-top: 0;
+    margin-left: 3px;
+    padding: 5px;
+    font-size: 15px;
+    font-family: Georgia, 'Times New Roman', Times, serif
+}
+
+.popup-message {
+    color: cyan;
+    margin-top: 0;
+    margin-left: 3px;
+    padding: 5px;
+    font-size: 14px;
+    font-family: Georgia, 'Times New Roman', Times, serif
+}
+
+.popup-button-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 50px;
+}
+
+.popup-button {
+    border-style: solid;
+    border-radius: 10px;
+    background-color: rgb(6, 145, 244);
+    border-width: 2px;
+}
+
+.popup-button-yes {
+    border-style: solid;
+    border-radius: 10px;
+    background-color: rgb(46, 169, 103);
+    border-width: 2px;
+}
+
+.popup-button-yes:hover {
+    background-color:rgb(70, 242, 150);
+    text-decoration: underline;
+    border-color: green;
+}
+
+.popup-button-no {
+    border-style: solid;
+    border-radius: 10px;
+    background-color: rgb(247, 75, 75);
+    border-width: 2px;
+}
+
+.popup-button-no:hover {
+    background-color:rgb(245, 141, 141);
+    text-decoration: underline;
+    border-color: rgb(243, 69, 69);
+}
+
+
 /* ---------------------------------------------------------------------------------------- */
 
 /* Page properties */
@@ -242,7 +320,7 @@ body {
     left: 0;
     width: 100%;
 
-    background-color: blue;
+    background-color: rgb(0, 98, 255);
     z-index: 50;
 }
 
