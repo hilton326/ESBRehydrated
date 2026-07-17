@@ -38,16 +38,30 @@ body {
 }
 
 .popup {
-    width: 300px;
-    height: 150px;
-
-    background-color: rgb(1, 53, 80);
+    width: max(300px, 20vw);
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(1, 53, 80, 0.8);
     border: 2px solid cyan;
     border-radius: 4px;
+    position: relative;
+    color: cyan;
+}
+
+.error-popup {
+    width: max(300px, 20vw);
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(184, 35, 82, 0.8);
+    border: 2px solid rgb(255, 0, 64);
+    border-radius: 4px;
+    position: relative;
+    color: rgb(255, 255, 255);
 }
 
 .popup-title {
-    color: cyan;
     margin-top: 0;
     margin-left: 3px;
     padding: 5px;
@@ -56,7 +70,6 @@ body {
 }
 
 .popup-message {
-    color: cyan;
     margin-top: 0;
     margin-left: 3px;
     padding: 5px;
@@ -69,6 +82,9 @@ body {
     align-items: center;
     justify-content: center;
     gap: 50px;
+
+    margin-top: auto;
+    margin-bottom: 10px;
 }
 
 .popup-button {
@@ -76,6 +92,24 @@ body {
     border-radius: 10px;
     background-color: rgb(6, 145, 244);
     border-width: 2px;
+}
+
+.popup-button:hover {
+    background-color:rgb(3, 92, 234);
+    text-decoration: underline;
+}
+
+.error-popup-button {
+    border-style: solid;
+    border-radius: 10px;
+    background-color: rgb(204, 70, 3);
+    border-width: 2px;
+}
+
+.error-popup-button:hover {
+    background-color:rgb(165, 24, 2);
+    text-decoration: underline;
+    border-color: red;
 }
 
 .popup-button-yes {

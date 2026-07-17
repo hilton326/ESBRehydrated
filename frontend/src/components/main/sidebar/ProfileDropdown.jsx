@@ -36,8 +36,8 @@ function ProfileDropdown() {
                     <PopupYesNo
                         title={"Log Out"} 
                         message={"Are you sure you want to log out of the chat?"} 
-                        onYes={handleLogout} 
-                        onNo={onLogoutClick} 
+                        onYes={() => handleLogout()} 
+                        onNo={() => onLogoutClick()} 
                     /> 
                 </div> 
             ) : (
