@@ -8,9 +8,9 @@ function ProfileDropdown() {
     const [logoutPopupVisible, setLogoutPopupVisible] = useState(false);
 
     // Toggle visibility of the logout prompt
-    const onLogoutClick = useCallback(() => {
-        setLogoutPopupVisible(!logoutPopupVisible);
-    }, [logoutPopupVisible]);
+    const onLogoutClick = useCallback((state) => {
+        setLogoutPopupVisible(state);
+    }, []);
 
     // Handle logging out
     const handleLogout = useCallback(async() => {
@@ -29,7 +29,7 @@ function ProfileDropdown() {
         <div id="profile-dropdown">
             <ul>
                 <li className="button"> Profile Settings </li>
-                <li className="button" onClick={onLogoutClick}> Log Out </li>
+                <li className="button" onClick={() => onLogoutClick(true)}> Log Out </li>
             </ul>
             {logoutPopupVisible ? ( 
                 <div> 
@@ -37,7 +37,7 @@ function ProfileDropdown() {
                         title={"Log Out"} 
                         message={"Are you sure you want to log out of the chat?"} 
                         onYes={() => handleLogout()} 
-                        onNo={() => onLogoutClick()} 
+                        onNo={() => onLogoutClick(false)} 
                     /> 
                 </div> 
             ) : (

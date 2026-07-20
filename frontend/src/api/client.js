@@ -2,8 +2,7 @@
 
 // Reusable error handler
 function handleServerUnreachable(error) {
-  console.error("Critical error: " + error)
-  alert("Server unreachable");
+  console.error("Critical error: " + error);
   return {successful: false, error: "Server unreachable"};
 }
 

@@ -62,9 +62,6 @@ export default function ChatController({account}) {
                 setMembers(prev => {
                     console.log("Members before deletion: ", prev);
                     const update = prev.filter(member => member.id !== deleteMember.id);
-                    
-                    console.log("members after:", update);
-                    console.log("removed?", prev.length !== update.length);
                     return update;
                 });
             }
