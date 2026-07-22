@@ -4,12 +4,13 @@ import http from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import fs from "node:fs/promises";
 import 'dotenv/config'; // Load environment variables from .env file
 import { testConnection, shutdownPool } from './db'; // database connection functions
 
 // Router functions from controllers
 import authRouter from './controllers/AuthController';
-//import profileRouter from './controllers/ProfileController';
+import profileRouter from './controllers/ProfileController';
 
 // Important services
 import { buildRecentMsgList, getMessageCount, prepareMessage, storeMessage } from './services/MessageService';
@@ -55,7 +56,7 @@ const io = new Server(httpServer, { cors: { origin: corsOrigin, credentials: tru
 
 // Import API routes from controllers
 app.use('/api/auth', authRouter);
-//app.use('/api/chat', mainRouter);
+app.use('/api/profile', profileRouter);
 
 // Test API endpoint (GET)
 app.get('/api/test', (req: Request, res: Response) => {

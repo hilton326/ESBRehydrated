@@ -7,11 +7,14 @@ import MessageInput from './messaging/MessageInput.jsx';
 import ProfileDisplay from './sidebar/ProfileDisplay.jsx';
 import MemberList from './sidebar/MemberList.jsx';
 
-export default function ChatController({account}) {
+import thinkton from '../../assets/legothinkton.png'; // image placeholder
+
+export default function ChatController({account, profilePicture}) {
 
     // Get account ID, name, and profile picture of current user
     const id = account?.id ?? 0;
     const name = account?.name ?? 'Thinkton';
+    const picture = profilePicture ?? thinkton;
     
     // Permanent instance of the socket connection
     const socketRef = useRef(null);
@@ -32,7 +35,7 @@ export default function ChatController({account}) {
             if (newMsg) {
                 /* Update message display array:
                 * "prev" represents previous contents of the array. We just add newMsg to it */
-                console.log(newMsg);
+                //console.log(newMsg);
                 setMessages(prev =>  [...prev, newMsg] );
                 //console.log("message #", newMsg.id);
             }
@@ -98,7 +101,7 @@ export default function ChatController({account}) {
                 <TitleBar/>
                 <div id="message-display">
                     <MessageDisplay accountID={id} messageList={messages}/>
-                    <MessageInput onNewMessage={sendNewMsg}/>
+                    <MessageInput onNewMessage={sendNewMsg} profilePicture={picture}/>
                 </div>
             </div>
             <div id="sidebar">

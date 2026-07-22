@@ -8,7 +8,7 @@ import { Account } from '../types/AccountTypes';
 // Services (functions that handle the logic)
 import { checkIfEmailExists, hashPassword, registerAccount } from '../services/RegistrationService'
 import { authenticate, generateToken } from '../services/AuthenticationService'
-import { JwtRequest, verifyToken } from '../services/MiddlewareService';
+import { getTokenFromCookie, verifyToken } from '../services/MiddlewareService';
 // Data Transfer Objects (DTOs)
 import { RegistrationForm } from '../types/AuthTypes';
 import { LoginCredentials } from '../types/AuthTypes';
@@ -68,6 +68,8 @@ router.post('/login', async (req: Request, res: Response) => {
         }
 
         const currentAccount = authenticationResponse.account;
+        console.log("Authentication successful. Generating cookie...");
+        
         // If authentication is successful, generate a login token
         const loginToken = generateToken(currentAccount);
         // Record server error if something goes wrong creating the token
@@ -88,6 +90,7 @@ router.post('/login', async (req: Request, res: Response) => {
         });
 
         // Report success back to client
+        console.log("JWT token and cookie created. Valid for 1 hour.");
         return res.status(200).json({success: true});
 
     } catch (error) {
@@ -113,27 +116,16 @@ router.post('/logout', (req: Request, res: Response) => {
 });
 
 /* whoAmI endpoint: Verify current login session using cookie.
-* Prerequisite for accessing most routes! */
-router.get('/me', async (req: JwtRequest, res: Response) => {
-    // Extract token from cookie
-    const cookieToken = req.cookies?.auth_token;
-    let token = cookieToken ?? null;
-
-    if (!token) {
-        // Fall back to authorization header if cookie not present
-        // // Make sure headers are correct
-        // const authHeader = req.headers['authorization'];
-        // if (!authHeader) return res.status(401).json({error:'Token is missing'});
-        // // Extract token from header
-        // token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
-        // if (!token) return res.status(401).json({error:'Token not received correctly'});
-
-        console.log("The cookie isn't present");
-        return res.status(400).json({error: 'Invalid or expired token'});
+* Prerequisite for accessing the chat page or profile page */
+router.get('/me', async (req: Request, res: Response) => {
+    // Extract token from cookie (if present)
+    const tokenData = await getTokenFromCookie(req);
+    if (!tokenData.token) {
+        return res.status(400).json({error: tokenData.error});
     }
 
     // Call middleware service to validate the JWT token 
-    const authData = await verifyToken(token);
+    const authData = await verifyToken(tokenData.token);
     if (!authData.account) {
         return res.status(400).json({error: authData.error});
     }

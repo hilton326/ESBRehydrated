@@ -139,6 +139,38 @@ export async function whoAmI() {
   }
 }
 
+/* getProfilePicture: Retrieve the user's profile picture from the server. */
+export async function getProfilePicture() {
+  try {
+    const response = await fetch(`http://localhost:8080/api/profile/picture`, {
+      method: 'GET',
+      headers: { 'Accept': 'image/*', },
+      credentials: 'include', // Required for cookies
+    });
+
+    if (!response) {
+      handleServerUnreachable("No response from server");
+      return null;
+    }
+
+    if (!response.ok) {
+      console.log("Failed to retrieve profile picture:", response.status);
+      return null;
+    }
+
+    console.log("Profile picture retrieved: ", response);
+    const blob = await response.blob(); // image bytes
+    const url = URL.createObjectURL(blob); // usable as <img src="...">
+    console.log(url);
+    
+    return { url };
+
+  } catch (error) {
+    handleServerUnreachable(error);
+    return null;
+  }
+}
+
 // Test function
 export async function testAPI() {
     // test API call
