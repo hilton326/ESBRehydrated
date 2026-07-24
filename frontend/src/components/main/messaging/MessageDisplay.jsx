@@ -2,7 +2,31 @@
 import MessageInput from './MessageInput.jsx';
 import Message from './Message.jsx';
 
-export default function MessageDisplay({accountID, messageList}) {
+import { getProfilePicture } from '../../../api/client.js'; // For API calls
+
+export default function MessageDisplay({accountID, messageList, memberList}) {
+    
+    // memberList.forEach(member => {
+    //     let count = 0;
+    //     messageList.forEach(msg => {
+    //         if (msg.senderID === member.id) {
+    //             count++;
+    //         }
+    //     })
+    //     console.log(member.name, "has", count, "messages");
+    // })
+
+    /* Issue: Message data doesn't contain profile picture.
+    We could call the API endpoint with the sender ID? */
+    function getSenderData(msg) {
+        if (!msg) return;
+        let data = memberList?.find(member => member.id === msg.senderID);
+        if (!data) {
+            data = {id: msg.senderID, name: msg.senderName, profilePicture: null};
+        }
+        return data;
+    }
+
     return (
         <div id="message-list">
             {messageList.map((msg) => (
@@ -10,9 +34,7 @@ export default function MessageDisplay({accountID, messageList}) {
                     key={msg.id}
                     msgBody={msg.text}
                     msgType={msg.msgType}  
-                    senderID={msg.senderID} 
-                    senderName={msg.senderName}
-                    senderProfile={msg.profilePicture}   
+                    senderData={getSenderData(msg)}  
                     timestamp={msg.timestamp} 
                     currentUserID={accountID}
                 />

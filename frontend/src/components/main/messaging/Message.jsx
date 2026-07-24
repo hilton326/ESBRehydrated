@@ -13,18 +13,22 @@ import thinkton from '../../../assets/legothinkton.png'; // image placeholder
 /* React Memo will only re-render each Message if its props get changed.
 * This increases performance since the entire message list won't re-render on every sent message.
 */
-const Message = React.memo(function Message({msgBody, msgType, senderID, senderName, senderProfile, timestamp, currentUserID }) {
+const Message = React.memo(function Message({msgBody, msgType, senderData, timestamp, currentUserID}) {
 
-    // Placeholder PFP
-    const picture = thinkton;
     // Convert the timestamp into readable date and time
     // console.log(timestamp);
     // const datetime = timestamp.split('T');
     // const date = datetime[0];
     // const time = datetime[1].slice(0,8);
 
+    const senderInfo = {
+        id: senderData?.id ?? 0,
+        name: senderData?.name ?? "System",
+        picture: senderData?.profilePicture ?? thinkton
+    }
+
     // Distinguish messages the current user sent and those that others send
-    const thisIsMyMessage = (senderID == currentUserID);
+    const thisIsMyMessage = (senderInfo.id == currentUserID);
     // If a message has the same sender as the previous message (msgType = 2), group them together
     const messageIsGrouped = (msgType == 2);
 
@@ -39,9 +43,9 @@ const Message = React.memo(function Message({msgBody, msgType, senderID, senderN
     // Used when you send a message following someone else's
     const myMessage = 
         <div className="message-self" >
-            <Image size={30} image={picture} alt={"user profile picture"} margin={10} />
+            <Image size={30} image={senderInfo.picture} alt={"user profile picture"} margin={10} />
             <div className="msgTextContainer">
-                <p className="msgSenderText"> {senderName} </p>
+                <p className="msgSenderText"> {senderInfo.name} </p>
                 <p className="msgTimestamp"> {timestamp} </p>
                 <p className="msgBodyText"> {msgBody} </p>
             </div>
@@ -56,9 +60,9 @@ const Message = React.memo(function Message({msgBody, msgType, senderID, senderN
     // Used when another person sends a message following yours or someone else's
     const otherMessage =
         <div className="message" >
-            <Image size={30} image={picture} alt={"user profile picture"} margin={10} />
+            <Image size={30} image={senderInfo.picture} alt={"user profile picture"} margin={10} />
             <div className="msgTextContainer">
-                <p className="msgSenderText"> {senderName} </p>
+                <p className="msgSenderText"> {senderInfo.name} </p>
                 <p className="msgTimestamp"> {timestamp} </p>
                 <p className="msgBodyText"> {msgBody} </p>
             </div>

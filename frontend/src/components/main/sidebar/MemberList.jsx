@@ -13,7 +13,7 @@ export default function MemberList({accountID, memberList}) {
                     key={member.id}
                     id={member.id}
                     name={member.name}
-                    picture={member.profilePicture}
+                    pictureData={member.profilePicture}
                     currentUserID={accountID}
                 />
             ))}

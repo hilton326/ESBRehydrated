@@ -11,7 +11,7 @@ import thinkton from '../../assets/legothinkton.png'; // image placeholder
 
 export default function ChatController({account, profilePicture}) {
 
-    // Get account ID, name, and profile picture of current user
+    // Get account ID, name, and profile picture of currently logged in user
     const id = account?.id ?? 0;
     const name = account?.name ?? 'Thinkton';
     const picture = profilePicture ?? thinkton;
@@ -22,6 +22,32 @@ export default function ChatController({account, profilePicture}) {
     const [messages, setMessages] = useState([]);
     // Member array (who is currently in the chat)
     const [members, setMembers] = useState([]);
+
+    // Function to convert profile picture array buffers into a readable format
+    function processPictureData(pictureData) {
+        if (!pictureData) {
+            console.log("pictureData is undefined");
+            return null;
+        }
+        if (!pictureData.mime || !pictureData.data) {
+            console.log("No picture data");
+            return null;
+        }
+
+        try {
+            const {mime, data} = pictureData;
+            const bytes =
+                data instanceof ArrayBuffer ? new Uint8Array(data)
+                : ArrayBuffer.isView(data) ? new Uint8Array(data.buffer)
+                : data; // if already a typed array
+
+            const blob = new Blob([bytes], { type: mime });
+            return URL.createObjectURL(blob);
+        } catch (error) {
+            console.error("Error processing picture data: ", error);
+            return null;
+        }
+    }
 
     // Receiving messages: Use socket.io client to receive new messages
     useEffect(() => {
@@ -47,17 +73,27 @@ export default function ChatController({account, profilePicture}) {
             * "clients:remove" = Signal that someone left; server sends matching info to be removed
         */
         socketRef.current.on("clients:init", (memberList) => {
-            if (memberList) {
-                console.log("Member list initialized:", memberList);
-                setMembers(memberList);
-            }
+            if (!memberList) return;
+            const processedMembers = memberList.map((member) => ({
+                id: member.id,
+                name: member.name, 
+                profilePicture: processPictureData(member.profilePicture)
+            }));
+            setMembers(processedMembers);
         });
+
         socketRef.current.on("clients:add", (newMember) => {
-            if (newMember) {
-                console.log("New member:", newMember);
-                setMembers(prev => [...prev, newMember] );
-            }
+            if (!newMember) return;
+            const addedMember = {
+                id: newMember.id,
+                name: newMember.name,
+                profilePicture: processPictureData(newMember.profilePicture)
+            };
+
+            console.log("New member:", addedMember);
+            setMembers(prev => [...prev, addedMember] );
         });
+        
         socketRef.current.on("clients:remove", (deleteMember) => {
             if (deleteMember) {
                 console.log("Member to delete:", deleteMember);
@@ -100,12 +136,12 @@ export default function ChatController({account, profilePicture}) {
             <div id="main">
                 <TitleBar/>
                 <div id="message-display">
-                    <MessageDisplay accountID={id} messageList={messages}/>
+                    <MessageDisplay accountID={id} messageList={messages} memberList={members} />
                     <MessageInput onNewMessage={sendNewMsg} profilePicture={picture}/>
                 </div>
             </div>
             <div id="sidebar">
-                <ProfileDisplay account={account}/>
+                <ProfileDisplay account={account} profilePicture={picture}/>
                 <MemberList accountID={id} memberList={members} /> 
             </div>
         </div> 

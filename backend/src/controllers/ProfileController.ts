@@ -25,7 +25,7 @@ router.get('/picture', async (req: Request, res: Response) => {
     }
 
     // Retrieve the profile picture
-    const profilePicture = getProfilePicture(authData.account.id);
+    const profilePicture = await getProfilePicture(authData.account.id);
     console.log(profilePicture);
 
     // Send it to the client
