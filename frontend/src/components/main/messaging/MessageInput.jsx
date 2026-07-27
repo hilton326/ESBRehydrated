@@ -8,7 +8,6 @@ export default function MessageInput({onNewMessage, profilePicture}) {
     const [newMsg, setNewMsg] = useState('');
 
     const picture = profilePicture.url ?? thinkton;
-    console.log(picture);
 
     // On ENTER press, forward message up to ChatController to send
     const handleSend = (msg) => {

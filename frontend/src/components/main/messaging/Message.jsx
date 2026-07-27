@@ -2,13 +2,14 @@ import React from 'react';
 import Image from '../../common/Image.jsx';
 import thinkton from '../../../assets/legothinkton.png'; // image placeholder
 
+import getProfilePicture from '../../../api/client.js';
+
 /* Message component props:
-* sender = sender of message
 * msgBody = message text
-* timestamp = time message was sent by server
-* senderProfile = profile picture of sender
-* prevSender = sender of the previous message; used for deciding what CSS to use
-* currentUser = currently logged in user; again, used for appearance */
+* msgType = used for deciding what CSS to use
+* senderData = sender of message (their id, name and picture)
+* timestamp = when message was received
+* currentUserID = currently logged in user; again, used for appearance */
 
 /* React Memo will only re-render each Message if its props get changed.
 * This increases performance since the entire message list won't re-render on every sent message.

@@ -18,10 +18,11 @@ export default function MessageDisplay({accountID, messageList, memberList}) {
 
     /* Issue: Message data doesn't contain profile picture.
     We could call the API endpoint with the sender ID? */
-    function getSenderData(msg) {
+   function getSenderData(msg) {
         if (!msg) return;
         let data = memberList?.find(member => member.id === msg.senderID);
         if (!data) {
+            //const picture = await getProfilePicture(msg.senderID);
             data = {id: msg.senderID, name: msg.senderName, profilePicture: null};
         }
         return data;

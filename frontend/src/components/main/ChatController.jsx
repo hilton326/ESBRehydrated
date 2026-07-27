@@ -7,6 +7,8 @@ import MessageInput from './messaging/MessageInput.jsx';
 import ProfileDisplay from './sidebar/ProfileDisplay.jsx';
 import MemberList from './sidebar/MemberList.jsx';
 
+import processImageData from '../../hooks/useBlob.js';
+
 import thinkton from '../../assets/legothinkton.png'; // image placeholder
 
 export default function ChatController({account, profilePicture}) {
@@ -22,32 +24,6 @@ export default function ChatController({account, profilePicture}) {
     const [messages, setMessages] = useState([]);
     // Member array (who is currently in the chat)
     const [members, setMembers] = useState([]);
-
-    // Function to convert profile picture array buffers into a readable format
-    function processPictureData(pictureData) {
-        if (!pictureData) {
-            console.log("pictureData is undefined");
-            return null;
-        }
-        if (!pictureData.mime || !pictureData.data) {
-            console.log("No picture data");
-            return null;
-        }
-
-        try {
-            const {mime, data} = pictureData;
-            const bytes =
-                data instanceof ArrayBuffer ? new Uint8Array(data)
-                : ArrayBuffer.isView(data) ? new Uint8Array(data.buffer)
-                : data; // if already a typed array
-
-            const blob = new Blob([bytes], { type: mime });
-            return URL.createObjectURL(blob);
-        } catch (error) {
-            console.error("Error processing picture data: ", error);
-            return null;
-        }
-    }
 
     // Receiving messages: Use socket.io client to receive new messages
     useEffect(() => {
@@ -77,7 +53,7 @@ export default function ChatController({account, profilePicture}) {
             const processedMembers = memberList.map((member) => ({
                 id: member.id,
                 name: member.name, 
-                profilePicture: processPictureData(member.profilePicture)
+                profilePicture: processImageData(member.profilePicture) // Convert raw data into image URL
             }));
             setMembers(processedMembers);
         });
@@ -87,7 +63,7 @@ export default function ChatController({account, profilePicture}) {
             const addedMember = {
                 id: newMember.id,
                 name: newMember.name,
-                profilePicture: processPictureData(newMember.profilePicture)
+                profilePicture: processImageData(newMember.profilePicture) // Convert raw data into image URL
             };
 
             console.log("New member:", addedMember);
@@ -96,11 +72,12 @@ export default function ChatController({account, profilePicture}) {
         
         socketRef.current.on("clients:remove", (deleteMember) => {
             if (deleteMember) {
-                console.log("Member to delete:", deleteMember);
+                console.log("Member to delete from server:", deleteMember);
                 // Filter out members that match the info returned from the server
                 setMembers(prev => {
                     console.log("Members before deletion: ", prev);
                     const update = prev.filter(member => member.id !== deleteMember.id);
+                    console.log("Members after deletion: ", update);
                     return update;
                 });
             }

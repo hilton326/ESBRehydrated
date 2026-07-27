@@ -108,20 +108,20 @@ async function main() {
                 const cookieHeader = socket.handshake.headers.cookie;
                 if (!cookieHeader) {
                     console.log("Unauthorized: cookie not present");
-                    return;
+                    return next(new Error("Unauthorized"));
                 }
                 // Retrieve JWT token from cookie
                 const cookies = cookie.parseCookie(cookieHeader);
                 const token = cookies["auth_token"];
                 if (!token) {
                     console.log("Unauthorized: token not present");
-                    return;
+                    return next(new Error("Unauthorized"));
                 }
                 // Call the middleware service to verify the token
                 const authData = await verifyToken(token);
                 if (!authData.account) {
                     console.log("Unauthorized: invalid token");
-                    return;
+                    return next(new Error("Unauthorized"));
                 }
                 // Attach authenticated user and continue
                 socket.data.client = {account: authData.account, profilePicture: null}; 
@@ -129,7 +129,7 @@ async function main() {
         
             } catch (error) {
                 console.error("Unauthorized: invalid token;", error);
-                return;
+                return next(new Error("Unauthorized"));
             }
 
             // after authenticating, attempt to get profile picture data
@@ -197,11 +197,10 @@ async function main() {
                             continue;
                         }
                         // Check if previous sender is defined
-                        let psender = 0;
                         if (msg.prevSender) {
-                            psender = msg.prevSender.id;
+                            prevSenderID = msg.prevSender.id;
                         }
-                        const msgFromDB: ServerMessage = prepareMessage(msg.id, msg.text, socket.id, msg.sender.id, msg.sender.name, msg.sender.profilePicture ?? '', psender, msg.timestamp);
+                        const msgFromDB: ServerMessage = prepareMessage(msg.id, msg.text, socket.id, msg.sender.id, msg.sender.name, msg.sender.profilePicture ?? '', prevSenderID, msg.timestamp);
                         socket.emit("message", msgFromDB);
                     }
                     console.log("Recent messages sent over");
@@ -221,9 +220,7 @@ async function main() {
                 if (!messageStored) {
                     console.log("Failed to store message #", msgCounter, "in the database.");
                 }
-
-            // Reset previous sender ID to 0
-            prevSenderID = 0;
+            prevSenderID = 0; // Reset previous sender ID to 0 (System's internal ID is 0)
             
             /* *****************************************************************
             * On new message
@@ -268,7 +265,8 @@ async function main() {
 
                 // Delete client from list and signal clients to update their displays
                 clientList = clientList.filter(client => client.id !== currentClient.account.id);
-                customIoEmit("clients:remove", currentClient, "");
+                const clientToRemove = {id: currentClient.account.id, name: currentClient.account.name, profilePicture: currentClient.profilePicture ?? null};
+                customIoEmit("clients:remove", clientToRemove, "");
                 console.log(currentClient.account.name, "has left.", clientList.length, "clients currently connected.");
 
                 msgCounter++;
@@ -291,8 +289,8 @@ async function main() {
         * SERVER SHUTDOWN
         * Handle shutdown of the server */
         const shutdown = async () => {
-            // Make sure shutdown isn't triggered more than once
-            if (shuttingDown) return;
+            if (!server) return; // Ensure there is a server running
+            if (shuttingDown) return; // Ensure shutdown isn't triggered more than once
             shuttingDown = true;
             console.log('Shutting down server...');
             try {
@@ -319,5 +317,4 @@ async function main() {
     }
 };
 
-// call with "npx ts-node src/server.ts" in terminal
-main();
+main(); // call with "npx ts-node src/server.ts" in terminal

@@ -29,6 +29,7 @@ router.get('/picture', async (req: Request, res: Response) => {
     console.log(profilePicture);
 
     // Send it to the client
+    // Note: Change cache controls
     return res.sendFile(profilePicture, { headers: { "Cache-Control": "private, max-age=3600" } }, (err) => {
         if (err) console.error("sendFile error:", err);
     });
