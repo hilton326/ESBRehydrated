@@ -7,11 +7,16 @@ import MessageInput from './messaging/MessageInput.jsx';
 import ProfileDisplay from './sidebar/ProfileDisplay.jsx';
 import MemberList from './sidebar/MemberList.jsx';
 
-export default function ChatController({account}) {
+import { processImageData } from '../../hooks/useBlob.js';
 
-    // Get account ID, name, and profile picture of current user
+import thinkton from '../../assets/legothinkton.png'; // image placeholder
+
+export default function ChatController({account, profilePicture}) {
+
+    // Get account ID, name, and profile picture of currently logged in user
     const id = account?.id ?? 0;
     const name = account?.name ?? 'Thinkton';
+    const picture = profilePicture ?? thinkton;
     
     // Permanent instance of the socket connection
     const socketRef = useRef(null);
@@ -32,7 +37,7 @@ export default function ChatController({account}) {
             if (newMsg) {
                 /* Update message display array:
                 * "prev" represents previous contents of the array. We just add newMsg to it */
-                console.log(newMsg);
+                //console.log(newMsg);
                 setMessages(prev =>  [...prev, newMsg] );
                 //console.log("message #", newMsg.id);
             }
@@ -44,27 +49,35 @@ export default function ChatController({account}) {
             * "clients:remove" = Signal that someone left; server sends matching info to be removed
         */
         socketRef.current.on("clients:init", (memberList) => {
-            if (memberList) {
-                console.log("Member list initialized:", memberList);
-                setMembers(memberList);
-            }
+            if (!memberList) return;
+            const processedMembers = memberList.map((member) => ({
+                id: member.id,
+                name: member.name, 
+                profilePicture: processImageData(member.profilePicture) // Convert raw data into image URL
+            }));
+            setMembers(processedMembers);
         });
+
         socketRef.current.on("clients:add", (newMember) => {
-            if (newMember) {
-                console.log("New member:", newMember);
-                setMembers(prev => [...prev, newMember] );
-            }
+            if (!newMember) return;
+            const addedMember = {
+                id: newMember.id,
+                name: newMember.name,
+                profilePicture: processImageData(newMember.profilePicture) // Convert raw data into image URL
+            };
+
+            console.log("New member:", addedMember);
+            setMembers(prev => [...prev, addedMember] );
         });
+        
         socketRef.current.on("clients:remove", (deleteMember) => {
             if (deleteMember) {
-                console.log("Member to delete:", deleteMember);
+                console.log("Member to delete from server:", deleteMember);
                 // Filter out members that match the info returned from the server
                 setMembers(prev => {
                     console.log("Members before deletion: ", prev);
                     const update = prev.filter(member => member.id !== deleteMember.id);
-                    
-                    console.log("members after:", update);
-                    console.log("removed?", prev.length !== update.length);
+                    console.log("Members after deletion: ", update);
                     return update;
                 });
             }
@@ -100,12 +113,12 @@ export default function ChatController({account}) {
             <div id="main">
                 <TitleBar/>
                 <div id="message-display">
-                    <MessageDisplay accountID={id} messageList={messages}/>
-                    <MessageInput onNewMessage={sendNewMsg}/>
+                    <MessageDisplay accountID={id} messageList={messages} memberList={members} />
+                    <MessageInput onNewMessage={sendNewMsg} profilePicture={picture}/>
                 </div>
             </div>
             <div id="sidebar">
-                <ProfileDisplay account={account}/>
+                <ProfileDisplay account={account} profilePicture={picture}/>
                 <MemberList accountID={id} memberList={members} /> 
             </div>
         </div> 

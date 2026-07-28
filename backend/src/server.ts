@@ -4,16 +4,18 @@ import http from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import fs from "node:fs/promises";
 import 'dotenv/config'; // Load environment variables from .env file
 import { testConnection, shutdownPool } from './db'; // database connection functions
 
 // Router functions from controllers
 import authRouter from './controllers/AuthController';
-//import profileRouter from './controllers/ProfileController';
+import profileRouter from './controllers/ProfileController';
 
 // Important services
 import { buildRecentMsgList, getMessageCount, prepareMessage, storeMessage } from './services/MessageService';
 import { verifyToken } from "./services/MiddlewareService"; 
+import { getProfilePicture, createBuffer } from "./services/ProfileService";
 
 // Important objects
 import { ClientMessage, ServerMessage } from './types/MessageTypes';
@@ -55,7 +57,7 @@ const io = new Server(httpServer, { cors: { origin: corsOrigin, credentials: tru
 
 // Import API routes from controllers
 app.use('/api/auth', authRouter);
-//app.use('/api/chat', mainRouter);
+app.use('/api/profile', profileRouter);
 
 // Test API endpoint (GET)
 app.get('/api/test', (req: Request, res: Response) => {
@@ -106,28 +108,41 @@ async function main() {
                 const cookieHeader = socket.handshake.headers.cookie;
                 if (!cookieHeader) {
                     console.log("Unauthorized: cookie not present");
-                    return;
+                    return next(new Error("Unauthorized"));
                 }
                 // Retrieve JWT token from cookie
                 const cookies = cookie.parseCookie(cookieHeader);
                 const token = cookies["auth_token"];
                 if (!token) {
                     console.log("Unauthorized: token not present");
-                    return;
+                    return next(new Error("Unauthorized"));
                 }
                 // Call the middleware service to verify the token
                 const authData = await verifyToken(token);
                 if (!authData.account) {
                     console.log("Unauthorized: invalid token");
-                    return;
+                    return next(new Error("Unauthorized"));
                 }
                 // Attach authenticated user and continue
-                socket.data.client = authData.account; 
-                console.log("Account", socket.data.client.id, "is verified");
-                return next();
+                socket.data.client = {account: authData.account, profilePicture: null}; 
+                console.log("Account", socket.data.client.account.id, "is verified");
+        
             } catch (error) {
                 console.error("Unauthorized: invalid token;", error);
-                return;
+                return next(new Error("Unauthorized"));
+            }
+
+            // after authenticating, attempt to get profile picture data
+            try {
+                const profilePicPath = await getProfilePicture(socket.data.client.account.id);
+                const buffer = await createBuffer(profilePicPath);
+                socket.data.client.profilePicture = {mime: "image/png", data: buffer};
+                console.log("Profile picture data retrieved: ", socket.data.client.profilePicture);
+                return next();
+
+            } catch (error) {
+                console.error("Couldn't get profile picture data: ", error);
+                return next();
             }
         });
 
@@ -139,31 +154,32 @@ async function main() {
             // Verify that the new client is authorized (has an active login session)
             const currentClient = socket.data.client;
             if (!currentClient) return;
-            console.log("New client", currentClient.name, "authorized.");
+            console.log("New client", currentClient.account.name, "authorized.");
 
             /* Make sure the client is not already present before adding it to the list.
             * This stops the client from occasionally being added twice when they refresh their chat. */
             let notPresent = true;
             clientList.forEach(client => {
-                if (client.id === currentClient.id) {
-                    console.log("Connection Notice:", currentClient.name, "is already in the list.");
+                if (client.id === currentClient.account.id) {
+                    console.log("Connection Notice:", currentClient.account.name, "is already in the list.");
                     notPresent = false;
                 }
             })
             if (!notPresent) return;
 
+            const newClientData = {id: currentClient.account.id, name: currentClient.account.name, profilePicture: currentClient.profilePicture ?? null};
             // Add the new client to the list
-            clientList.push({id: currentClient.id, name: currentClient.name, profilePicture: currentClient.profilePicture ?? ''});
+            clientList.push(newClientData);
             // Broadcast the new client's information to all other clients
-            customIoEmit("clients:add", currentClient, socket.id);
+            customIoEmit("clients:add", newClientData, socket.id);
             // Send entire list to new client
             socket.emit("clients:init", clientList);
-            console.log(socket.data.client.name, "has joined.", clientList.length, "clients currently connected.");
+            console.log(currentClient.account.name, "has joined.", clientList.length, "clients currently connected.");
             
             // Fetch recent messages from database (so the new client may see them)
             try {
                 // Retrieve last 100 messages from the database
-                const recentMessageList = await buildRecentMsgList(100);
+                const recentMessageList = await buildRecentMsgList(500);
                 if (recentMessageList == null) {
                     console.log("Failed to fetch recent messages from the database");
                 } else {
@@ -181,11 +197,10 @@ async function main() {
                             continue;
                         }
                         // Check if previous sender is defined
-                        let psender = 0;
                         if (msg.prevSender) {
-                            psender = msg.prevSender.id;
+                            prevSenderID = msg.prevSender.id;
                         }
-                        const msgFromDB: ServerMessage = prepareMessage(msg.id, msg.text, socket.id, msg.sender.id, msg.sender.name, msg.sender.profilePicture ?? '', psender, msg.timestamp);
+                        const msgFromDB: ServerMessage = prepareMessage(msg.id, msg.text, socket.id, msg.sender.id, msg.sender.name, msg.sender.profilePicture ?? '', prevSenderID, msg.timestamp);
                         socket.emit("message", msgFromDB);
                     }
                     console.log("Recent messages sent over");
@@ -196,7 +211,7 @@ async function main() {
 
             // Broadcast a system message to alert everyone of the new person joining
             msgCounter++;
-            const joinText = "~ " + currentClient.name + " has entered the Krusty Krab. ~";
+            const joinText = "~ " + currentClient.account.name + " has entered the Krusty Krab. ~";
             const joinMsg: ServerMessage = prepareMessage(msgCounter, joinText, socket.id, 0, "System", "", prevSenderID, String(new Date()));
             io.emit("message", joinMsg);
 
@@ -205,9 +220,7 @@ async function main() {
                 if (!messageStored) {
                     console.log("Failed to store message #", msgCounter, "in the database.");
                 }
-
-            // Reset previous sender ID to 0
-            prevSenderID = 0;
+            prevSenderID = 0; // Reset previous sender ID to 0 (System's internal ID is 0)
             
             /* *****************************************************************
             * On new message
@@ -221,10 +234,12 @@ async function main() {
                     } else {
                         // Increment message ID counter
                         msgCounter++;
-                        console.log("Message received:", msg.text, "from", currentClient.name);
+                        console.log("Message received:", msg.text, "from", currentClient.account.name);
 
                         // Broadcast message to all clients (including sender)
-                        const message: ServerMessage = prepareMessage(msgCounter, msg.text, socket.id, currentClient.id, currentClient.name, currentClient.profilePicture ?? '', prevSenderID, String(new Date()));
+                        const message: ServerMessage = prepareMessage(
+                            msgCounter, msg.text, socket.id, currentClient.account.id, currentClient.account.name, currentClient.profilePicture ?? null, prevSenderID, String(new Date())
+                        );
                         io.emit("message", message);
 
                         // Add message to database
@@ -233,7 +248,7 @@ async function main() {
                                 console.log("Failed to store message #", msgCounter, "in the database.");
                             }
                         // Update previous sender info to use for the next message
-                        prevSenderID = currentClient.id ?? msg.senderID;
+                        prevSenderID = currentClient.account.id ?? msg.senderID;
                     }
                 } catch (error) {
                     console.error("Unexpected error while sending message: ", error);
@@ -246,16 +261,17 @@ async function main() {
             socket.on('disconnect', async () => {
                 if (!currentClient) return;
                 if (shuttingDown) return;
-                console.log(currentClient.name, "has requested to leave.");
+                console.log(currentClient.account.name, "has requested to leave.");
 
                 // Delete client from list and signal clients to update their displays
-                clientList = clientList.filter(client => client.id !== currentClient.id);
-                customIoEmit("clients:remove", currentClient, "");
-                console.log(socket.data.client.name, "has left.", clientList.length, "clients currently connected.");
+                clientList = clientList.filter(client => client.id !== currentClient.account.id);
+                const clientToRemove = {id: currentClient.account.id, name: currentClient.account.name, profilePicture: currentClient.profilePicture ?? null};
+                customIoEmit("clients:remove", clientToRemove, "");
+                console.log(currentClient.account.name, "has left.", clientList.length, "clients currently connected.");
 
                 msgCounter++;
                 // Broadcast a system message to alert everyone of the new person leaving
-                const leaveText = "~ " + currentClient.name + " has left the Krusty Krab. ~";
+                const leaveText = "~ " + currentClient.account.name + " has left the Krusty Krab. ~";
                 const leaveMsg: ServerMessage = prepareMessage(msgCounter, leaveText, socket.id, 0, "System", "", prevSenderID, String(new Date()));
                 io.emit("message", leaveMsg);
 
@@ -273,8 +289,8 @@ async function main() {
         * SERVER SHUTDOWN
         * Handle shutdown of the server */
         const shutdown = async () => {
-            // Make sure shutdown isn't triggered more than once
-            if (shuttingDown) return;
+            if (!server) return; // Ensure there is a server running
+            if (shuttingDown) return; // Ensure shutdown isn't triggered more than once
             shuttingDown = true;
             console.log('Shutting down server...');
             try {
@@ -301,5 +317,4 @@ async function main() {
     }
 };
 
-// call with "npx ts-node src/server.ts" in terminal
-main();
+main(); // call with "npx ts-node src/server.ts" in terminal

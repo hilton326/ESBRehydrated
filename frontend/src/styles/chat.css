@@ -1,0 +1,189 @@
+:root {
+    --bg: rgb(0, 56, 71);
+    --panel: rgb(1, 53, 80);
+    --panel-2: rgb(0, 98, 255);
+    --aqua: aqua;
+    --white: #fff;
+    --blue: rgb(0, 81, 255);
+    --red: red;
+}
+
+/* =========================
+   Base / Page background
+   ========================= */
+body {
+    background-color: var(--bg);
+
+    /* Layout */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Page container */
+#page {
+    /* Layout */
+    display: flex;
+    flex-direction: row;
+    width: 90vw;
+    height: 90vh;
+    padding: 5px;
+
+    /* Cosmetic */
+    border-style: dotted;
+    border-color: var(--aqua);
+    border-width: 4px;
+}
+
+/* General element styling */
+.chat {
+    /* Cosmetic */
+    border-radius: 4px;
+}
+
+/* =========================
+   Main area (80%)
+   ========================= */
+#main {
+    /* Layout */
+    width: 80%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Title bar */
+#titlebar {
+    /* Layout */
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 70px;
+    gap: 16px;
+
+    /* Cosmetic */
+    background-color: var(--panel);
+    border-style: solid;
+    border-color: var(--white);
+    border-width: 1px;
+    border-radius: 4px;
+    color: var(--aqua);
+}
+
+/* Message display container */
+#message-display {
+    /* Layout */
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+
+    margin-top: 5px;
+}
+
+/* =========================
+   Sidebar area (20%)
+   ========================= */
+#sidebar {
+    /* Layout */
+    width: 20%;
+    height: 99%;
+    display: flex;
+    flex-direction: column;
+
+    /* Cosmetic */
+    border-style: dotted;
+    background-color: var(--panel);
+}
+
+/* =========================
+   Profile display block
+   ========================= */
+#profile-display {
+    /* Layout */
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+    position: relative;
+
+    /* Cosmetic */
+    border-style: solid;
+    border-color: var(--white);
+    border-width: 1px;
+    border-radius: 4px;
+    color: var(--aqua);
+}
+
+/* User settings menu opener */
+.profile-dropdown-button {
+    cursor: pointer;
+}
+.profile-dropdown-button:hover {
+    color: var(--red);
+}
+
+/* =========================
+   Dropdown menu
+   ========================= */
+#profile-dropdown {
+    /* Layout */
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    margin-top: 5px;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 50;
+
+    /* Cosmetic */
+    color: var(--aqua);
+    background-color: var(--panel-2);
+}
+
+/* =========================
+   Member list
+   ========================= */
+#member-list {
+    /* Layout */
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    z-index: 0;
+
+    /* Cosmetic */
+    color: white;
+    font-size: 13px;
+}
+
+/* Each display name in member list */
+#member-info {
+    /* Layout */
+    display: flex;
+    margin-left: 2px;
+    width: 99%;
+    position: relative;
+
+    /* Cosmetic */
+    color: rgb(226, 249, 252);
+    font-weight: bold;
+}
+
+/* Your own display name in the member list */
+#member-info-self {
+    /* Layout */
+    display: flex;
+    margin-left: 2px;
+    width: 99%;
+    position: relative;
+
+    /* Cosmetic */
+    color: var(--aqua);
+    font-weight: bold;
+}
