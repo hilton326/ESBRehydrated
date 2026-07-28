@@ -1,6 +1,6 @@
 
 // Function to convert profile picture array buffers into a readable format
-export default function processImageData(pictureData) {
+export function processImageData(pictureData) {
         // Don't proceed if any of the data is null or not in the expected format (mime type and array buffer)
         if (!pictureData) {
             console.log("pictureData is undefined");

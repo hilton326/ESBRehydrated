@@ -7,7 +7,7 @@ import MessageInput from './messaging/MessageInput.jsx';
 import ProfileDisplay from './sidebar/ProfileDisplay.jsx';
 import MemberList from './sidebar/MemberList.jsx';
 
-import processImageData from '../../hooks/useBlob.js';
+import { processImageData } from '../../hooks/useBlob.js';
 
 import thinkton from '../../assets/legothinkton.png'; // image placeholder
 
