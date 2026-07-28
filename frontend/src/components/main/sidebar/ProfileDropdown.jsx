@@ -1,15 +1,28 @@
 import { useState, useCallback } from 'react';
 import { logoutRequest } from '../../../api/client.js'; // Import the client for API calls
 import { useNavigate } from "react-router-dom";
+import ProfileSettingsMenu from '../settings/ProfileSettingsMenu.jsx';
+// import AccountSettingsMenu from '../settings/AccountSettingsMenu.jsx';
 import PopupYesNo from '../../common/PopupYesNo.jsx';
+import thinkton from '../../../assets/legothinkton.png'; // image placeholder
 
-function ProfileDropdown() {
+function ProfileDropdown({account, profilePicture}) {
     const navigate = useNavigate();
+    const [profileSettingsVisible, setProfileSettingsVisible] = useState(false);
+    const [accountSettingsVisible, setAccountSettingsVisible] = useState(false);
     const [logoutPopupVisible, setLogoutPopupVisible] = useState(false);
 
-    // Toggle visibility of the logout prompt
-    const onLogoutClick = useCallback((state) => {
-        setLogoutPopupVisible(state);
+    const accountInfo = {
+        id: account?.id ?? 0,
+        name: account?.name ?? "Thinkton",
+        profilePicture: profilePicture ?? thinkton
+    }
+
+    // MenuController: Takes in a useState function and a state to set
+    // So, any of the menu states can be toggled using just this function
+    const menuController = useCallback((func, state) => {
+        console.log(func, state);
+        func(state);
     }, []);
 
     // Handle logging out
@@ -28,20 +41,35 @@ function ProfileDropdown() {
     return (
         <div id="profile-dropdown">
             <ul>
-                <li className="button"> Profile Settings </li>
-                <li className="button" onClick={() => onLogoutClick(true)}> Log Out </li>
+                <li className="button"> Walk Gary </li>
+                <li className="button" onClick={() => menuController(setProfileSettingsVisible, true)}> Profile Settings </li>
+                <li className="button" onClick={() => menuController(setAccountSettingsVisible, true)}> Account Settings </li>
+                <li className="button" onClick={() => menuController(setLogoutPopupVisible, true)}> Log Out </li>
             </ul>
-            {logoutPopupVisible ? ( 
-                <div> 
-                    <PopupYesNo
-                        title={"Log Out"} 
-                        message={"Are you sure you want to log out of the chat?"} 
-                        onYes={() => handleLogout()} 
-                        onNo={() => onLogoutClick(false)} 
-                    /> 
-                </div> 
-            ) : (
-                <div> </div>
+
+            {profileSettingsVisible && ( 
+                <ProfileSettingsMenu
+                    accountID={accountInfo.id}
+                    displayName={accountInfo.name}
+                    profilePicture={accountInfo.profilePicture}
+                    onClose={() => menuController(setProfileSettingsVisible, false)} 
+                /> 
+            )}
+
+            {/* {accountSettingsVisible && ( 
+                <AccountSettingsMenu
+                    accountID={account.id}
+                    onClose={() => menuController(setAccountSettingsVisible, false)} 
+                /> 
+            )} */}
+
+            {logoutPopupVisible && ( 
+                <PopupYesNo
+                    title={"Log Out"} 
+                    message={"Are you sure you want to log out of the chat?"} 
+                    onYes={() => handleLogout()} 
+                    onNo={() => menuController(setLogoutPopupVisible, false)} 
+                /> 
             )}
         
         </div>

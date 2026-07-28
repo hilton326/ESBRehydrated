@@ -38,22 +38,22 @@ const Message = React.memo(function Message({msgBody, msgType, senderData, times
 
     if (isSystem) {
         return (
-            <div className="message-system">
-                <div className="msgTextContainer">
-                    <p className="systemMsgText"> {msgBody} </p>
+            <div className="system-message">
+                <div className="msg-text-container">
+                    <p className="system-msg-text"> {msgBody} </p>
                 </div>
             </div>
         );    
     }
 
     return (
-		<div className={`${isMine ? "message-self" : "message"}`}> 
+		<div className={`${isMine ? "my-message" : "message"}`}> 
         {/* Note to self: AND is used as shorthand for a ternary operator here */}
 			{!isGrouped && (<Image size={30} image={senderInfo.picture} alt={"user profile picture"} margin={10}/>)} 
-			<div className="msgTextContainer">
-				{!isGrouped && (<p className="msgSenderText"> {senderInfo.name} </p>)}
-				{!isGrouped && (<p className="msgTimestamp"> {timestamp} </p>)}
-                <p className={`${isGrouped ? "msgBodyTextGrouped" : "msgBodyText"}`}> {msgBody} </p>
+			<div className="msg-text-container">
+				{!isGrouped && (<p className="msg-sender-text"> {senderInfo.name} </p>)}
+				{!isGrouped && (<p className="msg-timestamp"> {timestamp} </p>)}
+                <p className={`${isGrouped ? "msg-body-text-grouped" : "msg-body-text"}`}> {msgBody} </p>
 			</div>
         </div>
     );

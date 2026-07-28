@@ -33,7 +33,7 @@ function ProfileDisplay({account, profilePicture}) {
             {/* ACTUAL DROPDOWN MENU */}
             <div id="profile-display">
                 {dropDownOpen 
-                    ? <div> <ProfileDropdown /> </div>
+                    ? <div> <ProfileDropdown account={account} profilePicture={pfp} /> </div>
                     : <div> </div>  
                 }
             </div>

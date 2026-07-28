@@ -26,7 +26,7 @@
 }
 
 /* Individual message (sent) */
-.message-self {
+.my-message {
     display: flex;
     flex-direction: row;
     width: 100%;
@@ -37,7 +37,7 @@
 }
 
 /* System message */
-.message-system {
+.system-message {
     display: flex;
     flex-direction: row;
     text-align: center;
@@ -49,30 +49,30 @@
 }
 
 /* Message text fields */
-.msgTextContainer {
+.msg-text-container {
     display: flex;
     flex-direction: column;
     min-width: 0;
     flex: 1 1 0;
     padding-right: 15px;
 }
-.msgSenderText {
+.msg-sender-text {
     font-weight: bold;
     font-size: 13px;
     margin-bottom: 3px;
 }
-.msgBodyText {
+.msg-body-text {
     font-size: 12px;
     margin-top: 3px;
     margin-bottom: 3px;
 }
-.msgBodyTextGrouped {
+.msg-body-text-grouped {
     font-size: 12px;
     margin-left: 50px;
     margin-top: 0;
     margin-bottom: 3px;
 }
-.msgTimestamp {
+.msg-timestamp {
     position: absolute;
     top: 0;
     right: 0;
@@ -80,7 +80,7 @@
     padding-right: 15px;
     font-weight: bold;
 }
-.systemMsgText {
+.system-msg-text {
     font-weight: bold;
     font-size: 13px;
     margin-bottom: 6px;
