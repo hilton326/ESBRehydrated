@@ -10,12 +10,12 @@ import { testConnection, shutdownPool } from './db'; // database connection func
 
 // Router functions from controllers
 import authRouter from './controllers/AuthController';
-import profileRouter from './controllers/ProfileController';
+import accountRouter from './controllers/AccountController';
 
 // Important services
 import { buildRecentMsgList, getMessageCount, prepareMessage, storeMessage } from './services/MessageService';
 import { verifyToken } from "./services/MiddlewareService"; 
-import { getProfilePicture, createBuffer } from "./services/ProfileService";
+import { getProfilePicture, createBuffer } from "./services/FileService";
 
 // Important objects
 import { ClientMessage, ServerMessage } from './types/MessageTypes';
@@ -57,7 +57,7 @@ const io = new Server(httpServer, { cors: { origin: corsOrigin, credentials: tru
 
 // Import API routes from controllers
 app.use('/api/auth', authRouter);
-app.use('/api/profile', profileRouter);
+app.use('/api/account', accountRouter);
 
 // Test API endpoint (GET)
 app.get('/api/test', (req: Request, res: Response) => {

@@ -142,7 +142,7 @@ export async function whoAmI() {
 /* getProfilePicture: Retrieve the user's profile picture from the server. */
 export async function getProfilePicture() {
   try {
-    const response = await fetch(`http://localhost:8080/api/profile/picture`, {
+    const response = await fetch(`/api/account/picture`, {
       method: 'GET',
       headers: { 'Accept': 'image/*', },
       credentials: 'include', // Required for cookies
@@ -168,6 +168,44 @@ export async function getProfilePicture() {
   } catch (error) {
     handleServerUnreachable(error);
     return null;
+  }
+}
+
+/* updateProfile: Change profile picture and/or display name. */
+export async function updateProfile(newName, newPicture) {
+  try {
+    if (!newName && !newPicture) {
+      return {ok: false, error: "Nothing to update"};
+    }
+    const form = new FormData();
+    if (newName) {
+      form.append("name", newName);
+    }
+    if (newPicture) {
+      form.append("picture", newPicture);
+    }
+    
+    const response = await fetch(`/api/account/update-profile`, {
+      method: 'POST',
+      credentials: 'include', // Required for cookies
+      body: form,
+    });
+
+    if (!response) {
+      handleServerUnreachable("No response from server");
+      return {ok: false, error: "No response from server"};
+    }
+
+    if (!response.ok) {
+      console.log("Failed to update profile picture:", response.status);
+      return {ok: false, error: response.error};
+    }
+
+    return {ok: true};
+
+  } catch (error) {
+    handleServerUnreachable(error);
+    return {ok: false, error: error};
   }
 }
 
