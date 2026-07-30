@@ -8,15 +8,32 @@ import ProfileDisplay from './sidebar/ProfileDisplay.jsx';
 import MemberList from './sidebar/MemberList.jsx';
 
 import { processImageData } from '../../hooks/useBlob.js';
+import { whoAmI, getProfilePicture } from '../../api/client.js'; // For API calls
 
 import thinkton from '../../assets/legothinkton.png'; // image placeholder
 
-export default function ChatController({account, profilePicture}) {
+export default function ChatController({account}) {
 
-    // Get account ID, name, and profile picture of currently logged in user
+    // Get account ID and display name of current user
     const id = account?.id ?? 0;
     const name = account?.name ?? 'Thinkton';
-    const picture = profilePicture ?? thinkton;
+
+    const [profilePicture, setProfilePicture] = useState(thinkton); // current user's profile picture
+    const [pictureUpToDate, setPictureUpToDate] = useState(false); // update state
+
+    // Retrieves the profile picture of the current user
+    useEffect(() => {
+        // Retrieve profile picture
+        if (!pictureUpToDate) {
+            (async () => {
+                const picture = await getProfilePicture();
+                if (picture) {
+                    setProfilePicture(picture);
+                }
+                setPictureUpToDate(true);
+            })();
+        }
+    }, [pictureUpToDate]);
     
     // Permanent instance of the socket connection
     const socketRef = useRef(null);
@@ -83,6 +100,10 @@ export default function ChatController({account, profilePicture}) {
             }
         });
 
+        socketRef.current.on("profile-updated", (accountID) => {
+            setPictureUpToDate(false);
+        });
+
         // Handle disconnection
         return () => {
             socketRef.current?.off("message");
@@ -114,11 +135,11 @@ export default function ChatController({account, profilePicture}) {
                 <TitleBar/>
                 <div id="message-display">
                     <MessageDisplay accountID={id} messageList={messages} memberList={members} />
-                    <MessageInput onNewMessage={sendNewMsg} profilePicture={picture}/>
+                    <MessageInput onNewMessage={sendNewMsg} profilePicture={profilePicture}/>
                 </div>
             </div>
             <div id="sidebar">
-                <ProfileDisplay account={account} profilePicture={picture}/>
+                <ProfileDisplay account={account} profilePicture={profilePicture}/>
                 <MemberList accountID={id} memberList={members} /> 
             </div>
         </div> 

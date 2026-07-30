@@ -11,12 +11,12 @@ export default function ChatPage() {
   /* Loading: Loading state
   loggedIn: Whether a login session was successfully validated
   Account: Account data associated with the login session */
-  const [auth, setAuth] = useState({loading: true, loggedIn: false, account: null, profilePicture: null});
+  const [auth, setAuth] = useState({loading: true, loggedIn: false, account: null});
 
   // useEffect since page content is dependent on server validating a login session
   useEffect(() => {
     let mounted = true;
-    // Immediately Invoked Function Expression
+    // Immediately Invoked Function Expression: Useful for async operations inside a useEffect
     (async () => {
       // Contact server, which will validate the login session cookie if present
       const response = await whoAmI();
@@ -32,10 +32,8 @@ export default function ChatPage() {
         return;
       }
 
-      // Retrieve profile picture
-      const pic = await getProfilePicture();
       // Set account data and stop loading
-      setAuth({loading: false, loggedIn: true, account: response.account, profilePicture: pic})
+      setAuth({loading: false, loggedIn: true, account: response.account})
     })();
     // Cleanup function
     return () => {mounted = false};
@@ -49,7 +47,7 @@ export default function ChatPage() {
   // Normal content (assuming login session is validated)
   return (
     <div>
-      <ChatController account={auth.account} profilePicture={auth.profilePicture} />
+      <ChatController account={auth.account}/>
     </div>
   );  
 }

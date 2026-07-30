@@ -142,7 +142,7 @@ export async function whoAmI() {
 /* getProfilePicture: Retrieve the user's profile picture from the server. */
 export async function getProfilePicture() {
   try {
-    const response = await fetch(`/api/account/picture`, {
+    const response = await fetch(`/api/account/me/picture`, {
       method: 'GET',
       headers: { 'Accept': 'image/*', },
       credentials: 'include', // Required for cookies
@@ -185,7 +185,7 @@ export async function updateProfile(newName, newPicture) {
       form.append("picture", newPicture);
     }
     
-    const response = await fetch(`/api/account/update-profile`, {
+    const response = await fetch(`/api/account/me/update-profile`, {
       method: 'POST',
       credentials: 'include', // Required for cookies
       body: form,

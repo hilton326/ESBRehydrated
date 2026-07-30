@@ -16,6 +16,7 @@ import accountRouter from './controllers/AccountController';
 import { buildRecentMsgList, getMessageCount, prepareMessage, storeMessage } from './services/MessageService';
 import { verifyToken } from "./services/MiddlewareService"; 
 import { getProfilePicture, createBuffer } from "./services/FileService";
+import { initSocket } from './services/SocketEventService';
 
 // Important objects
 import { ClientMessage, ServerMessage } from './types/MessageTypes';
@@ -54,6 +55,8 @@ const cookie = require('cookie');
 const httpServer = http.createServer(app);
 // Also configure CORS for socket.io
 const io = new Server(httpServer, { cors: { origin: corsOrigin, credentials: true } });
+// Pass the server instance into the SocketEventService to allow other controllers/services to use it
+initSocket(io);
 
 // Import API routes from controllers
 app.use('/api/auth', authRouter);
@@ -85,7 +88,7 @@ async function main() {
         // Keep track of the sender of the previous message (used for determining message display type)
         let prevSenderID = 0;
         // Set the next message ID based on the # of messages in the database
-        let msgCounter = await getMessageCount() ?? 1; 
+        let msgCounter = await getMessageCount(); 
         
         // Customizable emit function: Best used for excluding specific sockets from an io.emit broadcast
         const customIoEmit = (action: string, data: any, exceptSocketId: string) => {
@@ -220,7 +223,7 @@ async function main() {
                 if (!messageStored) {
                     console.log("Failed to store message #", msgCounter, "in the database.");
                 }
-            prevSenderID = 0; // Reset previous sender ID to 0 (System's internal ID is 0)
+            prevSenderID = 0; // Reset previous sender ID to 0 (System's database ID is 0)
             
             /* *****************************************************************
             * On new message
