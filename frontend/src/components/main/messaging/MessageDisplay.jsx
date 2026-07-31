@@ -2,9 +2,7 @@
 import MessageInput from './MessageInput.jsx';
 import Message from './Message.jsx';
 
-import { getProfilePicture } from '../../../api/client.js'; // For API calls
-
-export default function MessageDisplay({accountID, messageList, memberList}) {
+export default function MessageDisplay({accountID, messageList, cache}) {
     
     // memberList.forEach(member => {
     //     let count = 0;
@@ -20,7 +18,7 @@ export default function MessageDisplay({accountID, messageList, memberList}) {
     We could call the API endpoint with the sender ID? */
    function getSenderData(msg) {
         if (!msg) return;
-        let data = memberList?.find(member => member.id === msg.senderID);
+        let data = cache?.find(member => member.id === msg.senderID);
         if (!data) {
             //const picture = await getProfilePicture(msg.senderID);
             data = {id: msg.senderID, name: msg.senderName, profilePicture: null};

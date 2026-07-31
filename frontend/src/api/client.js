@@ -36,7 +36,7 @@ export async function registrationRequest(email, name, password) {
     return {successful: true, error: null};
 
   } catch (error) {
-      return handleServerUnreachable(error);
+    return handleServerUnreachable(error);
   }
 }
 
@@ -139,8 +139,8 @@ export async function whoAmI() {
   }
 }
 
-/* getProfilePicture: Retrieve the user's profile picture from the server. */
-export async function getProfilePicture() {
+/* getYourProfilePicture: Retrieve the user's profile picture from the server. */
+export async function getYourProfilePicture() {
   try {
     const response = await fetch(`/api/account/me/picture`, {
       method: 'GET',
@@ -152,16 +152,13 @@ export async function getProfilePicture() {
       handleServerUnreachable("No response from server");
       return null;
     }
-
     if (!response.ok) {
       console.log("Failed to retrieve profile picture:", response.status);
       return null;
     }
 
-    console.log("Profile picture retrieved: ", response);
     const blob = await response.blob(); // image bytes
     const url = URL.createObjectURL(blob); // usable as <img src="...">
-    console.log(url);
     
     return { url };
 
@@ -171,8 +168,8 @@ export async function getProfilePicture() {
   }
 }
 
-/* updateProfile: Change profile picture and/or display name. */
-export async function updateProfile(newName, newPicture) {
+/* updateYourProfile: Change profile picture and/or display name. */
+export async function updateYourProfile(newName, newPicture) {
   try {
     if (!newName && !newPicture) {
       return {ok: false, error: "Nothing to update"};
@@ -184,6 +181,7 @@ export async function updateProfile(newName, newPicture) {
     if (newPicture) {
       form.append("picture", newPicture);
     }
+    console.log(form);
     
     const response = await fetch(`/api/account/me/update-profile`, {
       method: 'POST',
@@ -195,7 +193,6 @@ export async function updateProfile(newName, newPicture) {
       handleServerUnreachable("No response from server");
       return {ok: false, error: "No response from server"};
     }
-
     if (!response.ok) {
       console.log("Failed to update profile picture:", response.status);
       return {ok: false, error: response.error};
@@ -206,6 +203,66 @@ export async function updateProfile(newName, newPicture) {
   } catch (error) {
     handleServerUnreachable(error);
     return {ok: false, error: error};
+  }
+}
+
+/* getProfilePicture: get profile picture of any person (not just yourself). */
+export async function getProfilePictureForId(accountID) {
+  try {
+    const request = { id: accountID };
+
+    const response = await fetch(`/api/account/picture`, {
+      method: 'POST',
+      headers: { 'Accept': 'image/*', 'Content-Type': 'application/json'},
+      body: JSON.stringify(request)
+    });
+
+    if (!response) {
+      handleServerUnreachable("No response from server");
+      return null;
+    }
+    if (!response.ok) {
+      console.error("Failed to retrieve profile picture for", accountID, ":", response.status);
+      return null;
+    }
+
+    const blob = await response.blob(); // image bytes
+    const url = URL.createObjectURL(blob); // usable as <img src="...">
+    
+    return { url };
+
+  } catch (error) {
+    handleServerUnreachable(error);
+    return null;
+  }
+}
+
+/* getDisplayName: get display name of any person (not just yourself). */
+export async function getDisplayName(accountID) {
+  try {
+    const request = { id: accountID };
+    
+    const response = await fetch(`/api/account/name`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', },
+      body: JSON.stringify(request)
+    });
+
+    if (!response) {
+      handleServerUnreachable("No response from server");
+      return null;
+    }
+    if (!response.ok) {
+      console.log("Failed to retrieve display name:", response.status);
+      return null;
+    }
+
+    const data = await response.json();
+    return data;
+
+  } catch (error) {
+    handleServerUnreachable(error);
+    return null;
   }
 }
 

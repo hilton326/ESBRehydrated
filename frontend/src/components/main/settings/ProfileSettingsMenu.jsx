@@ -1,13 +1,15 @@
 import {useState, useRef} from 'react';
 import Image from '../../common/Image.jsx';
 
-import {updateProfile} from '../../../api/client.js';
+import {updateYourProfile} from '../../../api/client.js';
 
 // ProfileSettingsMenu: Small menu changing display name and profile picture.
 function ProfileSettingsMenu({accountID, displayName, profilePicture, onClose}) {
     const [newName, setNewName] = useState(displayName ?? ""); // for changing display name
     const [newPicture, setNewPicture] = useState(profilePicture ?? null); // for profile picture preview
     const [selectedFile, setSelectedFile] = useState(null); // uploaded file (for changing PFP)
+
+    const [unsavedChanges, setUnsavedChanges] = useState(false); // controls visibility of Save button
 
     // File selection menu
     const fileInputRef = useRef(null);
@@ -22,6 +24,7 @@ function ProfileSettingsMenu({accountID, displayName, profilePicture, onClose}) 
         if (file) {
             const previewUrl = URL.createObjectURL(file);
             setNewPicture(previewUrl);
+            setUnsavedChanges(true);
             // URL.revokeObjectURL(previewUrl) when you replace/remove preview
         } else {
             console.log("file is null");
@@ -29,8 +32,19 @@ function ProfileSettingsMenu({accountID, displayName, profilePicture, onClose}) 
         }
     };
 
+    // Changing display name input field
+    function onDisplayNameChange(e) {
+        setNewName(e.target.value);
+        // Only control visibility of the save button if profile picture hasn't already been changed
+        if (!selectedFile) {
+            const nameDiffers = (e.target.value !== displayName);
+            setUnsavedChanges(nameDiffers);
+        }
+    }
+
     async function onSave() {
-        const response = await updateProfile(null, selectedFile);
+        let selectedName = (newName !== displayName) ? newName : null;
+        const response = await updateYourProfile(selectedName, selectedFile);
 
         if (response.ok) {
             alert("Profile updated successfully.");
@@ -61,10 +75,10 @@ function ProfileSettingsMenu({accountID, displayName, profilePicture, onClose}) 
                                 onChange={onFileChange}
                             />
                         </div>
-                        <input className="login-input" type="text" value={newName} onChange={e => setNewName(e.target.value)} />
+                        <input className="login-input" type="text" value={newName} onChange={onDisplayNameChange} />
                     </div>
                     <div className="save-button">
-                        <h2 className="button" onClick={onSave}> Save </h2>
+                        {unsavedChanges && (<h2 className="button" onClick={onSave}> Save </h2>)}
                     </div>
                 </div>
             

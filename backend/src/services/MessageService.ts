@@ -1,6 +1,6 @@
 import { Message, ServerMessage }  from '../types/MessageTypes';
-import { getLastMessageID, storeNewMessage, getRecentMessages } from '../repository/MessageRepository';
-import { getAccountById } from '../repository/AccountRepository';
+import { getLastMessageID, getLastMessageSender, storeNewMessage, getRecentMessages } from '../repository/MessageRepository';
+import { getAccountById} from '../repository/AccountRepository';
 
 // getMessageCount: Figure out what the next message ID should be (the ID of the last message plus one)
 export async function getMessageCount() {
@@ -42,50 +42,66 @@ export async function buildRecentMsgList(count: number) {
 };
 
 // prepareMessage: Convert the ClientMessage into a ServerMessage (add additional details) before sending it.
-export function prepareMessage(msgID: number, msgText: string, socketID: string, senderID: number, senderName: string, senderPFP: string, prevSenderID: number, timestamp: string) {
+export async function prepareMessage(msgID: number, msgText: string, socketID: string, senderID: number, senderName: string, timestamp: string) {
+    try {
+        // Determine message type, which is needed for the client to figure out how to display it
+        const assignMsgType = (sender: number, prevSender: number ) => {
+            // Type 0 = System message (primarily used for join and leave logs). No sender data is associated.
+            if (sender == 0) return 0;
 
-    // Determine message type, which is needed for the client to figure out how to display it
-    const assignMsgType = (sender: number, prevSender: number ) => {
-        // Type 0 = System message (primarily used for join and leave logs). No sender data is associated.
-        if (sender == 0) return 0;
+            // Type 1 = Message has different sender from previous, so it has full sender info
+            // Type 2 = Message has same sender as previous, so it has less info
+            const msgType = (sender != prevSender) ? 1 : 2;
+            return msgType;
+        }
 
-        // Type 1 = Message has different sender from previous, so it has full sender info
-        // Type 2 = Message has same sender as previous, so it has less info
-        const msgType = (sender != prevSender) ? 1 : 2;
-        return msgType;
+        // Retrieve previous sender ID, which is needed for determining msgType
+        const prevSenderID = await getLastMessageSender();
+        // console.log("Prev sender:", prevSenderID);
+        if (prevSenderID == null) {
+            throw new Error("Couldn't retrieve previous sender ID");
+        }
+
+        const message: ServerMessage = {
+            id: msgID, 
+            socket: socketID,
+            msgType: assignMsgType(senderID, prevSenderID),  
+            senderID: senderID,
+            senderName: senderName,
+            text: msgText, 
+            timestamp: timestamp
+        };
+        //console.log(message);
+        return message;
+
+    } catch (error) {
+        console.error(`Error preparing message: ${error}`);
+        return null;
     }
-
-    const message: ServerMessage = {
-        id: msgID, 
-        socket: socketID,
-        msgType: assignMsgType(senderID, prevSenderID),  
-        senderID: senderID,
-        senderName: senderName,
-        text: msgText, 
-        timestamp: timestamp, 
-        profilePicture: senderPFP,
-    };
-    //console.log(message);
-    return message;
 };
 
 // storeMessage: Store a new message in the database.
-export async function storeMessage(msg: ServerMessage, prevSenderID: number) {
-    // Ensure that the sender and previous sender IDs are linked to an account
-    const senderCheck = await getAccountById(msg.senderID);
-    if (!senderCheck) { 
-        console.error("Account not found with ID" + msg.senderID); 
+export async function storeMessage(msg: ServerMessage) {
+    try {
+        // Ensure that the sender and previous sender IDs are linked to an account
+        const senderCheck = await getAccountById(msg.senderID);
+        if (!senderCheck) { 
+            throw new Error("Account not found with ID " + msg.senderID); 
+        }
+        const prevSenderID = await getLastMessageSender();
+        if (prevSenderID == null) { 
+            throw new Error("Error retrieving previous sender ID"); 
+        }
+
+        // If both checks pass, attempt to store new message in the DB
+        const added = await storeNewMessage(msg.text, msg.senderID, prevSenderID, String(msg.timestamp));
+        if (!added) { 
+            return false; 
+        }
+        return true;
+
+    } catch (error) {
+        console.error(`Error storing message in database: ${error}`);
         return false;
     }
-    const prevSenderCheck = await getAccountById(prevSenderID);
-    if (!prevSenderCheck) { 
-        console.error("Invalid ID for previous sender:" + prevSenderID);
-        return false;
-    }
-    // If both checks pass, attempt to store new message in the DB
-    const added = await storeNewMessage(msg.text, msg.senderID, prevSenderID, String(msg.timestamp));
-    if (!added) { 
-        return false; 
-    }
-    return true;
 };

@@ -2,8 +2,6 @@ import React from 'react';
 import Image from '../../common/Image.jsx';
 import thinkton from '../../../assets/legothinkton.png'; // image placeholder
 
-import {getProfilePicture} from '../../../api/client.js';
-
 /* Message component props:
 * msgBody = message text
 * msgType = used for deciding what CSS to use

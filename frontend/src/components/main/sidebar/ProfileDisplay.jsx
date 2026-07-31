@@ -16,7 +16,7 @@ function ProfileDisplay({account, profilePicture}) {
     }
 
     const name = account?.name ?? "Thinkton";
-    const pfp = profilePicture?.url ?? thinkton;
+    const pfp = profilePicture ?? thinkton;
     
     return (
         <div>

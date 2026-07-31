@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import ChatController from '../components/main/ChatController.jsx';
 
-import { whoAmI, getProfilePicture } from '../api/client.js'; // For API calls
+import { whoAmI } from '../api/client.js'; // For API calls
 
 export default function ChatPage() {
   const navigate = useNavigate();
