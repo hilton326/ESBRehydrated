@@ -7,7 +7,7 @@ import Image from '../../common/Image.jsx';
 import ProfileDropdown from './ProfileDropdown.jsx';
 import Popup from '../../common/PopupYesNo.jsx';
 
-function ProfileDisplay({account, profilePicture}) {
+function ProfileDisplay({accountID, displayName, profilePicture}) {
     // Dropdown controller
     const [dropDownOpen, setDropDownOpen] = useState(false);
 
@@ -15,7 +15,7 @@ function ProfileDisplay({account, profilePicture}) {
         setDropDownOpen(!dropDownOpen);
     }
 
-    const name = account?.name ?? "Thinkton";
+    const name = displayName ?? "Thinkton";
     const pfp = profilePicture ?? thinkton;
     
     return (
@@ -33,7 +33,7 @@ function ProfileDisplay({account, profilePicture}) {
             {/* ACTUAL DROPDOWN MENU */}
             <div id="profile-display">
                 {dropDownOpen 
-                    ? <div> <ProfileDropdown account={account} profilePicture={pfp} /> </div>
+                    ? <div> <ProfileDropdown accountID={accountID} displayName={name} profilePicture={pfp} /> </div>
                     : <div> </div>  
                 }
             </div>

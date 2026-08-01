@@ -238,7 +238,7 @@ export async function getProfilePictureForId(accountID) {
 }
 
 /* getDisplayName: get display name of any person (not just yourself). */
-export async function getDisplayName(accountID) {
+export async function getDisplayNameForId(accountID) {
   try {
     const request = { id: accountID };
     

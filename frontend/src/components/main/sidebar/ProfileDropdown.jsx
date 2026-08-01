@@ -6,15 +6,15 @@ import ProfileSettingsMenu from '../settings/ProfileSettingsMenu.jsx';
 import PopupYesNo from '../../common/PopupYesNo.jsx';
 import thinkton from '../../../assets/legothinkton.png'; // image placeholder
 
-function ProfileDropdown({account, profilePicture}) {
+function ProfileDropdown({accountID, displayName, profilePicture}) {
     const navigate = useNavigate();
     const [profileSettingsVisible, setProfileSettingsVisible] = useState(false);
     const [accountSettingsVisible, setAccountSettingsVisible] = useState(false);
     const [logoutPopupVisible, setLogoutPopupVisible] = useState(false);
 
     const accountInfo = {
-        id: account?.id ?? 0,
-        name: account?.name ?? "Thinkton",
+        id: accountID ?? 0,
+        name: displayName ?? "Thinkton",
         profilePicture: profilePicture ?? thinkton
     }
 

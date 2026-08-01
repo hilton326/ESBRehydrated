@@ -23,6 +23,6 @@ export type ServerMessage = {
 // Expected format for messages received from the client
 export type ClientMessage = {
     senderID: number;
-    senderName: string;
+    senderName?: string;
     text: string;
 }

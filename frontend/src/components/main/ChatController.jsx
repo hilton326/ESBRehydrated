@@ -7,52 +7,34 @@ import MessageInput from './messaging/MessageInput.jsx';
 import ProfileDisplay from './sidebar/ProfileDisplay.jsx';
 import MemberList from './sidebar/MemberList.jsx';
 
-import { getYourProfilePicture, getProfilePictureForId } from '../../api/client.js'; // For API calls
+import { getProfilePictureForId } from '../../api/client.js'; // For API calls
 
 import thinkton from '../../assets/legothinkton.png'; // image placeholder
 
-export default function ChatController({account}) {
+export default function ChatController({account, pfp}) {
 
-    // Get account ID and display name of current user
+    // Account ID: Should always be carried over from ChatPage and never change
     const id = account?.id ?? 0;
-    const name = account?.name ?? 'Thinkton';
-
-    const [profilePicture, setProfilePicture] = useState(thinkton); // current user's profile picture
-    const [pictureUpToDate, setPictureUpToDate] = useState(false); // whether the picture is "stale"
-
-    // Retrieves the profile picture of the current user
-    useEffect(() => {
-        // Retrieve profile picture
-        if (!pictureUpToDate) {
-            (async () => {
-                const picture = await getYourProfilePicture();
-                if (picture) {
-                    setProfilePicture(picture.url);
-                }
-                setPictureUpToDate(true);
-            })();
-        }
-    }, [pictureUpToDate]);
+    const [displayName, setDisplayName] = useState(account?.name ?? "Thinkton"); // current user's display name
+    const [profilePicture, setProfilePicture] = useState(pfp ?? thinkton); // current user's profile picture
     
     // Permanent instance of the socket connection
     const socketRef = useRef(null);
-    // Message array 
-    const [messages, setMessages] = useState([]);
-    // Member array (who is currently in the chat)
-    const [members, setMembers] = useState([]);
+    
+    const [messages, setMessages] = useState([]); // Message array
+    const [members, setMembers] = useState([]); // Member array (who is currently in the chat)
 
-    // People cache: Includes {id, name, profilePicture} of all members and those who have currently loaded messages
-    const [peopleCache, setPeopleCache] = useState([]);
-    const peopleCacheRef = useRef([]);
-
-     // Update the reference whenever the cache changes
+    // Account cache: Includes {id, name, profilePicture} of all members and those who have currently loaded messages
+    const [accountCache, setPeopleCache] = useState([]);
+    const accountCacheRef = useRef([]);
+    // Update the reference whenever the cache changes
     useEffect(() => {
-        peopleCacheRef.current = peopleCache;
-    }, [peopleCache]);
+        accountCacheRef.current = accountCache;
+    }, [accountCache]);
 
     // Retrieve an account's profile picture from the API (by their id)
     async function getProfilePicture(id) {
-        console.log("ID we're sending:", id);
+        // console.log("ID we're sending:", id);
         const pictureURL = await getProfilePictureForId(id);
         if (pictureURL) {
             return pictureURL.url;
@@ -69,11 +51,6 @@ export default function ChatController({account}) {
             prev.map(account => (account.id === id ? { ...account, ...update } : account)));
     }
 
-    // const handleProfileChanges = useCallback((id, patch) => {
-    //     setMembers(prev => prev.map(m => (m.id === id ? { ...m, ...patch } : m)));
-    //     setPeopleCache(prev => prev.map(p => (p.id === id ? { ...p, ...patch } : p)));
-    // }, []);
-
     // Receiving messages: Use socket.io client to receive new messages
     useEffect(() => {
         // Establish connection with server
@@ -85,6 +62,7 @@ export default function ChatController({account}) {
         socketRef.current.on("message", async (newMsg) => {
             if (!newMsg) return;
 
+            // Make sure sender info was received
             const senderID = newMsg.senderID;
             const senderName = newMsg.senderName;
             if (senderID == null) {
@@ -103,17 +81,15 @@ export default function ChatController({account}) {
             // Don't add SYSTEM to cache
             if (senderID == 0) return;
             // Check if the sender is already present in cache
-            for (const account of peopleCacheRef.current) {
+            for (const account of accountCacheRef.current) {
                 if (account.id === senderID) {
-                    console.log(`${id} already present`);
+                    // console.log(`${id} already present`);
                     return;
                 }
             }
-
             // If not, add sender info to cache:
             const picture = await getProfilePicture(senderID);
             if (!picture) return;
-
             setPeopleCache(prev => {
                 // re-check with functional update for safety
                 if (prev.some(account => account.id === senderID)) return prev;
@@ -166,29 +142,34 @@ export default function ChatController({account}) {
             }
         });
 
+        // Display name / profile picture updates (for any member)
         socketRef.current.on("display-name-updated", (response) => {
-            if (response) return;
-
+            if (!response) return;
+            
             const { id: updatedId, name: updatedName } = response;
             if (updatedId == null || updatedName == null) return;
 
-            // Update both memberList and peopleCache
+            // If it's your display name (the IDs match), signal to update ProfileDisplay and MessageInput
+            if (updatedId === id) {
+                setDisplayName(updatedName);
+            }
+
+            // Update both memberList and accountCache
             handleProfileChanges(updatedId, { name: updatedName });
         });
         socketRef.current.on("profile-picture-updated", async (accountID) => {
             if (!accountID) return;
-            console.log(accountID, account.id);
-
-            // If it's your profile picture (the IDs match), signal to update ProfileDisplay and MessageInput
-            if (accountID === account.id) {
-                setPictureUpToDate(false);
-            }
 
             // Retrieve the new URL from the API
             const newURL = await getProfilePicture(accountID);
             if (!newURL) return;
 
-            // Update both memberList and peopleCache
+            // If it's your profile picture (the IDs match), signal to update ProfileDisplay and MessageInput
+            if (accountID === id) {
+                setProfilePicture(newURL);
+            }
+
+            // Update both memberList and accountCache
             handleProfileChanges(accountID, { profilePicture: newURL });
         });
 
@@ -202,7 +183,7 @@ export default function ChatController({account}) {
             setMembers([]);
             setPeopleCache([]);
         };
-    }, [account?.id]);
+    }, [id]);
 
     // When a new message is added, scroll to the bottom of the message list
     useEffect(() => {
@@ -214,21 +195,21 @@ export default function ChatController({account}) {
     * useCallback allows new messages to be passed up from the MessageInput component.
     * Note: updateMsgList is not called until the server receives the message and then broadcasts it to the chat. */
     const sendNewMsg = useCallback(msg => {
-        const newMsg = { senderID: id, senderName: name, text: msg};
+        const newMsg = { senderID: id, text: msg};
         socketRef.current?.emit("message", newMsg );
-    }, [id, name]);
+    }, [id]);
 
     return (
         <div id="page" className="chat">
             <div id="main">
                 <TitleBar/>
                 <div id="message-display">
-                    <MessageDisplay accountID={id} messageList={messages} cache={peopleCache} />
+                    <MessageDisplay accountID={id} messageList={messages} cache={accountCache} />
                     <MessageInput onNewMessage={sendNewMsg} profilePicture={profilePicture}/>
                 </div>
             </div>
             <div id="sidebar">
-                <ProfileDisplay account={account} profilePicture={profilePicture}/>
+                <ProfileDisplay accountID={id} displayName={displayName} profilePicture={profilePicture}/>
                 <MemberList accountID={id} memberList={members} /> 
             </div>
         </div> 

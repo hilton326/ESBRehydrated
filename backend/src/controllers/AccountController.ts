@@ -35,8 +35,8 @@ router.get('/me/picture', async (req: Request, res: Response) => {
         console.log(profilePicture);
 
         // Send it to the client
-        // Note: Change cache controls
-        return res.sendFile(profilePicture, { headers: { "Cache-Control": "private, max-age=3600" } }, (err) => {
+        // Note: No cache for now
+        return res.sendFile(profilePicture, { headers: { "Cache-Control": "no-store" } }, (err) => {
             if (err) {
                 console.error("sendFile error:", err);
                 return res.status(500);
@@ -155,8 +155,8 @@ router.post('/picture', async (req: Request, res: Response) => {
         console.log(profilePicture);
 
         // Send it to the client
-        // Note: Change cache controls
-        return res.sendFile(profilePicture, { headers: { "Cache-Control": "private, max-age=3600" } }, (err) => {
+        // Note: No cache for now; may change later
+        return res.sendFile(profilePicture, { headers: { "Cache-Control": "no-store" } }, (err) => {
             if (err) console.error("sendFile error:", err);
         });
     } catch (e) {
