@@ -10,26 +10,17 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 // Main authentication function
-export async function authenticate(identifier: string, password: string, isEmail: boolean) {
+export async function authenticate(email: string, password: string) {
     try {
         let matchingAccount: Account;
         // Look up account in the database based on provided identifier (email)
-        if (isEmail == true) {
-            console.log("Searching for email ", identifier, "...");
-            matchingAccount = await getAccountByEmail(identifier);
-            if (!matchingAccount) {
-                return {account: null, authenticated: false, code: 400, error: "No account is associated with that email."}
-            }
-        } else {
-            // This is currently unused since I realized the issues of duplicate names
-            console.log("Searching by display name...");
-            matchingAccount = await getAccountByName(identifier);
-            if (!matchingAccount) {
-                return {account: null, authenticated: false, code: 400, error: "No account is associated with that display name."}
-            }
+        console.log(`Searching for email address ${email}...`);
+        matchingAccount = await getAccountByEmail(email);
+        if (!matchingAccount) {
+            return {account: null, authenticated: false, code: 400, error: "No account is associated with that email."}
         }
         
-        console.log("Attempting to authenticate");
+        console.log("Account found. Attempting to authenticate...");
         // If account exists, check if the entered password matches the one from the database
         const valid = await bcrypt.compare(password, matchingAccount.password);
         // Return account, authentication status, HTTP status code, and error message

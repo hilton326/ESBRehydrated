@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from "react-router-dom";
 
-import { loginRequest } from '../../api/client.js'; // Import the client for API calls
+import { loginRequest } from '../../api/AuthClient.js'; // Import the client for API calls
 import Popup from '../common/Popup.jsx';
 
 const LoginButton = ({email, password}) => {

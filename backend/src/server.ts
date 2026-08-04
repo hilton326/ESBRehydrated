@@ -133,19 +133,6 @@ async function main() {
                 console.error("Unauthorized: invalid token;", error);
                 return next(new Error("Unauthorized"));
             }
-
-            // after authenticating, attempt to get profile picture data
-            // try {
-            //     const profilePicPath = await getProfilePicture(socket.data.client.account.id);
-            //     const buffer = await createBuffer(profilePicPath);
-            //     socket.data.client.profilePicture = {mime: "image/png", data: buffer};
-            //     console.log("Profile picture data retrieved: ", socket.data.client.profilePicture);
-            //     return next();
-
-            // } catch (error) {
-            //     console.error("Couldn't get profile picture data: ", error);
-            //     return next();
-            // }
         });
 
         /* *****************************************************************
@@ -180,10 +167,11 @@ async function main() {
             
             // Fetch recent messages from database (so the new client may see them)
             try {
-                // Retrieve last 100 messages from the database
-                const recentMessageList = await buildRecentMsgList(500);
+                // Retrieve last {count} messages from the database (count can be any integer)
+                const recentMessageList = await buildRecentMsgList(250);
                 if (recentMessageList == null) {
-                    console.log("Failed to fetch recent messages from the database");
+                    throw new Error("Failed to fetch recent messages from the database");
+
                 } else {
                     // Send in reverse order so they display oldest to newest
                     for (let i = recentMessageList.length - 1; i >= 0; i--) {
@@ -195,20 +183,20 @@ async function main() {
                         }
                         // If there is no sender, skip this message
                         if (!msg.sender) {
-                            console.log("Skipping message ", msg.id, ". Sender couldn't be verified.");
+                            console.log(`Skipping message ${msg.id}. Sender couldn't be verified.`);
                             continue;
                         }
                         const msgFromDB = await prepareMessage(msg.id, msg.text, socket.id, msg.sender.id, msg.sender.name, msg.timestamp);
                         if (!msgFromDB) {
-                            console.log("Failed to prepare message ", msg.id);
+                            console.log(`Failed to prepare message ${msg.id}`);
                             continue;
                         }
                         socket.emit("message", msgFromDB);
                     }
-                    console.log("Recent messages sent over");
+                    console.log(`Recent messages sent to ${currentClient.account.name}`);
                 }
             } catch (error) {
-                console.error("Failed to process message list:", error);
+                console.error(`Failed to process message list:, ${error}`);
             }
 
             // Broadcast a system message to alert everyone of the new person joining
@@ -221,7 +209,7 @@ async function main() {
                 // Add message to database
                 const messageStored = await storeMessage(joinMsg);
                 if (!messageStored) {
-                    console.log("Failed to store message #", msgCounter, "in the database.");
+                    console.error("Failed to store message #", msgCounter, "in the database.");
                 }
             }
 

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { logoutRequest } from '../../../api/client.js'; // Import the client for API calls
+import { logoutRequest } from '../../../api/AuthClient.js'; // Import the client for API calls
 import { useNavigate } from "react-router-dom";
 import ProfileSettingsMenu from '../settings/ProfileSettingsMenu.jsx';
 // import AccountSettingsMenu from '../settings/AccountSettingsMenu.jsx';

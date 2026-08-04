@@ -141,7 +141,7 @@ router.post('/name', async (req: Request, res: Response) => {
 router.post('/picture', async (req: Request, res: Response) => {
     // Retrieve the account ID from the request body
     const form = req.body;
-    console.log("Received body:", form);
+    // console.log("Received body:", form);
     if (!form) { 
         return res.status(400).json({error:"Empty response received."}); 
     }

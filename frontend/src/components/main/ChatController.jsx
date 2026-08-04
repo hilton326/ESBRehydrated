@@ -7,30 +7,9 @@ import MessageInput from './messaging/MessageInput.jsx';
 import ProfileDisplay from './sidebar/ProfileDisplay.jsx';
 import MemberList from './sidebar/MemberList.jsx';
 
-import { getProfilePictureForId } from '../../api/client.js'; // For API calls
+import { getProfilePictureForId } from '../../api/ProfileClient.js'; // For API calls
 
-import thinkton from '../../assets/legothinkton.png'; // image placeholder
-
-export default function ChatController({account, pfp}) {
-
-    // Account ID: Should always be carried over from ChatPage and never change
-    const id = account?.id ?? 0;
-    const [displayName, setDisplayName] = useState(account?.name ?? "Thinkton"); // current user's display name
-    const [profilePicture, setProfilePicture] = useState(pfp ?? thinkton); // current user's profile picture
-    
-    // Permanent instance of the socket connection
-    const socketRef = useRef(null);
-    
-    const [messages, setMessages] = useState([]); // Message array
-    const [members, setMembers] = useState([]); // Member array (who is currently in the chat)
-
-    // Account cache: Includes {id, name, profilePicture} of all members and those who have currently loaded messages
-    const [accountCache, setPeopleCache] = useState([]);
-    const accountCacheRef = useRef([]);
-    // Update the reference whenever the cache changes
-    useEffect(() => {
-        accountCacheRef.current = accountCache;
-    }, [accountCache]);
+export default function ChatController({accountInfo}) {
 
     // Retrieve an account's profile picture from the API (by their id)
     async function getProfilePicture(id) {
@@ -47,9 +26,40 @@ export default function ChatController({account, pfp}) {
         // Only update information for the specified account ID
         setMembers(prev => 
             prev.map(member => (member.id === id ? { ...member, ...update } : member)));
-        setPeopleCache(prev => 
+        setAccountCache(prev => 
             prev.map(account => (account.id === id ? { ...account, ...update } : account)));
     }
+
+    // Account ID: Should always be carried over from ChatPage and never change
+    const id = accountInfo?.id ?? 0;
+    const [displayName, setDisplayName] = useState(accountInfo?.name ?? "Thinkton"); // Current user's display name
+
+    const [profilePicture, setProfilePicture] = useState(null); // Current user's profile picture
+    // Fetch the picture once on page load (for components such as ProfileDisplay)
+    useEffect(() => {
+        if (profilePicture) return;
+        (async () => {
+            const newURL = await getProfilePicture(id);
+            if (!newURL) return;
+            setProfilePicture(newURL);
+        })();
+    }, [id, profilePicture]);
+
+    const [messages, setMessages] = useState([]); // Message array
+    const [members, setMembers] = useState([]); // Member array (who is currently in the chat)
+
+    // Account cache: Includes {id, name, profilePicture} of all members AND those who have currently loaded messages
+    const [accountCache, setAccountCache] = useState([]);
+    const accountCacheRef = useRef([]);
+    const inflightRef = useRef(new Map()); // Track duplicate profile picture requests
+
+    // Update the reference whenever the cache changes
+    useEffect(() => {
+        accountCacheRef.current = accountCache;
+    }, [accountCache, messages]);
+
+    // Permanent instance of the socket connection
+    const socketRef = useRef(null);
 
     // Receiving messages: Use socket.io client to receive new messages
     useEffect(() => {
@@ -58,7 +68,7 @@ export default function ChatController({account, pfp}) {
             withCredentials: true // send cookie
         });
 
-        // Listen for new messages from server and call updateMsgList
+        // Listen for new messages from server and update message list
         socketRef.current.on("message", async (newMsg) => {
             if (!newMsg) return;
 
@@ -78,23 +88,39 @@ export default function ChatController({account, pfp}) {
             * "prev" represents previous contents of the array. We just add newMsg to it */
             setMessages(prev =>  [...prev, newMsg] );
 
-            // Don't add SYSTEM to cache
+            /* Profile picture logic:
+            * Check if the sender is already in the account cache (should be true for anyone currently in member list). 
+            * If they are, don't call the API again. If not, call the API to get the profile picture and add to cache. */
+
+             // Don't add the SYSTEM user to cache! (There is no profile picture associated with it)
             if (senderID == 0) return;
-            // Check if the sender is already present in cache
-            for (const account of accountCacheRef.current) {
-                if (account.id === senderID) {
-                    // console.log(`${id} already present`);
+            // "some" is equivalent to a for loop checking this expression
+            const alreadyCached = accountCacheRef.current.some(account => account.id === senderID);
+            if (!alreadyCached) {
+                // Also make sure that there is not already a request ongoing for that sender ID
+                // Necessary because the messages arrive faster than accountCache can update
+                if (!inflightRef.current.has(senderID)) {
+                    inflightRef.current.set(
+                        senderID,
+                        (async () => {
+                            const picture = await getProfilePicture(senderID);
+                            return picture;
+                        })()
+                    );
+                }
+        
+                const picture = await inflightRef.current.get(senderID);
+                if (!picture) {
+                    inflightRef.current.delete(senderID);
                     return;
                 }
+                
+                setAccountCache(prev => {
+                    // re-check with functional update for safety
+                    if (prev.some(account => account.id === senderID)) return prev;
+                    return [...prev, { id: senderID, name: senderName, profilePicture: picture }];
+                });
             }
-            // If not, add sender info to cache:
-            const picture = await getProfilePicture(senderID);
-            if (!picture) return;
-            setPeopleCache(prev => {
-                // re-check with functional update for safety
-                if (prev.some(account => account.id === senderID)) return prev;
-                return [...prev, { id: senderID, name: senderName, profilePicture: picture }];
-            });
 
         });
 
@@ -113,7 +139,7 @@ export default function ChatController({account, pfp}) {
                 }))
             );
             setMembers(processedMembers);
-            setPeopleCache(processedMembers);
+            setAccountCache(processedMembers);
         });
 
         socketRef.current.on("clients:add", async (newMember) => {
@@ -126,7 +152,7 @@ export default function ChatController({account, pfp}) {
 
             console.log("New member:", addedMember);
             setMembers(prev => [...prev, addedMember] );
-            setPeopleCache(prev => [...prev, addedMember] );
+            setAccountCache(prev => [...prev, addedMember] );
         });
         
         socketRef.current.on("clients:remove", (deleteMember) => {
@@ -181,7 +207,7 @@ export default function ChatController({account, pfp}) {
             // Reset message and member lists
             setMessages([]);
             setMembers([]);
-            setPeopleCache([]);
+            setAccountCache([]);
         };
     }, [id]);
 

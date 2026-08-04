@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from "react-router-dom";
 
-import { registrationRequest } from '../../api/client.js'; // Import the client for API calls
+import { registrationRequest } from '../../api/AuthClient.js'; // Import the client for API calls
 import Popup from '../common/Popup.jsx';
 
 export default function RegisterButton({email, name, password, confirmPassword}) {

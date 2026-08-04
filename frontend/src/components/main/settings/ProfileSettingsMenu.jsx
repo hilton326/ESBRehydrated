@@ -1,7 +1,7 @@
 import {useState, useRef} from 'react';
 import Image from '../../common/Image.jsx';
 
-import {updateYourProfile} from '../../../api/client.js';
+import {updateYourProfile} from '../../../api/ProfileClient.js';
 
 // ProfileSettingsMenu: Small menu changing display name and profile picture.
 function ProfileSettingsMenu({accountID, displayName, profilePicture, onClose}) {
