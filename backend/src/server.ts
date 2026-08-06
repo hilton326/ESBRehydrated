@@ -168,7 +168,7 @@ async function main() {
             // Fetch recent messages from database (so the new client may see them)
             try {
                 // Retrieve last {count} messages from the database (count can be any integer)
-                const recentMessageList = await buildRecentMsgList(250);
+                const recentMessageList = await buildRecentMsgList(500);
                 if (recentMessageList == null) {
                     throw new Error("Failed to fetch recent messages from the database");
 
@@ -191,7 +191,7 @@ async function main() {
                             console.log(`Failed to prepare message ${msg.id}`);
                             continue;
                         }
-                        socket.emit("message", msgFromDB);
+                        socket.emit("old-message", msgFromDB);
                     }
                     console.log(`Recent messages sent to ${currentClient.account.name}`);
                 }

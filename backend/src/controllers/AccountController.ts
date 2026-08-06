@@ -11,7 +11,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 import { getProfilePicture, determineImageType, storeFile } from '../services/FileService';
 import { getTokenFromCookie, verifyToken } from '../services/MiddlewareService';
-import { emitDisplayNameUpdated, emitProfilePictureUpdated } from '../services/SocketEventService';
+import { emitDisplayNameUpdated, emitProfilePictureUpdated, emitWalkingGaryUpdated } from '../services/SocketEventService';
 import { getDisplayNameById, changeDisplayName } from '../services/AccountService';
 
 
@@ -162,6 +162,35 @@ router.post('/picture', async (req: Request, res: Response) => {
     } catch (e) {
         console.error(e);
         return res.status(500).json({error: e});
+    }
+});
+
+/* walk the snail */
+router.post('/walk-gary', async (req: Request, res: Response) => {
+    // Retrieve the account ID from the request body
+    const form = req.body;
+    // console.log("Received body:", form);
+    if (!form) { 
+        return res.status(400).json({error:"Empty response received."}); 
+    }
+    if (!form.id) { 
+        return res.status(400).json({error:"Please provide an account ID to retrieve details for."});
+    }
+    if (form.status == null) { 
+        return res.status(400).json({error:"Please provide a walking Gary status."});
+    }
+    
+    try {
+        console.log(form.id, form.status);
+        const updated = emitWalkingGaryUpdated(form.id, form.status);
+        console.log(updated);
+        if (!updated) return res.status(500).json({ok: false});
+
+        return res.status(200).json({ok: true});
+
+    } catch (e) {
+        console.error(e);
+        return res.status(500);
     }
 });
 

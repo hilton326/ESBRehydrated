@@ -39,3 +39,16 @@ export async function emitProfilePictureUpdated(accountID: number, displayName: 
         console.log("Failed to store message #", msgId, "in the database.");
     }
 }
+
+export function emitWalkingGaryUpdated(accountID: number, currentStatus: boolean) {
+    try {
+        if (!io) throw new Error("No socket");
+
+        const newStatus = !currentStatus;
+        io.emit("walking-gary-updated", {id: accountID, status: newStatus});
+        return true;
+    } catch (e) {
+        console.error(`${e}`);
+        return false;
+    }
+}

@@ -10,6 +10,7 @@ import MemberList from './sidebar/MemberList.jsx';
 import { getProfilePictureForId } from '../../api/ProfileClient.js'; // For API calls
 
 export default function ChatController({accountInfo}) {
+    // console.log(accountInfo);
 
     // Retrieve an account's profile picture from the API (by their id)
     async function getProfilePicture(id) {
@@ -33,6 +34,7 @@ export default function ChatController({accountInfo}) {
     // Account ID: Should always be carried over from ChatPage and never change
     const id = accountInfo?.id ?? 0;
     const [displayName, setDisplayName] = useState(accountInfo?.name ?? "Thinkton"); // Current user's display name
+    const [walkingGary, setWalkingGary] = useState(false); // Walking Gary status (always starts as "false")
 
     const [profilePicture, setProfilePicture] = useState(null); // Current user's profile picture
     // Fetch the picture once on page load (for components such as ProfileDisplay)
@@ -69,12 +71,12 @@ export default function ChatController({accountInfo}) {
         });
 
         // Listen for new messages from server and update message list
-        socketRef.current.on("message", async (newMsg) => {
-            if (!newMsg) return;
+        socketRef.current.on("message", async (msg) => {
+            if (!msg) return;
 
             // Make sure sender info was received
-            const senderID = newMsg.senderID;
-            const senderName = newMsg.senderName;
+            const senderID = msg.senderID;
+            const senderName = msg.senderName;
             if (senderID == null) {
                 console.error("Message has no ID");
                 return;
@@ -86,7 +88,25 @@ export default function ChatController({accountInfo}) {
 
             /* Update message display array:
             * "prev" represents previous contents of the array. We just add newMsg to it */
-            setMessages(prev =>  [...prev, newMsg] );
+            setMessages(prev =>  [...prev, msg]);
+        });
+
+
+        // On connection, the server will send a bunch of recent messages all at once.
+        // These are processed in the same way, though profile picture data needs some special logic if the sender isn't in memberList.
+        socketRef.current.on("old-message", async (msg) => {
+            if (!msg) return;
+            const senderID = msg.senderID;
+            const senderName = msg.senderName;
+            if (senderID == null) {
+                console.error("Message has no ID");
+                return;
+            }
+            if (!senderName) {
+                console.error("Message has no name");
+                return;
+            }
+            setMessages(prev =>  [...prev, msg]);
 
             /* Profile picture logic:
             * Check if the sender is already in the account cache (should be true for anyone currently in member list). 
@@ -118,7 +138,7 @@ export default function ChatController({accountInfo}) {
                 setAccountCache(prev => {
                     // re-check with functional update for safety
                     if (prev.some(account => account.id === senderID)) return prev;
-                    return [...prev, { id: senderID, name: senderName, profilePicture: picture }];
+                    return [...prev, { id: senderID, name: senderName, walkingGary: false, profilePicture: picture }];
                 });
             }
 
@@ -135,6 +155,7 @@ export default function ChatController({accountInfo}) {
                 memberList.map(async (member) => ({
                     id: member.id,
                     name: member.name,
+                    walkingGary: false,
                     profilePicture: await getProfilePicture(member.id),
                 }))
             );
@@ -147,6 +168,7 @@ export default function ChatController({accountInfo}) {
             const addedMember = {
                 id: newMember.id,
                 name: newMember.name,
+                walkingGary: false,
                 profilePicture: await getProfilePicture(newMember.id) // Convert raw data into image URL
             };
 
@@ -171,7 +193,6 @@ export default function ChatController({accountInfo}) {
         // Display name / profile picture updates (for any member)
         socketRef.current.on("display-name-updated", (response) => {
             if (!response) return;
-            
             const { id: updatedId, name: updatedName } = response;
             if (updatedId == null || updatedName == null) return;
 
@@ -179,13 +200,24 @@ export default function ChatController({accountInfo}) {
             if (updatedId === id) {
                 setDisplayName(updatedName);
             }
-
             // Update both memberList and accountCache
             handleProfileChanges(updatedId, { name: updatedName });
         });
+        socketRef.current.on("walking-gary-updated", (response) => {
+            if (!response) return;
+            console.log(`Walking Gary update: ${response}`);
+            const { id: updatedId, status: updatedStatus } = response;
+            if (updatedId == null || updatedStatus == null) return;
+
+            // If it's your display name (the IDs match), signal to update ProfileDisplay and MessageInput
+            if (updatedId === id) {
+                setWalkingGary(updatedStatus);
+            }
+            // Update both memberList and accountCache
+            handleProfileChanges(updatedId, { walkingGary: updatedStatus });
+        });
         socketRef.current.on("profile-picture-updated", async (accountID) => {
             if (!accountID) return;
-
             // Retrieve the new URL from the API
             const newURL = await getProfilePicture(accountID);
             if (!newURL) return;
@@ -194,7 +226,6 @@ export default function ChatController({accountInfo}) {
             if (accountID === id) {
                 setProfilePicture(newURL);
             }
-
             // Update both memberList and accountCache
             handleProfileChanges(accountID, { profilePicture: newURL });
         });
@@ -211,11 +242,14 @@ export default function ChatController({accountInfo}) {
         };
     }, [id]);
 
-    // When a new message is added, scroll to the bottom of the message list
+    // When a new message is added, automatically jump to the bottom of the message list
     useEffect(() => {
+        // This will not occur when Walking Gary
+        if (walkingGary) return;
+
         var objDiv = document.getElementById("message-list");
         objDiv.scrollTop = objDiv.scrollHeight;
-    }, [messages]);
+    }, [messages, walkingGary]);
 
     /* Sending messages:
     * useCallback allows new messages to be passed up from the MessageInput component.
@@ -231,11 +265,11 @@ export default function ChatController({accountInfo}) {
                 <TitleBar/>
                 <div id="message-display">
                     <MessageDisplay accountID={id} messageList={messages} cache={accountCache} />
-                    <MessageInput onNewMessage={sendNewMsg} profilePicture={profilePicture}/>
+                    <MessageInput onNewMessage={sendNewMsg} profilePicture={profilePicture} walkingGary={walkingGary} />
                 </div>
             </div>
             <div id="sidebar">
-                <ProfileDisplay accountID={id} displayName={displayName} profilePicture={profilePicture}/>
+                <ProfileDisplay accountID={id} displayName={displayName} profilePicture={profilePicture} walkingGary={walkingGary}/>
                 <MemberList accountID={id} memberList={members} /> 
             </div>
         </div> 

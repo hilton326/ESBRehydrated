@@ -128,3 +128,31 @@ export async function getDisplayNameForId(accountID) {
     return null;
   }
 }
+
+export async function walkGary(accountID, currentStatus) {
+  try {
+    const request = { id: accountID, status: currentStatus };
+    
+    const response = await fetch(`/api/account/walk-gary`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', },
+      body: JSON.stringify(request)
+    });
+
+    if (!response) {
+      handleServerUnreachable("No response from server");
+      return null;
+    }
+    if (!response.ok) {
+      console.log("Failed to update status:", response.status);
+      return null;
+    }
+    
+    const data = await response.json();
+    return data;
+
+  } catch (error) {
+    handleServerUnreachable(error);
+    return null;
+  }
+}

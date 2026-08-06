@@ -4,19 +4,16 @@ import { useNavigate } from "react-router-dom";
 import ProfileSettingsMenu from '../settings/ProfileSettingsMenu.jsx';
 // import AccountSettingsMenu from '../settings/AccountSettingsMenu.jsx';
 import PopupYesNo from '../../common/PopupYesNo.jsx';
-import thinkton from '../../../assets/legothinkton.png'; // image placeholder
+// import thinkton from '../../../assets/legothinkton.png'; // image placeholder
+import {walkGary} from '../../../api/ProfileClient.js';
 
-function ProfileDropdown({accountID, displayName, profilePicture}) {
+function ProfileDropdown({accountInfo, onClose}) {
+    
     const navigate = useNavigate();
+    const [walkingGary, setWalkingGary] = useState(accountInfo?.walkingGary ?? false);
     const [profileSettingsVisible, setProfileSettingsVisible] = useState(false);
     const [accountSettingsVisible, setAccountSettingsVisible] = useState(false);
     const [logoutPopupVisible, setLogoutPopupVisible] = useState(false);
-
-    const accountInfo = {
-        id: accountID ?? 0,
-        name: displayName ?? "Thinkton",
-        profilePicture: profilePicture ?? thinkton
-    }
 
     // MenuController: Takes in a useState function and a state to set
     // So, any of the menu states can be toggled using just this function
@@ -24,6 +21,16 @@ function ProfileDropdown({accountID, displayName, profilePicture}) {
         console.log(func, state);
         func(state);
     }, []);
+
+    const toggleWalkingGary = async() => {
+        console.log(`yo it's ${walkingGary}`);
+        const statusUpdated = await walkGary(accountInfo.id, walkingGary);
+        if (statusUpdated.ok) {
+            setWalkingGary(!walkingGary);
+            console.log(`result: ${statusUpdated.ok}`);
+            onClose?.();
+        }
+    }
 
     // Handle logging out
     const handleLogout = useCallback(async() => {
@@ -41,7 +48,7 @@ function ProfileDropdown({accountID, displayName, profilePicture}) {
     return (
         <div id="profile-dropdown">
             <ul>
-                <li className="button"> Walk Gary </li>
+                <li className="button" onClick={() => toggleWalkingGary()}> {walkingGary ? "Return to Chat" : "Walk Gary"} </li>
                 <li className="button" onClick={() => menuController(setProfileSettingsVisible, true)}> Profile Settings </li>
                 <li className="button" onClick={() => menuController(setAccountSettingsVisible, true)}> Account Settings </li>
                 <li className="button" onClick={() => menuController(setLogoutPopupVisible, true)}> Log Out </li>
@@ -49,9 +56,7 @@ function ProfileDropdown({accountID, displayName, profilePicture}) {
 
             {profileSettingsVisible && ( 
                 <ProfileSettingsMenu
-                    accountID={accountInfo.id}
-                    displayName={accountInfo.name}
-                    profilePicture={accountInfo.profilePicture}
+                    accountInfo={accountInfo}
                     onClose={() => menuController(setProfileSettingsVisible, false)} 
                 /> 
             )}

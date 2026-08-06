@@ -2,11 +2,17 @@ import {useState, useRef} from 'react';
 import Image from '../../common/Image.jsx';
 
 import {updateYourProfile} from '../../../api/ProfileClient.js';
+import thinkton from '../../../assets/legothinkton.png'; // image placeholder
 
 // ProfileSettingsMenu: Small menu changing display name and profile picture.
-function ProfileSettingsMenu({accountID, displayName, profilePicture, onClose}) {
-    const [newName, setNewName] = useState(displayName ?? ""); // for changing display name
-    const [newPicture, setNewPicture] = useState(profilePicture ?? null); // for profile picture preview
+function ProfileSettingsMenu({accountInfo, onClose}) {
+
+    const id = accountInfo?.id ?? 0;
+    const name = accountInfo?.name ?? 'Thinkton';
+    const pfp = accountInfo?.profilePicture ?? thinkton;
+
+    const [newName, setNewName] = useState(name ?? ""); // for changing display name
+    const [newPicture, setNewPicture] = useState(pfp ?? null); // for profile picture preview
     const [selectedFile, setSelectedFile] = useState(null); // uploaded file (for changing PFP)
 
     const [unsavedChanges, setUnsavedChanges] = useState(false); // controls visibility of Save button
@@ -28,7 +34,7 @@ function ProfileSettingsMenu({accountID, displayName, profilePicture, onClose}) 
             // URL.revokeObjectURL(previewUrl) when you replace/remove preview
         } else {
             console.log("file is null");
-            setNewPicture(profilePicture ?? null);
+            setNewPicture(pfp ?? null);
         }
     };
 
@@ -37,13 +43,13 @@ function ProfileSettingsMenu({accountID, displayName, profilePicture, onClose}) 
         setNewName(e.target.value);
         // Only control visibility of the save button if profile picture hasn't already been changed
         if (!selectedFile) {
-            const nameDiffers = (e.target.value !== displayName);
+            const nameDiffers = (e.target.value !== name);
             setUnsavedChanges(nameDiffers);
         }
     }
 
     async function onSave() {
-        let selectedName = (newName !== displayName) ? newName : null;
+        let selectedName = (newName !== name) ? newName : null;
         const response = await updateYourProfile(selectedName, selectedFile);
 
         if (response.ok) {
