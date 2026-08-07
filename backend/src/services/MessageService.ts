@@ -42,7 +42,7 @@ export async function buildRecentMsgList(count: number) {
 };
 
 // prepareMessage: Convert the ClientMessage into a ServerMessage (add additional details) before sending it.
-export async function prepareMessage(msgID: number, msgText: string, socketID: string, senderID: number, senderName: string, timestamp: string) {
+export async function prepareMessage(msgID: number, msgText: string, senderID: number, senderName: string, timestamp: string, prevSenderID: number | null) {
     try {
         // Determine message type, which is needed for the client to figure out how to display it
         const assignMsgType = (sender: number, prevSender: number ) => {
@@ -56,22 +56,25 @@ export async function prepareMessage(msgID: number, msgText: string, socketID: s
         }
 
         // Retrieve previous sender ID, which is needed for determining msgType
-        const prevSenderID = await getLastMessageSender();
-        // console.log("Prev sender:", prevSenderID);
-        if (prevSenderID == null) {
-            throw new Error("Couldn't retrieve previous sender ID");
+        let prevSender = prevSenderID;
+        if (prevSender == null) {
+            prevSender = await getLastMessageSender();
+            if (prevSender == null) throw new Error("Couldn't retrieve previous sender ID");
         }
-
+        
         const message: ServerMessage = {
             id: msgID, 
-            socket: socketID,
-            msgType: assignMsgType(senderID, prevSenderID),  
+            msgType: assignMsgType(senderID, prevSender),  
             senderID: senderID,
             senderName: senderName,
             text: msgText, 
             timestamp: timestamp
         };
-        //console.log(message);
+        console.log(`Id: ${message.id}, Message.txt: ${message.text}`);
+        console.log(`Sender: ${message.senderID}, PrevSender: ${prevSenderID}, Msgtype: ${message.msgType}`);
+        console.log(`senderID === prevSenderID: ${(senderID === message.senderID)}`);
+        console.log();
+
         return message;
 
     } catch (error) {

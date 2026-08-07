@@ -186,7 +186,7 @@ async function main() {
                             console.log(`Skipping message ${msg.id}. Sender couldn't be verified.`);
                             continue;
                         }
-                        const msgFromDB = await prepareMessage(msg.id, msg.text, socket.id, msg.sender.id, msg.sender.name, msg.timestamp);
+                        const msgFromDB = await prepareMessage(msg.id, msg.text, msg.sender.id, msg.sender.name, msg.timestamp, msg.prevSender?.id ?? null);
                         if (!msgFromDB) {
                             console.log(`Failed to prepare message ${msg.id}`);
                             continue;
@@ -202,7 +202,7 @@ async function main() {
             // Broadcast a system message to alert everyone of the new person joining
             msgCounter = await getMessageCount();
             const joinText = "~ " + currentClient.account.name + " has entered the Krusty Krab. ~";
-            const joinMsg = await prepareMessage(msgCounter, joinText, socket.id, 0, "System", String(new Date()));
+            const joinMsg = await prepareMessage(msgCounter, joinText, 0, "System", String(new Date()), null);
             if (joinMsg) {
                 io.emit("message", joinMsg);
 
@@ -229,7 +229,7 @@ async function main() {
 
                         // Broadcast message to all clients (including sender)
                         const message = await prepareMessage(
-                            msgCounter, msg.text, socket.id, currentClient.account.id, currentClient.account.name, String(new Date())
+                            msgCounter, msg.text, currentClient.account.id, currentClient.account.name, String(new Date()), null
                         );
                         if (message) {
                             io.emit("message", message);
@@ -263,7 +263,7 @@ async function main() {
                 msgCounter = await getMessageCount();
                 // Broadcast a system message to alert everyone of the new person leaving
                 const leaveText = "~ " + currentClient.account.name + " has left the Krusty Krab. ~";
-                const leaveMsg = await prepareMessage(msgCounter, leaveText, socket.id, 0, "System", String(new Date()));
+                const leaveMsg = await prepareMessage(msgCounter, leaveText, 0, "System", String(new Date()), null);
 
                 if (leaveMsg) {
                     io.emit("message", leaveMsg);

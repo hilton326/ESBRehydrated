@@ -47,6 +47,7 @@ export default function ChatPage() {
   // Normal content (assuming login session is validated)
   return (
     <div>
+      <title> Special:Chat - ESB Rehydrated </title>
       <ChatController accountInfo={auth.account}/>
     </div>
   );  

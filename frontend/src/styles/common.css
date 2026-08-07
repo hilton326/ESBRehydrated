@@ -15,6 +15,7 @@
 
 /* Clickable text / buttons */
 .button {
+    color: aqua;
     cursor: pointer;
 }
 .button:hover {

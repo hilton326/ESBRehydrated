@@ -78,8 +78,8 @@ export const getLastMessageSender = async () => {
              ORDER BY id DESC
              LIMIT 1`
         );
-        // console.log("Message: ", response.rows[0]);
-        // console.log("Sender: ", response.rows[0].sender);
+        console.log("Message from DB: ", response.rows[0]);
+        console.log("Sender of message: ", response.rows[0].sender);
         return response.rows[0]?.sender ?? null;
     
     } catch (error) {

@@ -13,7 +13,7 @@ export async function emitDisplayNameUpdated(accountID: number, oldName: string,
     io.emit("display-name-updated", {id: accountID, name: newName});
 
     const msgId = await getMessageCount();
-    const msgText = `${oldName} changed their name to ${newName}.`;
+    const msgText = `~ ${oldName} changed their name to ${newName}. ~`;
     const message = {id: msgId, msgType: 0, senderID: 0, senderName: "System", text: msgText, timestamp: String(new Date())};
     io.emit("message", message);
 
@@ -29,7 +29,7 @@ export async function emitProfilePictureUpdated(accountID: number, displayName: 
     io.emit("profile-picture-updated", accountID);
 
     const msgId = await getMessageCount();
-    const msgText = `${displayName} changed their profile picture.`;
+    const msgText = `~ ${displayName} changed their profile picture. ~`;
     const message = {id: msgId, msgType: 0, senderID: 0, senderName: "System", text: msgText, timestamp: String(new Date())};
     io.emit("message", message);
 

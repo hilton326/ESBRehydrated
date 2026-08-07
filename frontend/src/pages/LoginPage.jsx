@@ -1,14 +1,17 @@
 'use client';
 import LoginButton from '../components/login/LoginButton.jsx';
 import { useState } from 'react';
+import { useNavigate } from "react-router-dom";
 
 function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  const navigate = useNavigate();
+
   return (
     <div>
-      <title>Chill - Welcome Back! </title>
+      <title> Welcome Back! - ESB Rehydrated </title>
 
       <div id="login-main">
 
@@ -29,6 +32,8 @@ function LoginPage() {
           </div>
 
           <LoginButton email={String(email)} password={String(password)} />
+
+          <p className="button" onClick={() => navigate('/register')}> Not registered yet? </p>
 
         </div>
         

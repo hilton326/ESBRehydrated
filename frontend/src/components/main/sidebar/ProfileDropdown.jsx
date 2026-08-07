@@ -23,7 +23,6 @@ function ProfileDropdown({accountInfo, onClose}) {
     }, []);
 
     const toggleWalkingGary = async() => {
-        console.log(`yo it's ${walkingGary}`);
         const statusUpdated = await walkGary(accountInfo.id, walkingGary);
         if (statusUpdated.ok) {
             setWalkingGary(!walkingGary);
