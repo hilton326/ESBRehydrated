@@ -16,7 +16,7 @@ const Message = React.memo(function Message({msgBody, msgType, senderData, times
 
     // Convert the timestamp into readable date and time
     // console.log(timestamp);
-    // const datetime = timestamp.split('T');
+    const datetime = timestamp.split('G');
     // const date = datetime[0];
     // const time = datetime[1].slice(0,8);
 
@@ -50,7 +50,7 @@ const Message = React.memo(function Message({msgBody, msgType, senderData, times
 			{!isGrouped && (<Image size={30} image={senderInfo.picture} alt={"user profile picture"} margin={10}/>)} 
 			<div className="msg-text-container">
 				{!isGrouped && (<p className="msg-sender-text"> {senderInfo.name} </p>)}
-				{!isGrouped && (<p className="msg-timestamp"> {timestamp} </p>)}
+				{!isGrouped && (<p className="msg-timestamp"> {datetime[0]} </p>)}
                 <p className={`${isGrouped ? "msg-body-text-grouped" : "msg-body-text"}`}> {msgBody} </p>
 			</div>
         </div>

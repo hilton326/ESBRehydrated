@@ -57,8 +57,8 @@ export async function updateYourProfile(newName, newPicture) {
       return {ok: false, error: "No response from server"};
     }
     if (!response.ok) {
-      console.log("Failed to update profile picture:", response.status);
-      return {ok: false, error: response.error};
+      console.log("Failed to update profile:", response.status);
+      return {ok: false, error: "Error updating profile. Try logging out and back in."};
     }
 
     return {ok: true};

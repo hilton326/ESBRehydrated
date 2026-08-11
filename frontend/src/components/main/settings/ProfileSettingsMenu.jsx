@@ -3,6 +3,8 @@ import Image from '../../common/Image.jsx';
 
 import {updateYourProfile} from '../../../api/ProfileClient.js';
 import thinkton from '../../../assets/legothinkton.png'; // image placeholder
+import Popup from '../../common/Popup.jsx';
+import PopupTwoButtons from '../../common/PopupTwoButtons.jsx';
 
 // ProfileSettingsMenu: Small menu changing display name and profile picture.
 function ProfileSettingsMenu({accountInfo, onClose}) {
@@ -16,6 +18,12 @@ function ProfileSettingsMenu({accountInfo, onClose}) {
     const [selectedFile, setSelectedFile] = useState(null); // uploaded file (for changing PFP)
 
     const [unsavedChanges, setUnsavedChanges] = useState(false); // controls visibility of Save button
+    const [unsavedChangesWarning, setUnsavedChangesWarning] = useState(false); // controls whether to warn about unsaved changes
+
+    // Success and failure popup box states
+    const [success, setSuccess] = useState(false);
+    const [failure, setFailure] = useState(false);
+
 
     // File selection menu
     const fileInputRef = useRef(null);
@@ -48,16 +56,31 @@ function ProfileSettingsMenu({accountInfo, onClose}) {
         }
     }
 
+    // Attempt to save profile changes
     async function onSave() {
         let selectedName = (newName !== name) ? newName : null;
         const response = await updateYourProfile(selectedName, selectedFile);
 
         if (response.ok) {
-            alert("Profile updated successfully.");
-            onClose?.();
+            setUnsavedChanges(false);
+            setSuccess(true);
+            // alert("Profile updated successfully.");
+            // onClose?.();
         } else {
-            alert("Error updating profile:", response.error);
+            setFailure(true);
+            // alert(response.error);
         }
+    }
+
+    // Close the menu
+    function exitMenu() {
+        setSuccess(false);
+        setFailure(false);
+        if (unsavedChanges == true) {
+            setUnsavedChangesWarning(true);
+            return;
+        }
+        onClose?.();
     }
 
     return (
@@ -65,7 +88,7 @@ function ProfileSettingsMenu({accountInfo, onClose}) {
             <div id="profile-settings">
                 <div className="window-titlebar">
                     <h2 className="settings-title"> Profile Settings </h2>
-                    <h2 className="close-button" onClick={() => {onClose?.();}}> X </h2>
+                    <h2 className="close-button" onClick={() => {exitMenu()}}> X </h2>
                 </div>
                 <div className="settings-container">
                     <div id="name-and-picture">
@@ -89,6 +112,37 @@ function ProfileSettingsMenu({accountInfo, onClose}) {
                 </div>
             
             </div>
+
+            {success && ( 
+                <Popup
+                    title={"Success!"} 
+                    message={"Your profile has been updated."}
+                    buttonText={"Yay!"}
+                    onConfirm={() => exitMenu()}
+                    isError={false}
+                /> 
+            )}
+
+            {failure && ( 
+                <Popup
+                    title={"Error"} 
+                    message={"There was a problem updating your profile. Try logging out and back in."}
+                    buttonText={"OK"}
+                    onConfirm={() => setFailure(false)}
+                    isError={true}
+                /> 
+            )}
+
+            {unsavedChangesWarning && ( 
+                <PopupTwoButtons
+                    title={"Wait!"} 
+                    message={"You have unsaved changes. Are you sure you want to exit?"}
+                    onYes={() => onClose?.()}
+                    onNo={() => setUnsavedChangesWarning(false)}
+                    isError={true}
+                /> 
+            )}
+
         </div>
     )
 }

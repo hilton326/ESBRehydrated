@@ -5,7 +5,6 @@ import { TiArrowSortedDown } from "react-icons/ti";
 import thinkton from '../../../assets/legothinkton.png'; // image placeholder
 import Image from '../../common/Image.jsx';
 import ProfileDropdown from './ProfileDropdown.jsx';
-import Popup from '../../common/PopupYesNo.jsx';
 
 function ProfileDisplay({accountID, displayName, profilePicture, walkingGary}) {
     // Dropdown controller

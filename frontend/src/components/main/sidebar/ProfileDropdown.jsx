@@ -3,7 +3,7 @@ import { logoutRequest } from '../../../api/AuthClient.js'; // Import the client
 import { useNavigate } from "react-router-dom";
 import ProfileSettingsMenu from '../settings/ProfileSettingsMenu.jsx';
 // import AccountSettingsMenu from '../settings/AccountSettingsMenu.jsx';
-import PopupYesNo from '../../common/PopupYesNo.jsx';
+import PopupTwoButtons from '../../common/PopupTwoButtons.jsx';
 // import thinkton from '../../../assets/legothinkton.png'; // image placeholder
 import {walkGary} from '../../../api/ProfileClient.js';
 
@@ -68,7 +68,7 @@ function ProfileDropdown({accountInfo, onClose}) {
             )} */}
 
             {logoutPopupVisible && ( 
-                <PopupYesNo
+                <PopupTwoButtons
                     title={"Log Out"} 
                     message={"Are you sure you want to log out of the chat?"} 
                     onYes={() => handleLogout()} 
