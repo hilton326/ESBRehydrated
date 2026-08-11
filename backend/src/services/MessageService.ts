@@ -70,10 +70,10 @@ export async function prepareMessage(msgID: number, msgText: string, senderID: n
             text: msgText, 
             timestamp: timestamp
         };
-        console.log(`Id: ${message.id}, Message.txt: ${message.text}`);
-        console.log(`Sender: ${message.senderID}, PrevSender: ${prevSenderID}, Msgtype: ${message.msgType}`);
-        console.log(`senderID === prevSenderID: ${(senderID === message.senderID)}`);
-        console.log();
+        // console.log(`Id: ${message.id}, Message.txt: ${message.text}`);
+        // console.log(`Sender: ${message.senderID}, PrevSender: ${prevSenderID}, Msgtype: ${message.msgType}`);
+        // console.log(`senderID === prevSenderID: ${(senderID === message.senderID)}`);
+        // console.log();
 
         return message;
 

@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { useNavigate } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
 
 import TitleBar from './TitleBar.jsx';
@@ -6,11 +7,13 @@ import MessageDisplay from './messaging/MessageDisplay.jsx';
 import MessageInput from './messaging/MessageInput.jsx';
 import ProfileDisplay from './sidebar/ProfileDisplay.jsx';
 import MemberList from './sidebar/MemberList.jsx';
+import Popup from '../common/Popup.jsx';
 
 import { getProfilePictureForId } from '../../api/ProfileClient.js'; // For API calls
 
 export default function ChatController({accountInfo}) {
     // console.log(accountInfo);
+    const getOuttaHere = useNavigate(); // used to navigate back to login page
 
     // Retrieve an account's profile picture from the API (by their id)
     async function getProfilePicture(id) {
@@ -29,6 +32,11 @@ export default function ChatController({accountInfo}) {
             prev.map(member => (member.id === id ? { ...member, ...update } : member)));
         setAccountCache(prev => 
             prev.map(account => (account.id === id ? { ...account, ...update } : account)));
+    }
+
+    // Function that runs when you get the BOOT
+    function exitChat() {
+        getOuttaHere("/login");
     }
 
     // Account ID: Should always be carried over from ChatPage and never change
@@ -62,6 +70,9 @@ export default function ChatController({accountInfo}) {
 
     // Permanent instance of the socket connection
     const socketRef = useRef(null);
+
+    // Controller for "you're already logged in" popup
+    const [isDuplicateSession, setIsDuplicateSession] = useState(false);
 
     // Receiving messages: Use socket.io client to receive new messages
     useEffect(() => {
@@ -230,6 +241,11 @@ export default function ChatController({accountInfo}) {
             handleProfileChanges(accountID, { profilePicture: newURL });
         });
 
+        // Handle duplicate connection (when you try to log in twice under the same account)
+        socketRef.current.on("duplicate", () => {
+            setIsDuplicateSession(true);
+        });
+
         // Handle disconnection
         return () => {
             socketRef.current?.off("message");
@@ -272,6 +288,20 @@ export default function ChatController({accountInfo}) {
                 <ProfileDisplay accountID={id} displayName={displayName} profilePicture={profilePicture} walkingGary={walkingGary}/>
                 <MemberList accountID={id} memberList={members} /> 
             </div>
+
+            {isDuplicateSession && (
+                <Popup
+                    title={"Oops!"} 
+                    message={
+                        "It looks like you're already in this chat! " +
+                        "You're probably logged in on another browser tab or on a different device. " +
+                        "Try switching to that session instead."
+                    }
+                    buttonText={"OK"}
+                    onConfirm={() => exitChat()}
+                    isError={true}
+                /> 
+            )}
         </div> 
     );
 }

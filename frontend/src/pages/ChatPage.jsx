@@ -40,7 +40,11 @@ export default function ChatPage() {
   }, [navigate, setAuth]);
 
   // If loading state is set, show loading screen (WIP)
-  if (auth.loading) return <div> Loading... </div>;
+  if (auth.loading) {
+    console.log("Loading...");
+    return <div> Loading... </div>;
+  }
+  
   // Do not show any content if there is no login session
   if (!auth.loggedIn) return null;
 

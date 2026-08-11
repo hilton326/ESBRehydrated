@@ -37,7 +37,7 @@
 /* Popup box */
 .popup {
     width: max(300px, 20vw);
-    height: 200px;
+    height: max(250px, 10vw);
     display: flex;
     flex-direction: column;
     position: relative;
@@ -51,7 +51,7 @@
 /* Error popup box */
 .error-popup {
     width: max(300px, 20vw);
-    height: 200px;
+    height: max(250px, 10vw);
     display: flex;
     flex-direction: column;
     position: relative;

@@ -70,6 +70,7 @@ app.get('/api/test', (req: Request, res: Response) => {
 // Server main function
 async function main() {
     try {
+        console.log("Initializing...");
         /* *****************************************************************
         * SERVER STARTUP
         * Test database connection and start if successful */
@@ -154,7 +155,10 @@ async function main() {
                     notPresent = false;
                 }
             })
-            if (!notPresent) return;
+            if (!notPresent) {
+                socket.emit("duplicate");
+                return;
+            }
 
             const newClientData = {id: currentClient.account.id, name: currentClient.account.name};
             // Add the new client to the list
