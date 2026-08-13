@@ -1,3 +1,7 @@
+#downsized-text {
+    font-size: 12px;
+}
+
 .settings-container {
     display: flex;
     flex-direction: column;

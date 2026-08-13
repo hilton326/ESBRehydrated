@@ -1,7 +1,7 @@
 :root {
     --bg: rgb(0, 56, 71);
     --panel: rgb(1, 53, 80);
-    --panel-2: rgb(0, 98, 255);
+    --panel-2: rgba(0, 98, 255, 0.95);
     --aqua: aqua;
     --white: #fff;
     --blue: rgb(0, 81, 255);
@@ -39,6 +39,10 @@ body {
 .chat {
     /* Cosmetic */
     border-radius: 4px;
+}
+
+.chat-text {
+    margin-left: 5px;
 }
 
 /* =========================
@@ -106,6 +110,7 @@ body {
     align-items: center;
     gap: 5px;
     position: relative;
+    width: 100%;
 
     /* Cosmetic */
     border-style: solid;
@@ -129,16 +134,16 @@ body {
 #profile-dropdown {
     /* Layout */
     display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 10px;
-    margin-top: 5px;
+    flex-direction: column;
 
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     z-index: 50;
+
+    gap: 8px;
+    font-size: 15px;
 
     /* Cosmetic */
     color: var(--aqua);

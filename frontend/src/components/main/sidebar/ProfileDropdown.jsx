@@ -7,7 +7,8 @@ import PopupTwoButtons from '../../common/PopupTwoButtons.jsx';
 // import thinkton from '../../../assets/legothinkton.png'; // image placeholder
 import {walkGary} from '../../../api/ProfileClient.js';
 
-function ProfileDropdown({accountInfo, onClose}) {
+function ProfileDropdown({accountInfo, onClose, width}) {
+    const pageWidth = width ?? 0;
     
     const navigate = useNavigate();
     const [walkingGary, setWalkingGary] = useState(accountInfo?.walkingGary ?? false);
@@ -44,14 +45,16 @@ function ProfileDropdown({accountInfo, onClose}) {
         }
     }, [navigate]);
 
+    const textID = (pageWidth < 700) ? "downsized-text" : "";
+
     return (
         <div id="profile-dropdown">
-            <ul>
-                <li className="button" onClick={() => toggleWalkingGary()}> {walkingGary ? "Return to Chat" : "Walk Gary"} </li>
-                <li className="button" onClick={() => menuController(setProfileSettingsVisible, true)}> Profile Settings </li>
-                <li className="button" onClick={() => menuController(setAccountSettingsVisible, true)}> Account Settings </li>
-                <li className="button" onClick={() => menuController(setLogoutPopupVisible, true)}> Log Out </li>
-            </ul>
+            
+                <p id={textID} className="button" onClick={() => toggleWalkingGary()}> {walkingGary ? "Return to Chat" : "Walk Gary"} </p>
+                <p id={textID} className="button" onClick={() => menuController(setProfileSettingsVisible, true)}> Profile Settings </p>
+                <p id={textID} className="button" onClick={() => menuController(setAccountSettingsVisible, true)}> Account Settings </p>
+                <p id={textID} className="button" onClick={() => menuController(setLogoutPopupVisible, true)}> Log Out </p>
+            
 
             {profileSettingsVisible && ( 
                 <ProfileSettingsMenu
