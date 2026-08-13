@@ -1,0 +1,67 @@
+#downsized-text {
+    font-size: 12px;
+}
+
+.settings-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.window-titlebar {
+    display: flex;
+    flex-direction: row;
+}
+
+.settings-title {
+    margin-top: 0;
+    margin-left: 3px;
+    padding: 5px;
+
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-size: 20px;
+}
+
+.close-button {
+    position: absolute;
+    top: 0;
+    right: 5px;
+    margin: 0;
+}
+
+.close-button:hover {
+    color:red;
+    cursor: pointer;
+}
+
+.save-button {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+#profile-settings {
+    width: max(500px, 30vw);
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+
+    background-color: rgba(1, 53, 80, 0.8);
+    border: 2px solid cyan;
+    border-radius: 4px;
+    color: cyan;
+}
+
+#name-and-picture {
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+}
+
+#pfp-container {
+    display: flex;
+    flex-direction: column;
+}

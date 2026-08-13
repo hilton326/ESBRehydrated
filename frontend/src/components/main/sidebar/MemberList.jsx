@@ -14,6 +14,7 @@ export default function MemberList({accountID, memberList}) {
                     id={member.id}
                     name={member.name}
                     pictureData={member.profilePicture}
+                    walkingGary={member.walkingGary}
                     currentUserID={accountID}
                 />
             ))}

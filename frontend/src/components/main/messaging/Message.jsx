@@ -2,8 +2,6 @@ import React from 'react';
 import Image from '../../common/Image.jsx';
 import thinkton from '../../../assets/legothinkton.png'; // image placeholder
 
-import {getProfilePicture} from '../../../api/client.js';
-
 /* Message component props:
 * msgBody = message text
 * msgType = used for deciding what CSS to use
@@ -18,7 +16,7 @@ const Message = React.memo(function Message({msgBody, msgType, senderData, times
 
     // Convert the timestamp into readable date and time
     // console.log(timestamp);
-    // const datetime = timestamp.split('T');
+    const datetime = timestamp.split('G');
     // const date = datetime[0];
     // const time = datetime[1].slice(0,8);
 
@@ -38,22 +36,22 @@ const Message = React.memo(function Message({msgBody, msgType, senderData, times
 
     if (isSystem) {
         return (
-            <div className="message-system">
-                <div className="msgTextContainer">
-                    <p className="systemMsgText"> {msgBody} </p>
+            <div className="system-message">
+                <div className="msg-text-container">
+                    <p className="system-msg-text"> {msgBody} </p>
                 </div>
             </div>
         );    
     }
 
     return (
-		<div className={`${isMine ? "message-self" : "message"}`}> 
+		<div className={`${isMine ? "my-message" : "message"}`}> 
         {/* Note to self: AND is used as shorthand for a ternary operator here */}
 			{!isGrouped && (<Image size={30} image={senderInfo.picture} alt={"user profile picture"} margin={10}/>)} 
-			<div className="msgTextContainer">
-				{!isGrouped && (<p className="msgSenderText"> {senderInfo.name} </p>)}
-				{!isGrouped && (<p className="msgTimestamp"> {timestamp} </p>)}
-                <p className={`${isGrouped ? "msgBodyTextGrouped" : "msgBodyText"}`}> {msgBody} </p>
+			<div className="msg-text-container">
+				{!isGrouped && (<p className="msg-sender-text"> {senderInfo.name} </p>)}
+				{!isGrouped && (<p className="msg-timestamp"> {datetime[0]} </p>)}
+                <p className={`${isGrouped ? "msg-body-text-grouped" : "msg-body-text"}`}> {msgBody} </p>
 			</div>
         </div>
     );

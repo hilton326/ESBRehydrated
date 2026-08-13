@@ -1,3 +1,4 @@
+// UNUSED
 
 // Function to convert profile picture array buffers into a readable format
 export function processImageData(pictureData) {

@@ -1,7 +1,7 @@
 // Linked to Accounts table in the database
 export type Account = {
     id: number;
-    status: boolean,
+    verified: boolean,
     email: string,
     name: string,
     password: string

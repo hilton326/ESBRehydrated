@@ -57,13 +57,13 @@ router.post('/login', async (req: Request, res: Response) => {
         if (credentials == null) { return res.status(400).json({error:"Empty response received."}); }
         if (!credentials.identifier) { return res.status(400).json({error:"E-mail address or display name is required."}); }
         if (!credentials.password) { return res.status(400).json({error:"Password is required."}); }
-        if (!credentials.isEmail == null) { return res.status(400).json({error: "isEmail flag not set."}); }
+        // if (!credentials.isEmail == null) { return res.status(400).json({error: "isEmail flag not set."}); }
         console.log("Credentials received");
         
         // Authenticate: return error message if name/email is not found or password is incorrect
-        const authenticationResponse = await authenticate(credentials.identifier, credentials.password, credentials.isEmail);
+        const authenticationResponse = await authenticate(credentials.identifier, credentials.password);
         if (!authenticationResponse.authenticated || !authenticationResponse.account) {
-            console.error("Authentication error: " + authenticationResponse.error);
+            console.log("Authentication error: " + authenticationResponse.error);
             return res.status(authenticationResponse.code).json({error: authenticationResponse.error});
         }
 
@@ -80,7 +80,7 @@ router.post('/login', async (req: Request, res: Response) => {
 
         // Set HTTP-only cookie using the token
         const token = loginToken.token;
-        const isProduction = (process.env.NODE_ENV === 'production');
+        const isProduction = (process.env.NODE_ENV === 'production'); // will be "true" in real production
         res.cookie('auth_token', token, {
             httpOnly: true,
             secure: isProduction, // security level: true or false

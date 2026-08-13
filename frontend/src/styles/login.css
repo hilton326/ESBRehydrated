@@ -85,9 +85,8 @@
 
 /* "Log in" and "Register" buttons */
 .login-button {
-
     /* Design */
-    width: 110px;
+    width: 140px;
     height: 35px;
     border-style: solid;
     border-radius: 20px;
@@ -109,4 +108,8 @@
 .login-button:hover {
     background-color:rgb(3, 92, 234);
     text-decoration: underline;
+}
+
+#login-button-clicked {
+    background-color:rgb(3, 92, 234);
 }

@@ -10,12 +10,13 @@ import { testConnection, shutdownPool } from './db'; // database connection func
 
 // Router functions from controllers
 import authRouter from './controllers/AuthController';
-import profileRouter from './controllers/ProfileController';
+import accountRouter from './controllers/AccountController';
 
 // Important services
 import { buildRecentMsgList, getMessageCount, prepareMessage, storeMessage } from './services/MessageService';
 import { verifyToken } from "./services/MiddlewareService"; 
-import { getProfilePicture, createBuffer } from "./services/ProfileService";
+import { getProfilePicture, createBuffer } from "./services/FileService";
+import { initSocket } from './services/SocketEventService';
 
 // Important objects
 import { ClientMessage, ServerMessage } from './types/MessageTypes';
@@ -54,10 +55,12 @@ const cookie = require('cookie');
 const httpServer = http.createServer(app);
 // Also configure CORS for socket.io
 const io = new Server(httpServer, { cors: { origin: corsOrigin, credentials: true } });
+// Pass the server instance into the SocketEventService to allow other controllers/services to use it
+initSocket(io);
 
 // Import API routes from controllers
 app.use('/api/auth', authRouter);
-app.use('/api/profile', profileRouter);
+app.use('/api/account', accountRouter);
 
 // Test API endpoint (GET)
 app.get('/api/test', (req: Request, res: Response) => {
@@ -67,6 +70,7 @@ app.get('/api/test', (req: Request, res: Response) => {
 // Server main function
 async function main() {
     try {
+        console.log("Initializing...");
         /* *****************************************************************
         * SERVER STARTUP
         * Test database connection and start if successful */
@@ -82,10 +86,8 @@ async function main() {
         * Global Functions & Variables */ 
         // # of clients connected and list of connected clients
         let clientList: AccountInfo[] = [];
-        // Keep track of the sender of the previous message (used for determining message display type)
-        let prevSenderID = 0;
         // Set the next message ID based on the # of messages in the database
-        let msgCounter = await getMessageCount() ?? 1; 
+        let msgCounter = await getMessageCount(); 
         
         // Customizable emit function: Best used for excluding specific sockets from an io.emit broadcast
         const customIoEmit = (action: string, data: any, exceptSocketId: string) => {
@@ -124,25 +126,13 @@ async function main() {
                     return next(new Error("Unauthorized"));
                 }
                 // Attach authenticated user and continue
-                socket.data.client = {account: authData.account, profilePicture: null}; 
+                socket.data.client = {account: authData.account, /*profilePicture: null*/}; 
                 console.log("Account", socket.data.client.account.id, "is verified");
+                return next();
         
             } catch (error) {
                 console.error("Unauthorized: invalid token;", error);
                 return next(new Error("Unauthorized"));
-            }
-
-            // after authenticating, attempt to get profile picture data
-            try {
-                const profilePicPath = await getProfilePicture(socket.data.client.account.id);
-                const buffer = await createBuffer(profilePicPath);
-                socket.data.client.profilePicture = {mime: "image/png", data: buffer};
-                console.log("Profile picture data retrieved: ", socket.data.client.profilePicture);
-                return next();
-
-            } catch (error) {
-                console.error("Couldn't get profile picture data: ", error);
-                return next();
             }
         });
 
@@ -165,9 +155,12 @@ async function main() {
                     notPresent = false;
                 }
             })
-            if (!notPresent) return;
+            if (!notPresent) {
+                socket.emit("duplicate");
+                return;
+            }
 
-            const newClientData = {id: currentClient.account.id, name: currentClient.account.name, profilePicture: currentClient.profilePicture ?? null};
+            const newClientData = {id: currentClient.account.id, name: currentClient.account.name};
             // Add the new client to the list
             clientList.push(newClientData);
             // Broadcast the new client's information to all other clients
@@ -178,10 +171,11 @@ async function main() {
             
             // Fetch recent messages from database (so the new client may see them)
             try {
-                // Retrieve last 100 messages from the database
+                // Retrieve last {count} messages from the database (count can be any integer)
                 const recentMessageList = await buildRecentMsgList(500);
                 if (recentMessageList == null) {
-                    console.log("Failed to fetch recent messages from the database");
+                    throw new Error("Failed to fetch recent messages from the database");
+
                 } else {
                     // Send in reverse order so they display oldest to newest
                     for (let i = recentMessageList.length - 1; i >= 0; i--) {
@@ -193,35 +187,36 @@ async function main() {
                         }
                         // If there is no sender, skip this message
                         if (!msg.sender) {
-                            console.log("Skipping message ", msg.id, ". Sender couldn't be verified.");
+                            console.log(`Skipping message ${msg.id}. Sender couldn't be verified.`);
                             continue;
                         }
-                        // Check if previous sender is defined
-                        if (msg.prevSender) {
-                            prevSenderID = msg.prevSender.id;
+                        const msgFromDB = await prepareMessage(msg.id, msg.text, msg.sender.id, msg.sender.name, msg.timestamp, msg.prevSender?.id ?? null);
+                        if (!msgFromDB) {
+                            console.log(`Failed to prepare message ${msg.id}`);
+                            continue;
                         }
-                        const msgFromDB: ServerMessage = prepareMessage(msg.id, msg.text, socket.id, msg.sender.id, msg.sender.name, msg.sender.profilePicture ?? '', prevSenderID, msg.timestamp);
-                        socket.emit("message", msgFromDB);
+                        socket.emit("old-message", msgFromDB);
                     }
-                    console.log("Recent messages sent over");
+                    console.log(`Recent messages sent to ${currentClient.account.name}`);
                 }
             } catch (error) {
-                console.error("Failed to process message list:", error);
+                console.error(`Failed to process message list:, ${error}`);
             }
 
             // Broadcast a system message to alert everyone of the new person joining
-            msgCounter++;
+            msgCounter = await getMessageCount();
             const joinText = "~ " + currentClient.account.name + " has entered the Krusty Krab. ~";
-            const joinMsg: ServerMessage = prepareMessage(msgCounter, joinText, socket.id, 0, "System", "", prevSenderID, String(new Date()));
-            io.emit("message", joinMsg);
+            const joinMsg = await prepareMessage(msgCounter, joinText, 0, "System", String(new Date()), null);
+            if (joinMsg) {
+                io.emit("message", joinMsg);
 
-            // Add message to database
-            const messageStored = await storeMessage(joinMsg, prevSenderID);
+                // Add message to database
+                const messageStored = await storeMessage(joinMsg);
                 if (!messageStored) {
-                    console.log("Failed to store message #", msgCounter, "in the database.");
+                    console.error("Failed to store message #", msgCounter, "in the database.");
                 }
-            prevSenderID = 0; // Reset previous sender ID to 0 (System's internal ID is 0)
-            
+            }
+
             /* *****************************************************************
             * On new message
             */
@@ -233,22 +228,22 @@ async function main() {
                         return;
                     } else {
                         // Increment message ID counter
-                        msgCounter++;
+                        msgCounter = await getMessageCount();
                         console.log("Message received:", msg.text, "from", currentClient.account.name);
 
                         // Broadcast message to all clients (including sender)
-                        const message: ServerMessage = prepareMessage(
-                            msgCounter, msg.text, socket.id, currentClient.account.id, currentClient.account.name, currentClient.profilePicture ?? null, prevSenderID, String(new Date())
+                        const message = await prepareMessage(
+                            msgCounter, msg.text, currentClient.account.id, currentClient.account.name, String(new Date()), null
                         );
-                        io.emit("message", message);
+                        if (message) {
+                            io.emit("message", message);
 
-                        // Add message to database
-                        const messageStored = await storeMessage(message, prevSenderID);
-                            if (!messageStored) {
-                                console.log("Failed to store message #", msgCounter, "in the database.");
-                            }
-                        // Update previous sender info to use for the next message
-                        prevSenderID = currentClient.account.id ?? msg.senderID;
+                            // Add message to database
+                            const messageStored = await storeMessage(message);
+                                if (!messageStored) {
+                                    console.log("Failed to store message #", msgCounter, "in the database.");
+                                }
+                        }
                     }
                 } catch (error) {
                     console.error("Unexpected error while sending message: ", error);
@@ -269,19 +264,20 @@ async function main() {
                 customIoEmit("clients:remove", clientToRemove, "");
                 console.log(currentClient.account.name, "has left.", clientList.length, "clients currently connected.");
 
-                msgCounter++;
+                msgCounter = await getMessageCount();
                 // Broadcast a system message to alert everyone of the new person leaving
                 const leaveText = "~ " + currentClient.account.name + " has left the Krusty Krab. ~";
-                const leaveMsg: ServerMessage = prepareMessage(msgCounter, leaveText, socket.id, 0, "System", "", prevSenderID, String(new Date()));
-                io.emit("message", leaveMsg);
+                const leaveMsg = await prepareMessage(msgCounter, leaveText, 0, "System", String(new Date()), null);
 
-                // Add message to database
-                const messageStored = await storeMessage(leaveMsg, prevSenderID);
-                    if (!messageStored) {
-                        console.log("Failed to store message #", msgCounter, "in the database.");
-                    }
-                // Reset previous sender ID to 0
-                prevSenderID = 0;
+                if (leaveMsg) {
+                    io.emit("message", leaveMsg);
+
+                    // Add message to database
+                    const messageStored = await storeMessage(leaveMsg);
+                        if (!messageStored) {
+                            console.log("Failed to store message #", msgCounter, "in the database.");
+                        }
+                }
             });
         });
 

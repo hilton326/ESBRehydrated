@@ -37,6 +37,7 @@ export const query = (text: string, params?: any[]): Promise<QueryResult<any>> =
 // Test database connection by executing a simple query
 export const testConnection = async () => {
     try {
+        console.log("Connecting to database...");
         // Simple postgreSQL query to test the connection
         const response = await query('SELECT NOW()');
         console.log('Database connection successful. Current time:', response.rows[0].now);

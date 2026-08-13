@@ -1,11 +1,13 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from "react-router-dom";
 
-import { loginRequest } from '../../api/client.js'; // Import the client for API calls
+import { loginRequest } from '../../api/AuthClient.js'; // Import the client for API calls
 import Popup from '../common/Popup.jsx';
 
 const LoginButton = ({email, password}) => {
-    const navigate = useNavigate();
+    const navigate = useNavigate(); // used to navigate to chat page
+
+    const [isLoading, setIsLoading] = useState(false); // loading state
 
     // Controls for error popup
     const [popupVisible, setPopupVisible] = useState(false);
@@ -40,6 +42,7 @@ const LoginButton = ({email, password}) => {
             console.log(popupData);
             return;
         }
+        setIsLoading(true);
         // Attempt to authenticate
         const login = await loginRequest(email, password);
         
@@ -50,13 +53,15 @@ const LoginButton = ({email, password}) => {
             setPopupData(String(login.error));
             setPopupVisible(true);
         }
+        setIsLoading(false);
     }
 
     return (
         <div>
-            <button className="login-button" onClick={handleLogin}>
-                Log In
+            <button id={`${isLoading ? "login-button-clicked" : ""}`} className="login-button" onClick={handleLogin}>
+                {isLoading ? "Logging in..." : "Log In"}
             </button>
+
             {popupVisible ? 
             (
                 <div>

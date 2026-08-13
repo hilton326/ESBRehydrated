@@ -70,6 +70,24 @@ export const getLastMessageID = async () => {
     }
 };
 
+// getLastMessageID: Retrieves the most recent message and gets its ID.
+export const getLastMessageSender = async () => {
+    try {
+        const response = await query
+        (   `SELECT * FROM messages 
+             ORDER BY id DESC
+             LIMIT 1`
+        );
+        // console.log("Message from DB: ", response.rows[0]);
+        // console.log("Sender of message: ", response.rows[0].sender);
+        return response.rows[0]?.sender ?? null;
+    
+    } catch (error) {
+        console.error('Error returning last message sender', error);
+        return null;
+    }
+};
+
 // storeNewMessage: Stores a new message in the database.
 export const storeNewMessage = async (text: string, senderID: number, prevSenderID: number, timestamp: string) => {
     try {

@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 
 import ChatController from '../components/main/ChatController.jsx';
 
-import { whoAmI, getProfilePicture } from '../api/client.js'; // For API calls
+import { whoAmI } from '../api/AuthClient.js';
+// import { getYourProfilePicture } from '../api/ProfileClient.js';
 
 export default function ChatPage() {
   const navigate = useNavigate();
@@ -11,12 +12,12 @@ export default function ChatPage() {
   /* Loading: Loading state
   loggedIn: Whether a login session was successfully validated
   Account: Account data associated with the login session */
-  const [auth, setAuth] = useState({loading: true, loggedIn: false, account: null, profilePicture: null});
+  const [auth, setAuth] = useState({loading: true, loggedIn: false, account: null});
 
   // useEffect since page content is dependent on server validating a login session
   useEffect(() => {
     let mounted = true;
-    // Immediately Invoked Function Expression
+    // Immediately Invoked Function Expression: Useful for async operations inside a useEffect
     (async () => {
       // Contact server, which will validate the login session cookie if present
       const response = await whoAmI();
@@ -28,28 +29,30 @@ export default function ChatPage() {
       // If validation not successful, redirect to login page
       if (!response.successful) {
         navigate('/login');
-        setAuth({loading: false, loggedIn: false, account: null});
+        setAuth({loading: false, loggedIn: false, account: null, profilePicture: null});
         return;
       }
 
-      // Retrieve profile picture
-      const pic = await getProfilePicture();
-      // Set account data and stop loading
-      setAuth({loading: false, loggedIn: true, account: response.account, profilePicture: pic})
+      setAuth({loading: false, loggedIn: true, account: response.account})
     })();
     // Cleanup function
     return () => {mounted = false};
   }, [navigate, setAuth]);
 
   // If loading state is set, show loading screen (WIP)
-  if (auth.loading) return <div> Loading... </div>;
+  if (auth.loading) {
+    console.log("Loading...");
+    return <div> Loading... </div>;
+  }
+  
   // Do not show any content if there is no login session
   if (!auth.loggedIn) return null;
 
   // Normal content (assuming login session is validated)
   return (
     <div>
-      <ChatController account={auth.account} profilePicture={auth.profilePicture} />
+      <title> Special:Chat - ESB Rehydrated </title>
+      <ChatController accountInfo={auth.account}/>
     </div>
   );  
 }
