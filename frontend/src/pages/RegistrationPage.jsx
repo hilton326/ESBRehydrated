@@ -23,7 +23,7 @@ function RegistrationPage() {
           <div>
             <input className="login-input" type="text" value={email} onChange={e => setEmail(e.target.value)} />
           </div>
-          <p className="login-text"> Enter a display name (it doesn't have to be your real name): </p>
+          <p className="login-text"> Enter a username (you can change this later): </p>
           <div>
             <input className="login-input" type="text" value={name} onChange={e => setName(e.target.value)} />
           </div>
