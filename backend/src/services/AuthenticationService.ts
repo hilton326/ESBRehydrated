@@ -17,7 +17,7 @@ export async function authenticate(email: string, password: string) {
         console.log(`Searching for email address ${email}...`);
         matchingAccount = await getAccountByEmail(email);
         if (!matchingAccount) {
-            return {account: null, authenticated: false, code: 400, error: "No account is associated with that email."}
+            return {account: null, authenticated: false, code: 400, error: "No account is associated with that email."};
         }
         
         console.log("Account found. Attempting to authenticate...");

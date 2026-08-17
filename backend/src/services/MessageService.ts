@@ -6,7 +6,7 @@ import { getAccountById} from '../repository/AccountRepository';
 export async function getMessageCount() {
     // Retrieve total # of messages from database
     const msgCount = Number(await getLastMessageID());
-    if (!msgCount) {
+    if (msgCount == null) {
         console.log("Couldn't receive message count from database. Resetting msgCounter to 1");
         return 1;
     }
@@ -59,7 +59,10 @@ export async function prepareMessage(msgID: number, msgText: string, senderID: n
         let prevSender = prevSenderID;
         if (prevSender == null) {
             prevSender = await getLastMessageSender();
-            if (prevSender == null) throw new Error("Couldn't retrieve previous sender ID");
+            if (prevSender == null) {
+                console.log("Couldn't retrieve previous sender information. Defaulting to 0.");
+                prevSender = 0;
+            }
         }
         
         const message: ServerMessage = {
