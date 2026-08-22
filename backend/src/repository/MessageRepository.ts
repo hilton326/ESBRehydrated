@@ -62,11 +62,11 @@ export const getLastMessageID = async () => {
              ORDER BY id DESC
              LIMIT 1`
         );
-        return response.rows[0]?.id ?? null;
+        return response.rows[0]?.id ?? 0;
     
     } catch (error) {
         console.error('Error returning last message ID', error);
-        return null;
+        return 0;
     }
 };
 
@@ -89,13 +89,13 @@ export const getLastMessageSender = async () => {
 };
 
 // storeNewMessage: Stores a new message in the database.
-export const storeNewMessage = async (text: string, senderID: number, prevSenderID: number, timestamp: string) => {
+export const storeNewMessage = async (text: string, senderID: number, timestamp: string, msgType: number) => {
     try {
         const response = await query
         (
-            `INSERT INTO messages (text, sender, prev_sender, timestamp)
+            `INSERT INTO messages (text, sender, timestamp, type)
              VALUES ($1, $2, $3, $4) RETURNING *`, 
-             [text, senderID, prevSenderID, timestamp]
+             [text, senderID, timestamp, msgType]
         );
         return response.rows[0];
     

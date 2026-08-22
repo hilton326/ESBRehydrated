@@ -6,11 +6,7 @@ import { getAccountById} from '../repository/AccountRepository';
 export async function getMessageCount() {
     // Retrieve total # of messages from database
     const msgCount = Number(await getLastMessageID());
-    if (msgCount == null) {
-        console.log("Couldn't receive message count from database. Resetting msgCounter to 1");
-        return 1;
-    }
-    
+    // console.log("Current message count:", msgCount);
     return msgCount+1;
 };
 
@@ -26,8 +22,8 @@ export async function buildRecentMsgList(count: number) {
             id: msg.id,
             text: msg.text,
             sender: sender, 
-            prevSender: prevSender,
-            timestamp: msg.timestamp
+            timestamp: msg.timestamp,
+            type: msg.type
         }
         return updatedMsg;
     }
@@ -42,7 +38,7 @@ export async function buildRecentMsgList(count: number) {
 };
 
 // prepareMessage: Convert the ClientMessage into a ServerMessage (add additional details) before sending it.
-export async function prepareMessage(msgID: number, msgText: string, senderID: number, senderName: string, timestamp: string, prevSenderID: number | null) {
+export async function prepareMessage(msgID: number, msgText: string, senderID: number, senderName: string, timestamp: string, msgType: number | null) {
     try {
         // Determine message type, which is needed for the client to figure out how to display it
         const assignMsgType = (sender: number, prevSender: number ) => {
@@ -51,23 +47,25 @@ export async function prepareMessage(msgID: number, msgText: string, senderID: n
 
             // Type 1 = Message has different sender from previous, so it has full sender info
             // Type 2 = Message has same sender as previous, so it has less info
-            const msgType = (sender != prevSender) ? 1 : 2;
-            return msgType;
+            const type = (sender != prevSender) ? 1 : 2;
+            return type;
         }
 
-        // Retrieve previous sender ID, which is needed for determining msgType
-        let prevSender = prevSenderID;
-        if (prevSender == null) {
-            prevSender = await getLastMessageSender();
-            if (prevSender == null) {
-                console.log("Couldn't retrieve previous sender information. Defaulting to 0.");
-                prevSender = 0;
+        /* For new messages, the msgType hasn't been calculated yet.
+        * To calculate it, retrieve previous sender ID;
+        * Then use sender and prevSender IDs in assignMsgType function. */
+        if (msgType == null) {
+            let prevSenderID = await getLastMessageSender();
+            if (prevSenderID == null) {
+                console.log("WARNING: Couldn't retrieve previous sender information. Defaulting to 0.");
+                prevSenderID = 0;
             }
+            msgType = assignMsgType(senderID, prevSenderID);
         }
         
         const message: ServerMessage = {
             id: msgID, 
-            msgType: assignMsgType(senderID, prevSender),  
+            msgType: msgType,
             senderID: senderID,
             senderName: senderName,
             text: msgText, 
@@ -94,13 +92,13 @@ export async function storeMessage(msg: ServerMessage) {
         if (!senderCheck) { 
             throw new Error("Account not found with ID " + msg.senderID); 
         }
-        const prevSenderID = await getLastMessageSender();
-        if (prevSenderID == null) { 
-            throw new Error("Error retrieving previous sender ID"); 
-        }
+        // const prevSenderID = await getLastMessageSender();
+        // if (prevSenderID == null) { 
+        //     throw new Error("Error retrieving previous sender ID"); 
+        // }
 
         // If both checks pass, attempt to store new message in the DB
-        const added = await storeNewMessage(msg.text, msg.senderID, prevSenderID, String(msg.timestamp));
+        const added = await storeNewMessage(msg.text, msg.senderID, String(msg.timestamp), msg.msgType);
         if (!added) { 
             return false; 
         }

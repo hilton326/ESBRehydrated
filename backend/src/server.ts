@@ -84,10 +84,9 @@ async function main() {
 
         /* *****************************************************************
         * Global Functions & Variables */ 
-        // # of clients connected and list of connected clients
-        let clientList: AccountInfo[] = [];
-        // Set the next message ID based on the # of messages in the database
-        let msgCounter = await getMessageCount(); 
+
+        let clientList: AccountInfo[] = []; // # of clients connected and list of connected clients
+        let msgCounter = await getMessageCount(); // Set the next message ID based on the # of messages in the database
         
         // Customizable emit function: Best used for excluding specific sockets from an io.emit broadcast
         const customIoEmit = (action: string, data: any, exceptSocketId: string) => {
@@ -190,7 +189,7 @@ async function main() {
                             console.log(`Skipping message ${msg.id}. Sender couldn't be verified.`);
                             continue;
                         }
-                        const msgFromDB = await prepareMessage(msg.id, msg.text, msg.sender.id, msg.sender.name, msg.timestamp, msg.prevSender?.id ?? null);
+                        const msgFromDB = await prepareMessage(msg.id, msg.text, msg.sender.id, msg.sender.name, msg.timestamp, msg.type);
                         if (!msgFromDB) {
                             console.log(`Failed to prepare message ${msg.id}`);
                             continue;
@@ -206,7 +205,7 @@ async function main() {
             // Broadcast a system message to alert everyone of the new person joining
             msgCounter = await getMessageCount();
             const joinText = "~ " + currentClient.account.name + " has entered the Krusty Krab. ~";
-            const joinMsg = await prepareMessage(msgCounter, joinText, 0, "System", String(new Date()), null);
+            const joinMsg = await prepareMessage(msgCounter, joinText, 0, "System", String(new Date()), 0);
             if (joinMsg) {
                 io.emit("message", joinMsg);
 
@@ -231,11 +230,13 @@ async function main() {
                         msgCounter = await getMessageCount();
                         console.log("Message received:", msg.text, "from", currentClient.account.name);
 
-                        // Broadcast message to all clients (including sender)
+                        // Prepare message for sending
+                        // NOTE: "null" argument is msgType. This is unknown now but prepareMessage calculates it.
                         const message = await prepareMessage(
                             msgCounter, msg.text, currentClient.account.id, currentClient.account.name, String(new Date()), null
                         );
                         if (message) {
+                             // Broadcast message to all clients (including sender)
                             io.emit("message", message);
 
                             // Add message to database
@@ -260,14 +261,14 @@ async function main() {
 
                 // Delete client from list and signal clients to update their displays
                 clientList = clientList.filter(client => client.id !== currentClient.account.id);
-                const clientToRemove = {id: currentClient.account.id, name: currentClient.account.name, profilePicture: currentClient.profilePicture ?? null};
+                const clientToRemove = {id: currentClient.account.id, name: currentClient.account.name, /*profilePicture: currentClient.profilePicture ?? null*/};
                 customIoEmit("clients:remove", clientToRemove, "");
                 console.log(currentClient.account.name, "has left.", clientList.length, "clients currently connected.");
 
                 msgCounter = await getMessageCount();
                 // Broadcast a system message to alert everyone of the new person leaving
                 const leaveText = "~ " + currentClient.account.name + " has left the Krusty Krab. ~";
-                const leaveMsg = await prepareMessage(msgCounter, leaveText, 0, "System", String(new Date()), null);
+                const leaveMsg = await prepareMessage(msgCounter, leaveText, 0, "System", String(new Date()), 0);
 
                 if (leaveMsg) {
                     io.emit("message", leaveMsg);
