@@ -2,6 +2,10 @@
 import MessageInput from './MessageInput.jsx';
 import Message from './Message.jsx';
 
+/* MessageDisplay: Message list container.
+* accountID = current user ID; never changes
+* messageList = message array
+* cache = accountCache; used for profile pictures */
 export default function MessageDisplay({accountID, messageList, cache}) {
     
     // memberList.forEach(member => {
@@ -14,13 +18,12 @@ export default function MessageDisplay({accountID, messageList, cache}) {
     //     console.log(member.name, "has", count, "messages");
     // })
 
-    /* Issue: Message data doesn't contain profile picture.
-    We could call the API endpoint with the sender ID? */
-   function getSenderData(msg) {
+    // Retrieve each message's sender data from cache
+    function getSenderData(msg) {
         if (!msg) return;
+       
         let data = cache?.find(member => member.id === msg.senderID);
         if (!data) {
-            //const picture = await getProfilePicture(msg.senderID);
             data = {id: msg.senderID, name: msg.senderName, profilePicture: null};
         }
         return data;

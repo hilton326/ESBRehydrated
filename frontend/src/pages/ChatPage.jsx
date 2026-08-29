@@ -4,17 +4,17 @@ import { useEffect, useState } from 'react';
 import ChatController from '../components/main/ChatController.jsx';
 
 import { whoAmI } from '../api/AuthClient.js';
-// import { getYourProfilePicture } from '../api/ProfileClient.js';
 
+// ChatPage (/chat): Main page. 
 export default function ChatPage() {
   const navigate = useNavigate();
 
-  /* Loading: Loading state
-  loggedIn: Whether a login session was successfully validated
-  Account: Account data associated with the login session */
+  /* Loading: Loading state,
+    loggedIn: Whether a login session was successfully validated
+    Account: Account data associated with the login session */
   const [auth, setAuth] = useState({loading: true, loggedIn: false, account: null});
 
-  // useEffect since page content is dependent on server validating a login session
+  // Page content is dependent on valid login session
   useEffect(() => {
     let mounted = true;
     // Immediately Invoked Function Expression: Useful for async operations inside a useEffect
@@ -32,7 +32,7 @@ export default function ChatPage() {
         setAuth({loading: false, loggedIn: false, account: null, profilePicture: null});
         return;
       }
-
+      // If validation successful, update the account data
       setAuth({loading: false, loggedIn: true, account: response.account})
     })();
     // Cleanup function

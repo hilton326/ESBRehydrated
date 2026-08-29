@@ -2,6 +2,9 @@ import { useState } from 'react';
 import Image from '../../common/Image.jsx';
 import thinkton from '../../../assets/legothinkton.png'; // image placeholder
 
+/* MessageInput: Message box that allows the user to type their message.
+* onNewMessage: Callback; triggers event handler in ChatController
+* profilePicture, walkingGary: current user data from ChatController */
 export default function MessageInput({onNewMessage, profilePicture, walkingGary}) {
 
     // Message input box state
@@ -24,7 +27,6 @@ export default function MessageInput({onNewMessage, profilePicture, walkingGary}
                 ? (<div id="message-input-field" className="chat"> Walking Gary... </div>) 
                 : (<input id="message-input-field" className="chat" type="text" value={newMsg} onChange={e => setNewMsg(e.target.value)} />)
             }
-            
         </form>
     )
 }

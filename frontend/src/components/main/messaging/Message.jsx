@@ -5,7 +5,7 @@ import thinkton from '../../../assets/legothinkton.png'; // image placeholder
 /* Message component props:
 * msgBody = message text
 * msgType = used for deciding what CSS to use
-* senderData = sender of message (their id, name and picture)
+* senderData = message sender data (their id, name and picture)
 * timestamp = when message was received
 * currentUserID = currently logged in user; again, used for appearance */
 
@@ -20,7 +20,7 @@ const Message = React.memo(function Message({msgBody, msgType, senderData, times
     // const date = datetime[0];
     // const time = datetime[1].slice(0,8);
 
-    // Get sender info (use fallbacks if any values aren't present)
+    // Get sender info (use fallbacks if any values aren't present to prevent crashes)
     const senderInfo = {
         id: senderData?.id ?? 0,
         name: senderData?.name ?? "System",

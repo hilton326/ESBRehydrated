@@ -1,7 +1,8 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
-import { useNavigate } from "react-router-dom";
-import { io, Socket } from "socket.io-client";
+import { useState, useCallback, useEffect, useRef } from 'react'; // hooks
+import { useNavigate } from "react-router-dom"; // for page navigation
+import { io, Socket } from "socket.io-client"; // for connecting and messaging the server
 
+// Components
 import TitleBar from './TitleBar.jsx';
 import MessageDisplay from './messaging/MessageDisplay.jsx';
 import MessageInput from './messaging/MessageInput.jsx';
@@ -11,11 +12,13 @@ import Popup from '../common/Popup.jsx';
 
 import { getProfilePictureForId } from '../../api/ProfileClient.js'; // For API calls
 
+// ChatController: Main content of the application. 
+// accountInfo = {id, email, name}. Should always be provided by ChatPage
 export default function ChatController({accountInfo}) {
-    // console.log(accountInfo);
-    const getOuttaHere = useNavigate(); // used to navigate back to login page
+    
+    /* ******************************* FUNCTIONS ********************************** */
 
-    // Retrieve an account's profile picture from the API (by their id)
+    // getProfilePicture: Retrieve an account's profile picture from the API (by their id)
     async function getProfilePicture(id) {
         // console.log("ID we're sending:", id);
         const pictureURL = await getProfilePictureForId(id);
@@ -25,7 +28,7 @@ export default function ChatController({accountInfo}) {
         return null;
     }
 
-    // Function to update both memberList and cache when profile pictures or display names change
+    // handleProfileChanges: Update both memberList and cache when profile pictures or display names change
     function handleProfileChanges(id, update) {
         // Only update information for the specified account ID
         setMembers(prev => 
@@ -34,15 +37,17 @@ export default function ChatController({accountInfo}) {
             prev.map(account => (account.id === id ? { ...account, ...update } : account)));
     }
 
-    // Function that runs when you get the BOOT
+    const getOuttaHere = useNavigate(); // used to navigate back to login page
+    // exitChat: runs when you get the BOOT
     function exitChat() {
         getOuttaHere("/login");
     }
 
-    // Account ID: Should always be carried over from ChatPage and never change
-    const id = accountInfo?.id ?? 0;
+    /* ******************************* CONSTANTS + STATES ********************************** */
+
+    const id = accountInfo?.id ?? 0; // Current user ID: should always be carried over from ChatPage
     const [displayName, setDisplayName] = useState(accountInfo?.name ?? "Thinkton"); // Current user's display name
-    const [walkingGary, setWalkingGary] = useState(false); // Walking Gary status (always starts as "false")
+    const [walkingGary, setWalkingGary] = useState(false); // Current user's Walking Gary status (always starts false)
 
     const [profilePicture, setProfilePicture] = useState(null); // Current user's profile picture
     // Fetch the picture once on page load (for components such as ProfileDisplay)
@@ -56,25 +61,25 @@ export default function ChatController({accountInfo}) {
     }, [id, profilePicture]);
 
     const [messages, setMessages] = useState([]); // Message array
-    const [members, setMembers] = useState([]); // Member array (who is currently in the chat)
+    const [members, setMembers] = useState([]); // Member array (users currently in the chat)
 
     // Account cache: Includes {id, name, profilePicture} of all members AND those who have currently loaded messages
     const [accountCache, setAccountCache] = useState([]);
-    const accountCacheRef = useRef([]);
-    const inflightRef = useRef(new Map()); // Track duplicate profile picture requests
-
-    // Update the reference whenever the cache changes
+    const accountCacheRef = useRef([]); // reference to the cache; allows usage of the data inside effects
+    const inflightRef = useRef(new Map()); // Prevents duplicate profile picture API requests
+    // Update the reference whenever the cache changes or messages are sent
     useEffect(() => {
         accountCacheRef.current = accountCache;
     }, [accountCache, messages]);
 
-    // Permanent instance of the socket connection
-    const socketRef = useRef(null);
+    // Controller and message text for "you're already logged in" popup
+    const [isDuplicateSession, setIsDuplicateSession] = useState(false); 
+    const duplicateSessionMsg = "It looks like you're already in this chat! You're probably logged in on another browser tab or on a different device. Try switching to that session instead.";
 
-    // Controller for "you're already logged in" popup
-    const [isDuplicateSession, setIsDuplicateSession] = useState(false);
+    /* ******************************* SOCKET.IO CLIENT ********************************** */
 
-    // Receiving messages: Use socket.io client to receive new messages
+    const socketRef = useRef(null); // Permanent instance of the socket connection
+
     useEffect(() => {
         // Establish connection with server
         socketRef.current = io({
@@ -102,7 +107,6 @@ export default function ChatController({accountInfo}) {
             setMessages(prev =>  [...prev, msg]);
         });
 
-
         // On connection, the server will send a bunch of recent messages all at once.
         // These are processed in the same way, though profile picture data needs some special logic if the sender isn't in memberList.
         socketRef.current.on("old-message", async (msg) => {
@@ -123,9 +127,10 @@ export default function ChatController({accountInfo}) {
             * Check if the sender is already in the account cache (should be true for anyone currently in member list). 
             * If they are, don't call the API again. If not, call the API to get the profile picture and add to cache. */
 
-             // Don't add the SYSTEM user to cache! (There is no profile picture associated with it)
+            // Don't add the SYSTEM user to cache! (There is no profile picture associated with it)
             if (senderID == 0) return;
-            // "some" is equivalent to a for loop checking this expression
+
+            // "some" is equivalent to a for loop checking this expression on each element of the ref
             const alreadyCached = accountCacheRef.current.some(account => account.id === senderID);
             if (!alreadyCached) {
                 // Also make sure that there is not already a request ongoing for that sender ID
@@ -139,7 +144,7 @@ export default function ChatController({accountInfo}) {
                         })()
                     );
                 }
-        
+                
                 const picture = await inflightRef.current.get(senderID);
                 if (!picture) {
                     inflightRef.current.delete(senderID);
@@ -147,12 +152,11 @@ export default function ChatController({accountInfo}) {
                 }
                 
                 setAccountCache(prev => {
-                    // re-check with functional update for safety
+                    // re-check the ID for safety
                     if (prev.some(account => account.id === senderID)) return prev;
                     return [...prev, { id: senderID, name: senderName, walkingGary: false, profilePicture: picture }];
                 });
             }
-
         });
 
         /* Member list updates:
@@ -162,6 +166,8 @@ export default function ChatController({accountInfo}) {
         */
         socketRef.current.on("clients:init", async (memberList) => {
             if (!memberList) return;
+
+            // Retrieve profile picture for every member here
             const processedMembers = await Promise.all(
                 memberList.map(async (member) => ({
                     id: member.id,
@@ -173,21 +179,19 @@ export default function ChatController({accountInfo}) {
             setMembers(processedMembers);
             setAccountCache(processedMembers);
         });
-
         socketRef.current.on("clients:add", async (newMember) => {
             if (!newMember) return;
             const addedMember = {
                 id: newMember.id,
                 name: newMember.name,
                 walkingGary: false,
-                profilePicture: await getProfilePicture(newMember.id) // Convert raw data into image URL
+                profilePicture: await getProfilePicture(newMember.id) 
             };
 
             console.log("New member:", addedMember);
             setMembers(prev => [...prev, addedMember] );
             setAccountCache(prev => [...prev, addedMember] );
         });
-        
         socketRef.current.on("clients:remove", (deleteMember) => {
             if (deleteMember) {
                 console.log("Member to delete from server:", deleteMember);
@@ -207,12 +211,12 @@ export default function ChatController({accountInfo}) {
             const { id: updatedId, name: updatedName } = response;
             if (updatedId == null || updatedName == null) return;
 
-            // If it's your display name (the IDs match), signal to update ProfileDisplay and MessageInput
+            // Update displayName state if it's the current user's display name (the IDs match)
             if (updatedId === id) {
                 setDisplayName(updatedName);
             }
-            // Update both memberList and accountCache
-            handleProfileChanges(updatedId, { name: updatedName });
+
+            handleProfileChanges(updatedId, { name: updatedName }); // Update both memberList and accountCache
         });
         socketRef.current.on("walking-gary-updated", (response) => {
             if (!response) return;
@@ -220,25 +224,26 @@ export default function ChatController({accountInfo}) {
             const { id: updatedId, status: updatedStatus } = response;
             if (updatedId == null || updatedStatus == null) return;
 
-            // If it's your display name (the IDs match), signal to update ProfileDisplay and MessageInput
+            // Update walkingGary state if it's the current user's display name (the IDs match)
             if (updatedId === id) {
                 setWalkingGary(updatedStatus);
             }
-            // Update both memberList and accountCache
-            handleProfileChanges(updatedId, { walkingGary: updatedStatus });
+
+            handleProfileChanges(updatedId, { walkingGary: updatedStatus }); // Update both memberList and accountCache
         });
         socketRef.current.on("profile-picture-updated", async (accountID) => {
             if (!accountID) return;
+
             // Retrieve the new URL from the API
             const newURL = await getProfilePicture(accountID);
             if (!newURL) return;
 
-            // If it's your profile picture (the IDs match), signal to update ProfileDisplay and MessageInput
+            // Update profilePicture state if it's the current user's display name (the IDs match)
             if (accountID === id) {
                 setProfilePicture(newURL);
             }
-            // Update both memberList and accountCache
-            handleProfileChanges(accountID, { profilePicture: newURL });
+
+            handleProfileChanges(accountID, { profilePicture: newURL }); // Update both memberList and accountCache
         });
 
         // Handle duplicate connection (when you try to log in twice under the same account)
@@ -258,7 +263,7 @@ export default function ChatController({accountInfo}) {
         };
     }, [id]);
 
-    // When a new message is added, automatically jump to the bottom of the message list
+    // When a new message is received, automatically jump to the bottom of the message list
     useEffect(() => {
         // This will not occur when Walking Gary
         if (walkingGary) return;
@@ -267,8 +272,8 @@ export default function ChatController({accountInfo}) {
         objDiv.scrollTop = objDiv.scrollHeight;
     }, [messages, walkingGary]);
 
-    /* Sending messages:
-    * useCallback allows new messages to be passed up from the MessageInput component.
+    /* sendNewMsg: Message event handler.
+    * New messages are passed up from the MessageInput component.
     * Note: updateMsgList is not called until the server receives the message and then broadcasts it to the chat. */
     const sendNewMsg = useCallback(msg => {
         const newMsg = { senderID: id, text: msg};
@@ -292,11 +297,7 @@ export default function ChatController({accountInfo}) {
             {isDuplicateSession && (
                 <Popup
                     title={"Oops!"} 
-                    message={
-                        "It looks like you're already in this chat! " +
-                        "You're probably logged in on another browser tab or on a different device. " +
-                        "Try switching to that session instead."
-                    }
+                    message={duplicateSessionMsg}
                     buttonText={"OK"}
                     onConfirm={() => exitChat()}
                     isError={true}
