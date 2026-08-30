@@ -1,10 +1,11 @@
-// MAIN SERVER
+// MAIN SERVER APPLICATION
+console.log("Initializing...");
+
 import express, { Request, Response } from 'express';
 import http from 'http';
-import { Server } from 'socket.io';
+import { Server } from 'socket.io'; // Chat server
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import fs from "node:fs/promises";
 import 'dotenv/config'; // Load environment variables from .env file
 import { testConnection, shutdownPool } from './db'; // database connection functions
 
@@ -15,10 +16,9 @@ import accountRouter from './controllers/AccountController';
 // Important services
 import { buildRecentMsgList, getMessageCount, prepareMessage, storeMessage } from './services/MessageService';
 import { verifyToken } from "./services/MiddlewareService"; 
-import { getProfilePicture, createBuffer } from "./services/FileService";
 import { initSocket } from './services/SocketEventService';
 
-// Important objects
+// Important object types
 import { ClientMessage, ServerMessage } from './types/MessageTypes';
 import { AccountInfo } from './types/AccountTypes';
 
@@ -26,8 +26,6 @@ import { AccountInfo } from './types/AccountTypes';
 const app = express();
 // Set the server port (use 8080 if nothing specified in .env variables)
 const PORT = Number(process.env.SERVER_PORT) ?? 8080;
-// // Set the client URL
-// const CLIENT = process.env.CLIENT_URL ?? 'http://localhost:5173';
 
 // CORS control function
 function corsOrigin(origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
@@ -70,7 +68,6 @@ app.get('/api/test', (req: Request, res: Response) => {
 // Server main function
 async function main() {
     try {
-        console.log("Initializing...");
         /* *****************************************************************
         * SERVER STARTUP
         * Test database connection and start if successful */
@@ -140,13 +137,15 @@ async function main() {
         */
         io.on("connection", async (socket) => {
             if (shuttingDown) return;
+
             // Verify that the new client is authorized (has an active login session)
             const currentClient = socket.data.client;
             if (!currentClient) return;
             console.log("New client", currentClient.account.name, "authorized.");
 
             /* Make sure the client is not already present before adding it to the list.
-            * This stops the client from occasionally being added twice when they refresh their chat. */
+            * This stops the client from occasionally being added twice when they refresh their chat. 
+            * Also, if this is a duplicate session, emit a special signal to the client. */
             let notPresent = true;
             clientList.forEach(client => {
                 if (client.id === currentClient.account.id) {
@@ -159,13 +158,13 @@ async function main() {
                 return;
             }
 
+            /* Add new client data to clientList:
+            * Broadcast the entire clientList to the new client.
+            * But only broadcast the newClientData to all other clients. */
             const newClientData = {id: currentClient.account.id, name: currentClient.account.name};
-            // Add the new client to the list
-            clientList.push(newClientData);
-            // Broadcast the new client's information to all other clients
-            customIoEmit("clients:add", newClientData, socket.id);
-            // Send entire list to new client
+            clientList.push(newClientData); 
             socket.emit("clients:init", clientList);
+            customIoEmit("clients:add", newClientData, socket.id);
             console.log(currentClient.account.name, "has joined.", clientList.length, "clients currently connected.");
             
             // Fetch recent messages from database (so the new client may see them)
@@ -174,7 +173,6 @@ async function main() {
                 const recentMessageList = await buildRecentMsgList(500);
                 if (recentMessageList == null) {
                     throw new Error("Failed to fetch recent messages from the database");
-
                 } else {
                     // Send in reverse order so they display oldest to newest
                     for (let i = recentMessageList.length - 1; i >= 0; i--) {
@@ -194,12 +192,13 @@ async function main() {
                             console.log(`Failed to prepare message ${msg.id}`);
                             continue;
                         }
+                        // Send a distinct signal for "old messages"
                         socket.emit("old-message", msgFromDB);
                     }
                     console.log(`Recent messages sent to ${currentClient.account.name}`);
                 }
             } catch (error) {
-                console.error(`Failed to process message list:, ${error}`);
+                console.error(`Failed to process message list: ${error}`);
             }
 
             // Broadcast a system message to alert everyone of the new person joining
@@ -212,7 +211,7 @@ async function main() {
                 // Add message to database
                 const messageStored = await storeMessage(joinMsg);
                 if (!messageStored) {
-                    console.error("Failed to store message #", msgCounter, "in the database.");
+                    console.warn("Failed to store message #", msgCounter, "in the database.");
                 }
             }
 
@@ -242,7 +241,7 @@ async function main() {
                             // Add message to database
                             const messageStored = await storeMessage(message);
                                 if (!messageStored) {
-                                    console.log("Failed to store message #", msgCounter, "in the database.");
+                                    console.warn("Failed to store message #", msgCounter, "in the database.");
                                 }
                         }
                     }
@@ -276,7 +275,7 @@ async function main() {
                     // Add message to database
                     const messageStored = await storeMessage(leaveMsg);
                         if (!messageStored) {
-                            console.log("Failed to store message #", msgCounter, "in the database.");
+                            console.warn("Failed to store message #", msgCounter, "in the database.");
                         }
                 }
             });
@@ -293,10 +292,11 @@ async function main() {
             try {
                 // Stop accepting new web socket connections
                 await io.close();
-                // Close HTTP server
-                server.close();
-                // Close database pool
-                await shutdownPool();
+                
+                // Close HTTP server and database pool
+                server.close(); 
+                await shutdownPool(); 
+
                 console.log('Server shutdown complete.');
                 process.exit(0); // Terminate process
             } catch (error) {

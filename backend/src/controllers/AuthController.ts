@@ -3,12 +3,12 @@
 // Express.js imports
 import { Router, Request, Response } from 'express';
 const router = Router();
-// Model imports
-import { Account } from '../types/AccountTypes';
+
 // Services (functions that handle the logic)
 import { checkIfEmailExists, hashPassword, registerAccount } from '../services/RegistrationService'
 import { authenticate, generateToken } from '../services/AuthenticationService'
 import { getTokenFromCookie, verifyToken } from '../services/MiddlewareService';
+
 // Data Transfer Objects (DTOs)
 import { RegistrationForm } from '../types/AuthTypes';
 import { LoginCredentials } from '../types/AuthTypes';
@@ -57,7 +57,6 @@ router.post('/login', async (req: Request, res: Response) => {
         if (credentials == null) { return res.status(400).json({error:"Empty response received."}); }
         if (!credentials.identifier) { return res.status(400).json({error:"E-mail address or display name is required."}); }
         if (!credentials.password) { return res.status(400).json({error:"Password is required."}); }
-        // if (!credentials.isEmail == null) { return res.status(400).json({error: "isEmail flag not set."}); }
         console.log("Credentials received");
         
         // Authenticate: return error message if name/email is not found or password is incorrect
@@ -136,4 +135,3 @@ router.get('/me', async (req: Request, res: Response) => {
 
 
 export default router;
-

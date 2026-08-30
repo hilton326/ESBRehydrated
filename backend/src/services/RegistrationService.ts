@@ -2,7 +2,7 @@
 
 import { Account } from '../types/AccountTypes';
 // Database functions from Repository
-import { checkIfAccountExists, createNewAccount } from '../repository/AccountRepository';
+import { checkIfAccountExists, addNewAccount } from '../repository/AccountRepository';
 
 // Used to encrypt passwords
 const bcrypt = require('bcryptjs');
@@ -30,6 +30,7 @@ export async function hashPassword(password: string) {
     try {
         const hashedPassword = await bcrypt.hash(password, 8);
         return {password: hashedPassword, code: 200, error: null};
+        
     } catch (serverError) {
         return {password: null, code: 500, error: "Error encrypting the password: " + serverError};
     }
@@ -39,7 +40,7 @@ export async function hashPassword(password: string) {
 export async function registerAccount(email: string, name: string, hashedPassword: string) {
     try {
         // Create account in database
-        const newAccount: Account = await createNewAccount(email, name, hashedPassword);
+        const newAccount: Account = await addNewAccount(email, name, hashedPassword);
         if (!newAccount) throw new Error("Error creating account");
 
         return {name: newAccount.name, id: newAccount.id, message: "New account created successfully!"};

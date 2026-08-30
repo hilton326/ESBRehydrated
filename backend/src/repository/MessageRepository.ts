@@ -1,10 +1,9 @@
 // MessageRepository: Handles database queries for storing messages.
+// All queries are in postgreSQL.
 
 import { query } from '../db';
 import { QueryResult } from 'pg';
-
 import { Message }  from '../types/MessageTypes';
-
 
 // getMessageById: Looks up a message based on the database ID
 export const getMessageById = async (id: number) => {
@@ -13,7 +12,7 @@ export const getMessageById = async (id: number) => {
         return response.rows[0] ?? null;
     
     } catch (err) {
-        console.error('Error searching for message by ID:', err);
+        console.error(`Error searching for message by ID "${id}": ${err}`);
         return null;
     }
 }
@@ -100,7 +99,7 @@ export const storeNewMessage = async (text: string, senderID: number, timestamp:
         return response.rows[0];
     
     } catch (error) {
-        console.error('Error storing message in database:', error);
+        console.error(`Error storing new message "${text}" from account ${senderID} in database: ${error}`);
         return null;
     }
 };

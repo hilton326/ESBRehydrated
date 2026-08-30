@@ -1,4 +1,5 @@
 // AccountRepository: Handles database queries for account-related operations.
+// All queries are in postgreSQL.
 
 import { query } from '../db';
 import { QueryResult } from 'pg';
@@ -11,7 +12,7 @@ export async function getAccountById (id: number) {
         return response.rows[0] ?? null;
     
     } catch (err) {
-        console.error('Error searching for account by ID:', err);
+        console.error(`Error searching for account by ID "${id}": ${err}`);
         return null;
     }
 }
@@ -24,20 +25,20 @@ export async function getAccountByEmail(email: string) {
         return response.rows[0] ?? null;
     
     } catch (err) {
-        console.error('Error searching for account by email:', err);
+        console.error(`Error searching for account by email "${email}": ${err}`);
         return null;
     }
 }
 
 // getAccountByName: Looks up an account based on the display name and returns its associated data
-export async function getAccountByName (name: string) {
+export async function getAccountByName(name: string) {
     try {
         const response = await query('SELECT * FROM accounts WHERE name = $1', [name]);
         // Return all of the associated account data
         return response.rows[0] ?? null;
     
     } catch (err) {
-        console.error('Error searching for account by name:', err);
+        console.error(`Error searching for account by name "${name}": ${err}`);
         return null;
     }
 }
@@ -50,16 +51,15 @@ export async function checkIfAccountExists(email: string) {
         return (response.rowCount != 0); 
     
     } catch (err) {
-        console.error('Error checking for account:', err);
+        console.error(`Error checking for account matching ${email}: ${err}`);
         return null;
     }
 }
 
-// createNewAccount: Assuming all requirements are met, adds the new account to the database.
-export async function createNewAccount(email: string, name: string, password: string) {
+// addNewAccount: Assuming all requirements are met, adds the new account to the database.
+export async function addNewAccount(email: string, name: string, password: string) {
     try {
-        // Placeholder: will be replaced by result of true email verification
-        const verified = true 
+        const verified = true // Placeholder: will be replaced by result of true email verification
         const response = await query
             (
                 `INSERT INTO accounts (verified, email, name, password)
@@ -70,12 +70,12 @@ export async function createNewAccount(email: string, name: string, password: st
         return response.rows[0];
     
     } catch (err) {
-        console.error('Error creating account in database:', err);
+        console.error(`Error adding new account {${email}, ${name}} to database: ${err}`);
         return null;
     }
 }
 
-// createNewAccount: Assuming all requirements are met, adds the new account to the database.
+// updateAccountDisplayName: Changes a registered account's display name
 export async function updateAccountDisplayName(accountId: number, newName: string) {
     try {
         const response = await query
@@ -89,7 +89,7 @@ export async function updateAccountDisplayName(accountId: number, newName: strin
         return response.rows[0];
     
     } catch (err) {
-        console.error('Error updating display name:', err);
+        console.error(`Error updating display name for ${accountId}: ${err}`);
         return null;
     }
 }

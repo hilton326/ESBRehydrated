@@ -1,5 +1,6 @@
+// AuthenticationService: Checks login credentials.
+
 import { Account } from '../types/AccountTypes';
-// Database operations
 import { getAccountByEmail, getAccountByName  } from '../repository/AccountRepository';
 
 // Get this from env variables

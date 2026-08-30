@@ -1,6 +1,9 @@
+// FileService: Handles the server's filesystem.
+
 import fs from "node:fs/promises";
 import path from "node:path";
 
+// Default profile picture location
 const DEFAULT_PROFILE = path.resolve(process.cwd(), "src", "uploads", "default.png");
 
 // Check if the profile picture path actually exists for a user 
@@ -14,6 +17,7 @@ async function pathExists(pathToCheck: string, fallback: string) {
   return fallback;
 }
 
+// checkForExistingFiles: Retrieve a user's profile picture (if it exists)
 async function checkForExistingFiles(baseDir: string, fileName: string) {
     /* Profile pictures are stored in src/uploads/accountData/{accountID}/pfp.{extension}.
     * If someone doesn't have a picture, we fall back to the default picture.
@@ -89,14 +93,5 @@ export async function storeFile(file: Express.Multer.File, accountID: number, fi
 
     } catch (e) {
         return {success: false, error: "Error creating file on disk: " + e};
-    }
-}
-
-export async function createBuffer(filePath: string) {
-    try {
-        return fs.readFile(filePath);
-    } catch (error) {
-        console.error("Error reading file from", filePath, ":", error);
-        return null;
     }
 }

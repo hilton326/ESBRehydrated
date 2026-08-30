@@ -1,3 +1,5 @@
+// MessageService: Message related logic.
+
 import { Message, ServerMessage }  from '../types/MessageTypes';
 import { getLastMessageID, getLastMessageSender, storeNewMessage, getRecentMessages } from '../repository/MessageRepository';
 import { getAccountById} from '../repository/AccountRepository';
@@ -57,7 +59,7 @@ export async function prepareMessage(msgID: number, msgText: string, senderID: n
         if (msgType == null) {
             let prevSenderID = await getLastMessageSender();
             if (prevSenderID == null) {
-                console.log("WARNING: Couldn't retrieve previous sender information. Defaulting to 0.");
+                console.warn("WARNING: Failed to retrieve previous sender information. Defaulting to 0.");
                 prevSenderID = 0;
             }
             msgType = assignMsgType(senderID, prevSenderID);
@@ -87,17 +89,13 @@ export async function prepareMessage(msgID: number, msgText: string, senderID: n
 // storeMessage: Store a new message in the database.
 export async function storeMessage(msg: ServerMessage) {
     try {
-        // Ensure that the sender and previous sender IDs are linked to an account
+        // Ensure that the sender ID is linked to an account
         const senderCheck = await getAccountById(msg.senderID);
         if (!senderCheck) { 
             throw new Error("Account not found with ID " + msg.senderID); 
         }
-        // const prevSenderID = await getLastMessageSender();
-        // if (prevSenderID == null) { 
-        //     throw new Error("Error retrieving previous sender ID"); 
-        // }
 
-        // If both checks pass, attempt to store new message in the DB
+        // If the check passes, attempt to store new message in the DB
         const added = await storeNewMessage(msg.text, msg.senderID, String(msg.timestamp), msg.msgType);
         if (!added) { 
             return false; 

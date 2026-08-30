@@ -1,7 +1,9 @@
+// AccountService: Bridge between AccountController and AccountRepository
+
 import { getAccountById, updateAccountDisplayName } from '../repository/AccountRepository';
 import { Account, AccountInfo } from '../types/AccountTypes';
 
-
+// Functions for retrieving various account details from an account ID.
 export async function getAccountInfoFromId(id: number) {
     const account: Account = await getAccountById(id);
     if (!account) {
@@ -9,7 +11,6 @@ export async function getAccountInfoFromId(id: number) {
     }
     return account;
 }
-
 export async function getEmailById(id: number) {
     const account: Account = await getAccountById(id);
     if (!account) {
@@ -17,7 +18,6 @@ export async function getEmailById(id: number) {
     }
     return {email: account.email};
 }
-
 export async function getDisplayNameById(id: number) {
     const account: Account = await getAccountById(id);
     if (!account) {
@@ -25,7 +25,6 @@ export async function getDisplayNameById(id: number) {
     }
     return {name: account.name};
 }
-
 export async function getAccountStatusById(id: number) {
     const account: Account = await getAccountById(id);
     if (!account) {
@@ -34,6 +33,7 @@ export async function getAccountStatusById(id: number) {
     return {verified: account.verified};
 }
 
+// Functions for updating account details
 export async function changeDisplayName(id: number, newName: string) {
     const updatedAccount: Account = await updateAccountDisplayName(id, newName);
     if (!updatedAccount) {

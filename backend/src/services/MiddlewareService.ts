@@ -1,4 +1,5 @@
-// imports
+// MiddlewareService: Handles JWT token verification for accessing protected pages and routes.
+
 import { Request, Response, NextFunction} from 'express';
 import { Account } from '../types/AccountTypes';
 import { getAccountById } from '../repository/AccountRepository';
@@ -11,7 +12,7 @@ export interface JwtRequest extends Request { account?: any; }
 // Throw an exception immediately if the JWT secret is not defined
 if (!secretKey) throw new Error('Missing JWT_SECRET! Are the environment variables set?');
 
-// Extract token from cookie 
+// getTokenFromCookie: Extract token from cookie 
 export async function getTokenFromCookie(req: Request) {
     // Extract token from cookie (if present)
     const cookieToken = req.cookies?.auth_token;
@@ -32,7 +33,7 @@ export async function getTokenFromCookie(req: Request) {
     return {token: token, error: null};
 }
 
-// Middleware for token verification
+// verifyToken: Middleware for token verification
 export async function verifyToken(token: string) {
     try {
         // Verify JWT token

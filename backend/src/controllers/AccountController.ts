@@ -1,4 +1,4 @@
-// AccountController: Handles routes forretrieval and updating of account information
+// AccountController: Handles routes for retrieval and updating of account information
 
 // Express.js imports
 import { Router, Request, Response } from 'express';
