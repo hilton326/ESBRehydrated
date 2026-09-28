@@ -14,7 +14,7 @@ import authRouter from './controllers/AuthController';
 import accountRouter from './controllers/AccountController';
 
 // Important services
-import { buildRecentMsgList, getMessageCount, prepareMessage, storeMessage } from './services/MessageService';
+import { buildRecentMsgList, getMessageCount, prepareMessage, storeMessage, findMissingPictureIDs } from './services/MessageService';
 import { verifyToken } from "./services/MiddlewareService"; 
 import { initSocket } from './services/SocketEventService';
 
@@ -25,7 +25,7 @@ import { AccountInfo } from './types/AccountTypes';
 // Initialize the Express application
 const app = express();
 // Set the server port (use 8080 if nothing specified in .env variables)
-const PORT = Number(process.env.SERVER_PORT) ?? 8080;
+const PORT = Number(process.env.SERVER_PORT || 8080);
 
 // CORS control function
 function corsOrigin(origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
@@ -171,34 +171,21 @@ async function main() {
             try {
                 // Retrieve last {count} messages from the database (count can be any integer)
                 const recentMessageList = await buildRecentMsgList(500);
-                if (recentMessageList == null) {
-                    throw new Error("Failed to fetch recent messages from the database");
-                } else {
-                    // Send in reverse order so they display oldest to newest
-                    for (let i = recentMessageList.length - 1; i >= 0; i--) {
-                        const msg = recentMessageList[i];
-                        // Make sure the message exists
-                        if (!msg) {
-                            console.log("No", i, "th message found");
-                            continue;
-                        }
-                        // If there is no sender, skip this message
-                        if (!msg.sender) {
-                            console.log(`Skipping message ${msg.id}. Sender couldn't be verified.`);
-                            continue;
-                        }
-                        const msgFromDB = await prepareMessage(msg.id, msg.text, msg.sender.id, msg.sender.name, msg.timestamp, msg.type);
-                        if (!msgFromDB) {
-                            console.log(`Failed to prepare message ${msg.id}`);
-                            continue;
-                        }
-                        // Send a distinct signal for "old messages"
-                        socket.emit("old-message", msgFromDB);
-                    }
-                    console.log(`Recent messages sent to ${currentClient.account.name}`);
-                }
+                if (recentMessageList == null) throw new Error("Failed to fetch recent messages from the database");
+                
+                // Compare senders of recentMessageList with the clientList to see if the client is missing profile picture data
+                const missingPictureIDs = findMissingPictureIDs(recentMessageList, clientList);
+                if (missingPictureIDs == null) throw new Error("Failed to find sender IDs who have no picture data on client side");
+                
+                // Send over the IDs with missing pfps
+                socket.emit("missing-pfps", missingPictureIDs);
+
+                // Send a distinct signal for "old messages"
+                socket.emit("recent-messages", recentMessageList);
+                console.log(`Recent messages sent to ${currentClient.account.name}`);
+                 
             } catch (error) {
-                console.error(`Failed to process message list: ${error}`);
+                console.error(`Failed to send over recent messages to account ${currentClient.account.id}: ${error}`);
             }
 
             // Broadcast a system message to alert everyone of the new person joining

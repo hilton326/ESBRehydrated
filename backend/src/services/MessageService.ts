@@ -1,6 +1,7 @@
 // MessageService: Message related logic.
 
 import { Message, ServerMessage }  from '../types/MessageTypes';
+import { AccountInfo }  from '../types/AccountTypes';
 import { getLastMessageID, getLastMessageSender, storeNewMessage, getRecentMessages } from '../repository/MessageRepository';
 import { getAccountById} from '../repository/AccountRepository';
 
@@ -12,32 +13,90 @@ export async function getMessageCount() {
     return msgCount+1;
 };
 
-// buildRecentMsgList: Retrieve the last (COUNT) messages from the database and store them into a readable array
+// buildRecentMsgList: Retrieve the last (COUNT) messages from the database and process them into an array that socket.io can send
 export async function buildRecentMsgList(count: number) {
+    try {
+        // Fetch raw message data from database
+        const recentMsgs = await getRecentMessages(count);
+        if (!recentMsgs) throw new Error("Failed to retrieve recent messages from the database");
 
-    async function addMsgDetails(msg: any): Promise<Message> {
-        // Retrieve full account details of each message
-        const sender = await getAccountById(msg.sender);
-        const prevSender = await getAccountById(msg.prev_sender);
-        // Convert into Message objects
-        const updatedMsg: Message = {
-            id: msg.id,
-            text: msg.text,
-            sender: sender, 
-            timestamp: msg.timestamp,
-            type: msg.type
-        }
-        return updatedMsg;
-    }
+        // Array of properly formatted ServerMessages; successfully processed messages will be added to it
+        const messageList: ServerMessage[] = [];
 
-    // Fetch messages from database
-    const recentMsgs = await getRecentMessages(count);
-    if (!recentMsgs) {
+        // Process messages in reverse order so they display oldest to newest
+        for (let i = recentMsgs.length - 1; i >= 0; i--) {
+            const m = recentMsgs[i];
+            // Make sure the message exists
+            if (!m) {
+                console.warn(`No ${i}th message found.`);
+                continue;
+            }
+            // Skip the message if there is no sender ID 
+            if (m.sender == null) {
+                console.warn(`Skipping message ${m.id}. No sender.`);
+                continue;
+            }
+            // Skip the message if the sender ID cannot be verified
+            const sender = await getAccountById(m.sender);
+            if (!sender) {
+                console.warn(`Skipping message ${m.id}. Sender cannot be verified.`);
+                continue;
+            }
+            // All required info is now present; prepare message for sending
+            const msgFromDB = await prepareMessage(m.id, m.text, sender.id, sender.name, m.timestamp, m.type);
+                if (!msgFromDB) {
+                    console.warn(`Failed to prepare message ${m.id} for sending.`);
+                    continue;
+                } else {
+                    messageList.push(msgFromDB);
+                }
+            }
+
+        return messageList;
+
+    } catch (e) {
+        console.error(`MessageService, buildRecentMsgList() : Error building recent message list: ${e}`);
         return null;
     }
-    const messageList = await Promise.all(recentMsgs.map(addMsgDetails));
-    return messageList;
 };
+
+/* findMissingPictureIDs:
+* Sometimes, the recent messages will have senders who left the chat before a current client arrived.
+* This means that their memberList doesn't contain all of the profile pictures.
+* So, here, we compare the two lists and generate a list of IDs that the client needs to retrieve pictures for manually.
+* */
+export function findMissingPictureIDs(msgList: ServerMessage[], clientList: AccountInfo[]) {
+    try {
+        let clientIDs = [];
+        for (let i = 0; i < clientList.length; i++) {
+            const c = clientList[i];
+            if (c) clientIDs.push(c.id);
+        }
+
+        let missingSenderIDs: number[] = [];
+        let missingSenders: any[] = [];
+        for (let i = 0; i < msgList.length; i++) {
+            let m = msgList[i];
+            if (!m) continue;
+
+            if (m.senderID && m.senderName) {
+                console.log(`Client ID list: ${clientIDs}`);
+                console.log(`m.senderID: ${m.senderID}`);
+
+                if (!clientIDs.includes(m.senderID) && !missingSenderIDs.includes(m.senderID)) {
+                    missingSenderIDs.push(m.senderID);
+                    const senderData = {id: m.senderID, name: m.senderName};
+                    missingSenders.push(senderData);
+                }
+            }
+        }
+        console.log(`Missing senders: ${missingSenders}`);
+        return missingSenders;
+
+    } catch (e) {
+        console.error(`MessageService, findMissingPictureIDs(): ${e}`);
+    }
+}
 
 // prepareMessage: Convert the ClientMessage into a ServerMessage (add additional details) before sending it.
 export async function prepareMessage(msgID: number, msgText: string, senderID: number, senderName: string, timestamp: string, msgType: number | null) {
@@ -73,11 +132,6 @@ export async function prepareMessage(msgID: number, msgText: string, senderID: n
             text: msgText, 
             timestamp: timestamp
         };
-        // console.log(`Id: ${message.id}, Message.txt: ${message.text}`);
-        // console.log(`Sender: ${message.senderID}, PrevSender: ${prevSenderID}, Msgtype: ${message.msgType}`);
-        // console.log(`senderID === prevSenderID: ${(senderID === message.senderID)}`);
-        // console.log();
-
         return message;
 
     } catch (error) {

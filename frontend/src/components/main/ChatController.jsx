@@ -89,77 +89,118 @@ export default function ChatController({accountInfo}) {
 
         // Listen for new messages from server and update message list
         socketRef.current.on("message", async (msg) => {
-            if (!msg) return;
+            try {
+                if (!msg) throw new Error(`"message" broadcast from server sent no data!`);
 
-            // Make sure sender info was received
-            const senderID = msg.senderID;
-            const senderName = msg.senderName;
-            if (senderID == null) {
-                console.error("Message has no ID");
-                return;
-            }
-            if (!senderName) {
-                console.error("Message has no name");
-                return;
-            }
-
-            /* Update message display array:
-            * "prev" represents previous contents of the array. We just add newMsg to it */
-            setMessages(prev =>  [...prev, msg]);
-        });
-
-        // On connection, the server will send a bunch of recent messages all at once.
-        // These are processed in the same way, though profile picture data needs some special logic if the sender isn't in memberList.
-        socketRef.current.on("old-message", async (msg) => {
-            if (!msg) return;
-            const senderID = msg.senderID;
-            const senderName = msg.senderName;
-            if (senderID == null) {
-                console.error("Message has no ID");
-                return;
-            }
-            if (!senderName) {
-                console.error("Message has no name");
-                return;
-            }
-            setMessages(prev =>  [...prev, msg]);
-
-            /* Profile picture logic:
-            * Check if the sender is already in the account cache (should be true for anyone currently in member list). 
-            * If they are, don't call the API again. If not, call the API to get the profile picture and add to cache. */
-
-            // Don't add the SYSTEM user to cache! (There is no profile picture associated with it)
-            if (senderID == 0) return;
-
-            // "some" is equivalent to a for loop checking this expression on each element of the ref
-            const alreadyCached = accountCacheRef.current.some(account => account.id === senderID);
-            if (!alreadyCached) {
-                // Also make sure that there is not already a request ongoing for that sender ID (using inFlightRef):
-                // This is necessary because the messages arrive faster than accountCache can update.
-                if (!inflightRef.current.has(senderID)) {
-                    // If this isn't a duplicate request, retrieve the picture from the server and assign it to the inFlightRef
-                    inflightRef.current.set(
-                        senderID,
-                        (async () => {
-                            const picture = await getProfilePicture(senderID);
-                            return picture;
-                        })()
-                    );
-                }
-                // Get the picture from the inFlightRef, then clear the inFlightRef
-                const picture = await inflightRef.current.get(senderID);
-                if (!picture) {
-                    inflightRef.current.delete(senderID);
+                // Make sure sender info was received
+                const senderID = msg.senderID;
+                const senderName = msg.senderName;
+                if (senderID == null) {
+                    console.error("Message has no ID");
                     return;
                 }
-                // Update account cache with the new picture 
-                setAccountCache(prev => {
-                    // re-check the ID for safety
-                    if (prev.some(account => account.id === senderID)) return prev;
-                    return [...prev, { id: senderID, name: senderName, walkingGary: false, profilePicture: picture }];
-                });
+                if (!senderName) {
+                    console.error("Message has no name");
+                    return;
+                }
+
+                /* Update message display array:
+                * "prev" represents previous contents of the array. We just add newMsg to it */
+                setMessages(prev =>  [...prev, msg]);
+
+            } catch (e) {
+                console.error(`Error retrieving message: ${e}`);
             }
         });
+
+        // On initial connection, the server will send a bunch of recent messages (the last 100 sent before our arrival) all at once.
+        // These are processed in the same way, though profile picture data needs some special logic if the sender isn't in memberList.
+        socketRef.current.on("recent-messages", async (messageList) => {
+            try {
+                if (!messageList) {
+                    throw new Error(`"recent-messages" broadcast from server sent no data!`);
+                }
+                setMessages(messageList);
+
+            } catch (e) {
+                console.error(`Error retrieving and processing recent messages: ${e}`);
+            }
+        });
+
+        // Retrieve missing PFPs of senders in recent messages who are NOT in the member list currently
+        socketRef.current.on("missing-pfps", async (missingPictureList) => {
+            try {
+                if (!missingPictureList) {
+                    throw new Error(`"missing-pfps" broadcast from server sent no data!`);
+                }
+
+                for (let i = 0; i < missingPictureList.length; i++) {
+                    const sender = missingPictureList[i];
+                    if (sender) {
+                        const picture = await getProfilePicture(sender.id);
+                        setAccountCache(prev => {
+                            return [...prev, { id: sender.id, name: sender.name, profilePicture: picture }];
+                        });
+                    }
+                }
+
+            } catch (e) {
+                console.error(`Error retrieving missing profile pictures: ${e}`);
+            }
+        });
+
+        // // On connection, the server will send a bunch of recent messages all at once.
+        // // These are processed in the same way, though profile picture data needs some special logic if the sender isn't in memberList.
+        // socketRef.current.on("old-message", async (msg) => {
+        //     if (!msg) return;
+        //     const senderID = msg.senderID;
+        //     const senderName = msg.senderName;
+        //     if (senderID == null) {
+        //         console.error("Message has no ID");
+        //         return;
+        //     }
+        //     if (!senderName) {
+        //         console.error("Message has no name");
+        //         return;
+        //     }
+        //     setMessages(prev =>  [...prev, msg]);
+
+        //     /* Profile picture logic:
+        //     * Check if the sender is already in the account cache (should be true for anyone currently in member list). 
+        //     * If they are, don't call the API again. If not, call the API to get the profile picture and add to cache. */
+
+        //     // Don't add the SYSTEM user to cache! (There is no profile picture associated with it)
+        //     if (senderID == 0) return;
+
+        //     // "some" is equivalent to a for loop checking this expression on each element of the ref
+        //     const alreadyCached = accountCacheRef.current.some(account => account.id === senderID);
+        //     if (!alreadyCached) {
+        //         // Also make sure that there is not already a request ongoing for that sender ID (using inFlightRef):
+        //         // This is necessary because the messages arrive faster than accountCache can update.
+        //         if (!inflightRef.current.has(senderID)) {
+        //             // If this isn't a duplicate request, retrieve the picture from the server and assign it to the inFlightRef
+        //             inflightRef.current.set(
+        //                 senderID,
+        //                 (async () => {
+        //                     const picture = await getProfilePicture(senderID);
+        //                     return picture;
+        //                 })()
+        //             );
+        //         }
+        //         // Get the picture from the inFlightRef, then clear the inFlightRef
+        //         const picture = await inflightRef.current.get(senderID);
+        //         if (!picture) {
+        //             inflightRef.current.delete(senderID);
+        //             return;
+        //         }
+        //         // Update account cache with the new picture 
+        //         setAccountCache(prev => {
+        //             // re-check the ID for safety
+        //             if (prev.some(account => account.id === senderID)) return prev;
+        //             return [...prev, { id: senderID, name: senderName, walkingGary: false, profilePicture: picture }];
+        //         });
+        //     }
+        // });
 
         /* Member list updates:
             * "clients:init" = Server sends entire member list when you first join 
