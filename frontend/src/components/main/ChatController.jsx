@@ -67,6 +67,7 @@ export default function ChatController({accountInfo}) {
     const [accountCache, setAccountCache] = useState([]);
     const accountCacheRef = useRef([]); // reference to the cache; allows usage of the data inside effects
     const inflightRef = useRef(new Map()); // Prevents duplicate profile picture API requests
+
     // Update the reference whenever the cache changes or messages are sent
     useEffect(() => {
         accountCacheRef.current = accountCache;
@@ -133,9 +134,10 @@ export default function ChatController({accountInfo}) {
             // "some" is equivalent to a for loop checking this expression on each element of the ref
             const alreadyCached = accountCacheRef.current.some(account => account.id === senderID);
             if (!alreadyCached) {
-                // Also make sure that there is not already a request ongoing for that sender ID
-                // Necessary because the messages arrive faster than accountCache can update
+                // Also make sure that there is not already a request ongoing for that sender ID (using inFlightRef):
+                // This is necessary because the messages arrive faster than accountCache can update.
                 if (!inflightRef.current.has(senderID)) {
+                    // If this isn't a duplicate request, retrieve the picture from the server and assign it to the inFlightRef
                     inflightRef.current.set(
                         senderID,
                         (async () => {
@@ -144,13 +146,13 @@ export default function ChatController({accountInfo}) {
                         })()
                     );
                 }
-                
+                // Get the picture from the inFlightRef, then clear the inFlightRef
                 const picture = await inflightRef.current.get(senderID);
                 if (!picture) {
                     inflightRef.current.delete(senderID);
                     return;
                 }
-                
+                // Update account cache with the new picture 
                 setAccountCache(prev => {
                     // re-check the ID for safety
                     if (prev.some(account => account.id === senderID)) return prev;

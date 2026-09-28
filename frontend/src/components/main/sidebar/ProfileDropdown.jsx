@@ -1,16 +1,28 @@
-import { useState, useCallback } from 'react';
-import { logoutRequest } from '../../../api/AuthClient.js'; // Import the client for API calls
-import { useNavigate } from "react-router-dom";
+import {useState, useCallback} from 'react';
+import {useNavigate} from "react-router-dom";
+
 import ProfileSettingsMenu from '../settings/ProfileSettingsMenu.jsx';
 // import AccountSettingsMenu from '../settings/AccountSettingsMenu.jsx';
 import PopupTwoButtons from '../../common/PopupTwoButtons.jsx';
 // import thinkton from '../../../assets/legothinkton.png'; // image placeholder
-import {walkGary} from '../../../api/ProfileClient.js';
 
+// for API calls
+import { logoutRequest } from '../../../api/AuthClient.js';
+import { walkGary } from '../../../api/ProfileClient.js';
+
+/* ProfileDropdown: Dropdown menu on profile display.
+* Can open ProfileSettingsMenu or AccountSettingsMenu, log out of current session, or toggle Walking Gary status.
+*
+* accountInfo: id, name, profilePicture; only here to pass into submenus
+* onClose: Callback to close the menu
+* width: Page width, passed in from ProfileDisplay
+*/
 function ProfileDropdown({accountInfo, onClose, width}) {
     const pageWidth = width ?? 0;
-    
     const navigate = useNavigate();
+    const textID = (pageWidth < 700) ? "downsized-text" : "";
+
+    // States
     const [walkingGary, setWalkingGary] = useState(accountInfo?.walkingGary ?? false);
     const [profileSettingsVisible, setProfileSettingsVisible] = useState(false);
     const [accountSettingsVisible, setAccountSettingsVisible] = useState(false);
@@ -23,6 +35,7 @@ function ProfileDropdown({accountInfo, onClose, width}) {
         func(state);
     }, []);
 
+    // toggleWalkingGary: contacts API, which will tell socket server to broadcast status change to all users
     const toggleWalkingGary = async() => {
         const statusUpdated = await walkGary(accountInfo.id, walkingGary);
         if (statusUpdated.ok) {
@@ -32,9 +45,8 @@ function ProfileDropdown({accountInfo, onClose, width}) {
         }
     }
 
-    // Handle logging out
+    // handleLogout: Logout function. Triggered only after user selects "yes" on "are you sure?" popup
     const handleLogout = useCallback(async() => {
-        // Attempt to logout
         const logout = await logoutRequest();
         // If successful, redirect to login page
         if (logout.successful) {
@@ -44,8 +56,6 @@ function ProfileDropdown({accountInfo, onClose, width}) {
             alert(String(logout.error));
         }
     }, [navigate]);
-
-    const textID = (pageWidth < 700) ? "downsized-text" : "";
 
     return (
         <div id="profile-dropdown">

@@ -18,7 +18,7 @@ export async function authenticate(email: string, password: string) {
         console.log(`Searching for email address ${email}...`);
         matchingAccount = await getAccountByEmail(email);
         if (!matchingAccount) {
-            return {account: null, authenticated: false, code: 400, error: "No account is associated with that email."};
+            return {account: null, authenticated: false, code: 403, error: "No account is associated with that email."};
         }
         
         console.log("Account found. Attempting to authenticate...");
@@ -27,7 +27,7 @@ export async function authenticate(email: string, password: string) {
         // Return account, authentication status, HTTP status code, and error message
         const response = valid
             ? {account: matchingAccount, authenticated: true, code: 200, error: null} 
-            : {account: matchingAccount, authenticated: false, code: 400, error: "Incorrect password."};
+            : {account: matchingAccount, authenticated: false, code: 403, error: "Incorrect password."};
         return response;
 
     } catch (serverError) {

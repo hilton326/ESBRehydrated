@@ -55,7 +55,7 @@ router.post('/login', async (req: Request, res: Response) => {
 
         // Make sure credentials are not empty
         if (credentials == null) { return res.status(400).json({error:"Empty response received."}); }
-        if (!credentials.identifier) { return res.status(400).json({error:"E-mail address or display name is required."}); }
+        if (!credentials.identifier) { return res.status(400).json({error:"E-mail address is required."}); }
         if (!credentials.password) { return res.status(400).json({error:"Password is required."}); }
         console.log("Credentials received");
         

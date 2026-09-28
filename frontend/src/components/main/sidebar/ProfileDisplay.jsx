@@ -1,24 +1,27 @@
 'use client';
 import { useState, useCallback } from 'react';
-import { TiArrowSortedDown } from "react-icons/ti";
 
+import { TiArrowSortedDown } from "react-icons/ti"; // icon placeholder; replace with Bikini Bottom flower
 import thinkton from '../../../assets/legothinkton.png'; // image placeholder
 import Image from '../../common/Image.jsx';
 import ProfileDropdown from './ProfileDropdown.jsx';
 
-import {useWindowWidth} from '../../../hooks/useWindowSize.js';
+import {useWindowWidth} from '../../../hooks/useWindowSize.js'; // custom hook
 
-function ProfileDisplay({accountID, displayName, profilePicture, walkingGary}) {
+// ProfileDisplay (top right corner of the page)
+// Takes in account info as usual
+export default function ProfileDisplay({accountID, displayName, profilePicture, walkingGary}) {
 
+    // Call a hook to ensure the page width is always up to date
     const pageWidth = useWindowWidth();
 
     // Dropdown controller
     const [dropDownOpen, setDropDownOpen] = useState(false);
-
     const toggleProfileDropdown = useCallback(() => {
         setDropDownOpen(!dropDownOpen);
         console.log(pageWidth);
     }, [dropDownOpen, pageWidth]);
+
 
     const accountInfo = {
         id: accountID ?? 0,
@@ -27,6 +30,7 @@ function ProfileDisplay({accountID, displayName, profilePicture, walkingGary}) {
         walkingGary: walkingGary ?? false
     }
 
+    // Based on page width, calculate size of the profile picture on the display
     function calculateImageSize() {
         if (pageWidth < 700) return 0;
         if (pageWidth < 800) return 20;
@@ -56,6 +60,4 @@ function ProfileDisplay({accountID, displayName, profilePicture, walkingGary}) {
             </div>
         </div>
     )
-}
-
-export default ProfileDisplay;
+};
