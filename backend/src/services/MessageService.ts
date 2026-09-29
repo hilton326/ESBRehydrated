@@ -67,22 +67,24 @@ export async function buildRecentMsgList(count: number) {
 * */
 export function findMissingPictureIDs(msgList: ServerMessage[], clientList: AccountInfo[]) {
     try {
+        // Isolate the account IDs in clientList
         let clientIDs = [];
         for (let i = 0; i < clientList.length; i++) {
             const c = clientList[i];
             if (c) clientIDs.push(c.id);
         }
+        
+        let missingSenderIDs: number[] = []; // keeps track of account ids we've added
+        let missingSenders: any[] = []; // contains both the id and display name to send back to client
 
-        let missingSenderIDs: number[] = [];
-        let missingSenders: any[] = [];
+        // Search recent messages for senders not currently in clientList
         for (let i = 0; i < msgList.length; i++) {
             let m = msgList[i];
             if (!m) continue;
 
             if (m.senderID && m.senderName) {
-                console.log(`Client ID list: ${clientIDs}`);
-                console.log(`m.senderID: ${m.senderID}`);
-
+                // Check in both clientList and missingSenderIDs so that we don't add any ids twice
+                // Add when the id is excluded from both lists
                 if (!clientIDs.includes(m.senderID) && !missingSenderIDs.includes(m.senderID)) {
                     missingSenderIDs.push(m.senderID);
                     const senderData = {id: m.senderID, name: m.senderName};
@@ -90,7 +92,6 @@ export function findMissingPictureIDs(msgList: ServerMessage[], clientList: Acco
                 }
             }
         }
-        console.log(`Missing senders: ${missingSenders}`);
         return missingSenders;
 
     } catch (e) {
@@ -135,7 +136,7 @@ export async function prepareMessage(msgID: number, msgText: string, senderID: n
         return message;
 
     } catch (error) {
-        console.error(`Error preparing message: ${error}`);
+        console.error(`MessageService, prepareMessage(): Error preparing message: ${error}`);
         return null;
     }
 };
@@ -157,7 +158,7 @@ export async function storeMessage(msg: ServerMessage) {
         return true;
 
     } catch (error) {
-        console.error(`Error storing message in database: ${error}`);
+        console.error(`MessageService, storeMessage(): Error storing message in database: ${error}`);
         return false;
     }
 };

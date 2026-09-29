@@ -170,14 +170,14 @@ async function main() {
             // Fetch recent messages from database (so the new client may see them)
             try {
                 // Retrieve last {count} messages from the database (count can be any integer)
-                const recentMessageList = await buildRecentMsgList(500);
+                const recentMessageList = await buildRecentMsgList(200);
                 if (recentMessageList == null) throw new Error("Failed to fetch recent messages from the database");
                 
-                // Compare senders of recentMessageList with the clientList to see if the client is missing profile picture data
+                // Check if any senders in this list are missing profile data on the client's end
                 const missingPictureIDs = findMissingPictureIDs(recentMessageList, clientList);
-                if (missingPictureIDs == null) throw new Error("Failed to find sender IDs who have no picture data on client side");
+                if (missingPictureIDs == null) throw new Error("Failed to find missing picture data");
                 
-                // Send over the IDs with missing pfps
+                // Send over the IDs with missing pfps (if present)
                 socket.emit("missing-pfps", missingPictureIDs);
 
                 // Send a distinct signal for "old messages"
