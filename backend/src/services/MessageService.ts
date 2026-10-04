@@ -151,11 +151,8 @@ export async function storeMessage(msg: ServerMessage) {
         }
 
         // If the check passes, attempt to store new message in the DB
-        const added = await storeNewMessage(msg.text, msg.senderID, String(msg.timestamp), msg.msgType);
-        if (!added) { 
-            return false; 
-        }
-        return true;
+        const storedMsgID = await storeNewMessage(msg.text, msg.senderID, String(msg.timestamp), msg.msgType);
+        return storedMsgID;
 
     } catch (error) {
         console.error(`MessageService, storeMessage(): Error storing message in database: ${error}`);

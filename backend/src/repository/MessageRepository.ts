@@ -87,7 +87,7 @@ export const getLastMessageSender = async () => {
     }
 };
 
-// storeNewMessage: Stores a new message in the database.
+// storeNewMessage: Stores a new message in the database and returns the new message ID if successful.
 export const storeNewMessage = async (text: string, senderID: number, timestamp: string, msgType: number) => {
     try {
         const response = await query
@@ -96,10 +96,10 @@ export const storeNewMessage = async (text: string, senderID: number, timestamp:
              VALUES ($1, $2, $3, $4) RETURNING *`, 
              [text, senderID, timestamp, msgType]
         );
-        return response.rows[0];
+        return response.rows[0].id;
     
     } catch (error) {
-        console.error(`Error storing new message "${text}" from account ${senderID} in database: ${error}`);
+        console.error(`MessageRepository: Error storing new message "${text}" from account ${senderID} in database: ${error}`);
         return null;
     }
 };

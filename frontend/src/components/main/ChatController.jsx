@@ -177,7 +177,10 @@ export default function ChatController({accountInfo}) {
                 
                 for (let i = 0; i < missingPictureList.length; i++) {
                     const sender = missingPictureList[i];
-                    if (!sender) throw new Error("Sender is not defined");
+                    if (!sender) {
+                        console.warn("A sender in missingPicturesList is undefined");
+                        continue;
+                    }
 
                     const picture = await getProfilePicture(sender.id);
                     // Only update accountCache since these accounts are NOT in the member list!

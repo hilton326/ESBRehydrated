@@ -189,16 +189,17 @@ async function main() {
             }
 
             // Broadcast a system message to alert everyone of the new person joining
-            msgCounter = await getMessageCount();
             const joinText = "~ " + currentClient.account.name + " has entered the Krusty Krab. ~";
             const joinMsg = await prepareMessage(msgCounter, joinText, 0, "System", String(new Date()), 0);
             if (joinMsg) {
-                io.emit("message", joinMsg);
-
                 // Add message to database
-                const messageStored = await storeMessage(joinMsg);
-                if (!messageStored) {
-                    console.warn("Failed to store message #", msgCounter, "in the database.");
+                const storedMsgID = await storeMessage(joinMsg);
+                if (!storedMsgID) {
+                    console.warn(`Failed to store message # ${msgCounter+1} in the database. Message counter will remain ${msgCounter}.`);
+                } else {
+                    // If successful, update the message counter with the new message ID and then broadcast the message
+                    msgCounter = storedMsgID;
+                    io.emit("message", joinMsg);
                 }
             }
 
@@ -210,30 +211,31 @@ async function main() {
                 try {
                     // If user isn't authenticated, do not proceed
                     if (!currentClient) {
-                        return;
+                        throw new Error("User is not authenticated!");
+                        
                     } else {
-                        // Increment message ID counter
-                        msgCounter = await getMessageCount();
                         console.log("Message received:", msg.text, "from", currentClient.account.name);
 
                         // Prepare message for sending
-                        // NOTE: "null" argument is msgType. This is unknown now but prepareMessage calculates it.
+                        // NOTE: "null" argument is msgType. This is unknown now but prepareMessage() calculates it.
                         const message = await prepareMessage(
                             msgCounter, msg.text, currentClient.account.id, currentClient.account.name, String(new Date()), null
                         );
                         if (message) {
-                             // Broadcast message to all clients (including sender)
-                            io.emit("message", message);
-
                             // Add message to database
-                            const messageStored = await storeMessage(message);
-                                if (!messageStored) {
-                                    console.warn("Failed to store message #", msgCounter, "in the database.");
-                                }
+                            const storedMsgID = await storeMessage(message);
+                            if (!storedMsgID) {
+                                console.warn(`Failed to store message # ${msgCounter+1} in the database. Message counter will remain ${msgCounter}.`);
+                            } else {
+                                // If successful, update the message counter with the new message ID and then broadcast the message
+                                msgCounter = storedMsgID;
+                                // Broadcast message to all clients (including sender)
+                                io.emit("message", message);
+                            }
                         }
                     }
                 } catch (error) {
-                    console.error("Unexpected error while sending message: ", error);
+                    console.error("Error while sending message: ", error);
                 }
             });
 
@@ -251,19 +253,20 @@ async function main() {
                 customIoEmit("clients:remove", clientToRemove, "");
                 console.log(currentClient.account.name, "has left.", clientList.length, "clients currently connected.");
 
-                msgCounter = await getMessageCount();
                 // Broadcast a system message to alert everyone of the new person leaving
                 const leaveText = "~ " + currentClient.account.name + " has left the Krusty Krab. ~";
                 const leaveMsg = await prepareMessage(msgCounter, leaveText, 0, "System", String(new Date()), 0);
 
                 if (leaveMsg) {
-                    io.emit("message", leaveMsg);
-
                     // Add message to database
-                    const messageStored = await storeMessage(leaveMsg);
-                        if (!messageStored) {
-                            console.warn("Failed to store message #", msgCounter, "in the database.");
-                        }
+                    const storedMsgID = await storeMessage(leaveMsg);
+                    if (!storedMsgID) {
+                        console.warn(`Failed to store message # ${msgCounter+1} in the database. Message counter will remain ${msgCounter}.`);
+                    } else {
+                        // If successful, update the message counter with the new message ID and then broadcast the message
+                        msgCounter = storedMsgID;
+                        io.emit("message", leaveMsg);
+                    }
                 }
             });
         });
